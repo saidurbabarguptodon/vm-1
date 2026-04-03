@@ -1,10 +1,10 @@
-name: Deploy
+name: Run vm-1
 
 on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy
+  group: Run
   cancel-in-progress: false
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set hostname (vm-1)
+      - name: Set hostname
         run: |
           sudo hostnamectl set-hostname vm-1
           echo "127.0.0.1 vm-1" | sudo tee -a /etc/hosts
@@ -34,7 +34,7 @@ jobs:
           sudo systemctl restart ssh
           systemctl is-active --quiet ssh || { echo "::error::SSH failed to start."; exit 1; }
 
-      - name: Wipe old Tailscale device (vm-1)
+      - name: DELETE OLD TAILSCALE (vm-1)
         env:
           TS_API_KEY: ${{ secrets.TAILSCALE_API_KEY }}
         run: |
@@ -113,7 +113,7 @@ jobs:
             fi
           fi
 
-      - name: Install and setup Cloudflare Tunnel (optional)
+      - name: Install and setup Cloudflare Tunnel
         env:
           CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
         run: |
