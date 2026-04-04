@@ -21,13 +21,13 @@ jobs:
       - name: CHECK REPOSITORY
         uses: actions/checkout@v4
 
-      # 2. SETUP (DELETE ALL PREVIOUS RUNS + INITIAL DATA SYNC)
+      # 2. SETUP (DELETE OLD RUNS + INITIAL DATA SYNC + CLOUDFLARE TUNNEL)
       - name: 2. SETUP
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           # DELETE ALL PREVIOUS WORKFLOW RUNS (ANY STATUS) EXCEPT CURRENT
-          echo "🗑️  Removing all previous runs (completed, in_progress, failed, etc.) of this workflow..."
+          echo "🗑️  Removing all previous runs (any status) of this workflow..."
           gh run list --workflow "${{ github.workflow }}" \
             --repo "${{ github.repository }}" \
             --limit 200 --json databaseId,status \
@@ -46,6 +46,20 @@ jobs:
             echo "✅ Initial sync completed (repo → VM, preserving VM-only files)"
           else
             echo "ℹ️  No 'container' folder found in repo – nothing to sync initially"
+          fi
+
+          # INSTALL AND CONFIGURE CLOUDFLARE TUNNEL
+          if [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ]; then
+            echo "::warning::CLOUDFLARE_TOKEN not set → skipping Cloudflare Tunnel"
+          else
+            sudo mkdir -p /usr/share/keyrings
+            curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null
+            echo "deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
+            sudo apt-get update -qq && sudo apt-get install -y cloudflared
+            sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}"
+            sleep 5
+            systemctl is-active --quiet cloudflared || { echo "::error::Cloudflare Tunnel failed"; exit 1; }
+            echo "✅ Cloudflare Tunnel installed and running"
           fi
 
       # 3. INSTALL SSH AND CONFIGURE SSH + HOSTNAME (VM-1)
@@ -137,23 +151,7 @@ jobs:
             echo "⏭️  TAILSCALE_STATIC_IP or TAILSCALE_API_KEY not set - skipping static IP"
           fi
 
-      # 6. INSTALL AND CONFIGURE CLOUDFLARE TUNNEL
-      - name: Install and configure Cloudflare Tunnel
-        run: |
-          if [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ]; then
-            echo "::warning::CLOUDFLARE_TOKEN not set → skipping"
-            exit 0
-          fi
-          sudo mkdir -p /usr/share/keyrings
-          curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null
-          echo "deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
-          sudo apt-get update -qq && sudo apt-get install -y cloudflared
-          sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}"
-          sleep 5
-          systemctl is-active --quiet cloudflared || { echo "::error::Cloudflare Tunnel failed"; exit 1; }
-          echo "✅ Cloudflare Tunnel running"
-
-      # 7. CREATE ALIASES
+      # 6. CREATE ALIASES
       - name: Create aliases
         run: |
           sudo mkdir -p /root/container
@@ -164,18 +162,19 @@ jobs:
           EOF
           echo "✅ Aliases created (c, ts, tip)"
 
-      # 8. LIVE DATA SYNC EVERY 3 SECONDS (REPO -> VM, NO DELETE) + AUTO RESTART (1 MINUTE KEEP-ALIVE)
-      - name: Live data sync every 3 seconds and auto restart (1 min keep-alive)
+      # 7. LIVE DATA SYNC EVERY 3 SECONDS (REPO -> VM, NO DELETE) + AUTO RESTART (355 MIN KEEP-ALIVE)
+      - name: Live data sync every 3 seconds and auto restart (max timeout)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "🚀 VM running, keeping alive for 1 minute..."
+          echo "🚀 VM running, keeping alive for 355 minutes (max timeout - 5 min buffer)..."
           echo "🔄 Syncing repo container/ → /root/container/ every 3 seconds (no deletion of VM-only files)."
-          end_time=$((SECONDS + 60))   # 1 minute = 60 seconds
+          end_time=$((SECONDS + 355*60))
           while [ $SECONDS -lt $end_time ]; do
             if [ -d "container" ]; then
               sudo rsync -a container/ /root/container/ || true
-              echo "$(date): Sync completed (repo → VM, preserved VM-only files)"
+              # Log line commented to reduce noise – uncomment if needed
+              # echo "$(date): Sync completed"
             fi
             sleep 3
           done
