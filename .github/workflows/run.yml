@@ -12,142 +12,109 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy-vm:
+  vm-1:
     runs-on: ubuntu-latest
     timeout-minutes: 360
 
     steps:
-      # 1. Checkout repository
-      - name: Checkout repository
+      # 1. CHECK REPOSITORY
+      - name: CHECK REPOSITORY
         uses: actions/checkout@v4
 
-      # 2. Set hostname
-      - name: Set hostname
+      # 2. INSTALL SSH AND CONFIGURE SSH + HOSTNAME (VM-1)
+      - name: Install SSH and set hostname
         run: |
           sudo hostnamectl set-hostname vm-1
           echo "127.0.0.1 vm-1" | sudo tee -a /etc/hosts
-          echo "Hostname set to vm-1"
-
-      # 3. Install and configure SSH (root login)
-      - name: Install and configure SSH
-        run: |
           if [ -z "${{ secrets.PASSWORD }}" ]; then
-            echo "::error::PASSWORD secret is missing."
+            echo "::error::PASSWORD secret missing."
             exit 1
           fi
           sudo apt-get update -y
           sudo apt-get install -y openssh-server
           sudo bash -c "echo 'root:${{ secrets.PASSWORD }}' | chpasswd"
-          sudo sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-          sudo sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+          sudo sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+          sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
           sudo systemctl restart ssh
-          systemctl is-active --quiet ssh || { echo "::error::SSH failed to start."; exit 1; }
-          echo "✅ SSH ready (root login enabled)"
+          systemctl is-active --quiet ssh || { echo "::error::SSH failed"; exit 1; }
+          echo "✅ SSH ready, hostname vm-1"
 
-      # 4. DELETE OLD TAILSCALE DEVICE (vm-1) - using Tailscale API v2
-      - name: DELETE OLD TAILSCALE DEVICE (vm-1)
+      # 3. REMOVE TAILSCALE DEVICE (VM-1)
+      - name: Remove old Tailscale device
         run: |
-          if [ -z "${{ secrets.TAILSCALE_API_KEY }}" ]; then 
+          if [ -z "${{ secrets.TAILSCALE_API_KEY }}" ]; then
             echo "::warning::TAILSCALE_API_KEY not set. Skipping cleanup."
             exit 0
           fi
           sudo apt-get update -qq && sudo apt-get install -y jq curl
-          
-          echo "Fetching devices..."
-          DEVICES=\( (curl -s -u " \){{ secrets.TAILSCALE_API_KEY }}:" \
-            "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" || echo "{}")
-          
-          DEVICE_ID=$(echo "$DEVICES" | jq -r '
-            .devices[]? 
-            | select(.hostname == "vm-1" or .name | endswith(".vm-1"))
-            | .nodeId // .id' | head -n 1)
-          
+          DEVICES=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" \
+            "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" || echo '{"devices":[]}')
+          DEVICE_ID=$(echo "$DEVICES" | jq -r '.devices[]? | select(.hostname=="vm-1") | .nodeId // .id' | head -n1)
           if [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ]; then
-            echo "🗑️  Deleting old device (nodeId/id: $DEVICE_ID)..."
             curl -s -X DELETE -u "${{ secrets.TAILSCALE_API_KEY }}:" \
               "https://api.tailscale.com/api/v2/device/$DEVICE_ID"
             sleep 5
-            echo "✅ Old device removed"
+            echo "✅ Removed old vm-1 device"
           else
             echo "✅ No old vm-1 device found"
           fi
 
-      # 5. INSTALL AND CONFIGURE TAILSCALE
-      - name: INSTALL AND CONFIGURE TAILSCALE
+      # 4. INSTALL AND CONFIGURE TAILSCALE (WITH STATIC IP FROM SECRET)
+      - name: Install and configure Tailscale
         run: |
           set -e
           if [ -z "${{ secrets.TAILSCALE_AUTHKEY }}" ]; then
-            echo "::error::TAILSCALE_AUTHKEY secret is missing."
+            echo "::error::TAILSCALE_AUTHKEY missing."
             exit 1
           fi
-          
-          echo "Installing Tailscale..."
           curl -fsSL https://tailscale.com/install.sh | sh
-          
-          echo "Joining tailnet as vm-1..."
           sudo tailscale up \
             --authkey="${{ secrets.TAILSCALE_AUTHKEY }}" \
             --hostname="vm-1" \
             --accept-routes \
             --reset \
             --ssh
-          
-          echo "Waiting for Tailscale to connect..."
           sleep 8
-          sudo tailscale status --json | jq -r '.Self | "✅ Connected as \(.Hostname) (\(.TailscaleIPs[0]))"'
-          echo "Tailscale IP(s): $(sudo tailscale ip -4)"
-
-      # 6. SET TAILSCALE STATIC IP VIA API (most reliable version)
-      - name: SET TAILSCALE STATIC IP
-        run: |
+          sudo tailscale status --json | jq -r '.Self | "✅ Tailscale connected as \(.Hostname) (\(.TailscaleIPs[0]))"'
+          
           STATIC_IP="${{ secrets.TAILSCALE_STATIC_IP }}"
           API_KEY="${{ secrets.TAILSCALE_API_KEY }}"
-          
-          if [ -z "$STATIC_IP" ] || [ -z "$API_KEY" ]; then
-            echo "⏭️  Skipping static IP (secrets not set)"
-            exit 0
-          fi
-          
-          echo "🔍 Waiting for device to fully register (up to 30s)..."
-          for i in {1..6}; do
-            DEVICES=\( (curl -s -u " \){API_KEY}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all")
-            DEVICE_ID=$(echo "$DEVICES" | jq -r '
-              .devices[]? 
-              | select(.hostname == "vm-1" or .name | endswith(".vm-1"))
-              | .nodeId // .id' | head -n 1)
-            
+          if [ -n "$STATIC_IP" ] && [ -n "$API_KEY" ]; then
+            echo "🔍 Waiting for device to appear in API (up to 30s)..."
+            DEVICE_ID=""
+            for i in {1..6}; do
+              DEVICES=$(curl -s -u "${API_KEY}:" \
+                "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" || echo '{"devices":[]}')
+              DEVICE_ID=$(echo "$DEVICES" | jq -r '.devices[]? | select(.hostname=="vm-1") | .nodeId // .id' | head -n1)
+              if [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ]; then
+                echo "✅ Found device ID: $DEVICE_ID"
+                break
+              fi
+              sleep 5
+            done
             if [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ]; then
-              echo "✅ Found device → $DEVICE_ID"
-              break
+              echo "Setting static IPv4 to $STATIC_IP via API..."
+              RESPONSE=$(curl -s -X POST \
+                "https://api.tailscale.com/api/v2/device/$DEVICE_ID/ip" \
+                -u "${API_KEY}:" \
+                -H "Content-Type: application/json" \
+                -d "{\"ipv4\": \"$STATIC_IP\"}")
+              echo "API response: $RESPONSE"
+              sleep 6
+              echo "✅ Static IP set to $STATIC_IP"
+              echo "Current Tailscale IPs: $(sudo tailscale ip -4)"
+            else
+              echo "::warning::Could not find vm-1 in API, static IP not set"
             fi
-            echo "Retry $i/6..."
-            sleep 5
-          done
-          
-          if [ -z "$DEVICE_ID" ] || [ "$DEVICE_ID" = "null" ]; then
-            echo "::warning::Could not find vm-1 in Tailscale. Static IP skipped."
-            exit 0
+          else
+            echo "⏭️  TAILSCALE_STATIC_IP or TAILSCALE_API_KEY not set - skipping static IP"
           fi
-          
-          echo "Setting static IPv4 to $STATIC_IP..."
-          RESPONSE=$(curl -s -X POST \
-            "https://api.tailscale.com/api/v2/device/$DEVICE_ID/ip" \
-            -u "${API_KEY}:" \
-            -H "Content-Type: application/json" \
-            -d "{\"ipv4\": \"$STATIC_IP\"}")
-          
-          echo "API response: $RESPONSE"
-          
-          sleep 6
-          echo "Current Tailscale IPs:"
-          sudo tailscale ip -4
-          echo "✅ Static IP applied (you can now SSH to $STATIC_IP)"
 
-      # 7. INSTALL AND SETUP CLOUDFLARE TUNNEL (optional fallback)
-      - name: INSTALL AND SETUP CLOUDFLARE TUNNEL
+      # 6. INSTALL AND CONFIGURE CLOUDFLARE TUNNEL
+      - name: Install and configure Cloudflare Tunnel
         run: |
-          if [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ]; then 
-            echo "::warning::CLOUDFLARE_TOKEN not set → skipping tunnel"
+          if [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ]; then
+            echo "::warning::CLOUDFLARE_TOKEN not set → skipping"
             exit 0
           fi
           sudo mkdir -p /usr/share/keyrings
@@ -156,11 +123,11 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y cloudflared
           sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}"
           sleep 5
-          systemctl is-active --quiet cloudflared || { echo "::error::Cloudflare Tunnel failed to start"; exit 1; }
-          echo "✅ Cloudflare Tunnel installed and running"
+          systemctl is-active --quiet cloudflared || { echo "::error::Cloudflare Tunnel failed"; exit 1; }
+          echo "✅ Cloudflare Tunnel running"
 
-      # 8. CREATE USEFUL ALIASES
-      - name: CREATE ALIASES
+      # 7. CREATE ALIASES
+      - name: Create aliases
         run: |
           sudo mkdir -p /root/container
           cat <<EOF | sudo tee -a /root/.bashrc
@@ -170,8 +137,8 @@ jobs:
           EOF
           echo "✅ Aliases created (c, ts, tip)"
 
-      # 9. REMOVE OLD WORKFLOW RUNS (cleanup) - NO GITHUB_TOKEN SECRET NEEDED
-      - name: REMOVE OLD WORKFLOW RUNS
+      # 8. REMOVE OLD WORKFLOW RUNS
+      - name: Remove old workflow runs
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -181,13 +148,12 @@ jobs:
             | jq -r --arg current "${{ github.run_id }}" '
               .[]? | select(.status=="completed" and (.databaseId|tostring)!=$current) | .databaseId' \
             | while read id; do
-                echo "Deleting old run $id..."
-                gh run delete "\( id" --repo " \){{ github.repository }}" || true
+                gh run delete "$id" --repo "${{ github.repository }}" || true
               done
-          echo "✅ Old runs cleaned up (using built-in GitHub token)"
+          echo "✅ Old workflow runs cleaned"
 
-      # 10. DATA RSYNC + KEEP ALIVE + AUTO RESTART (NO GITHUB_TOKEN SECRET NEEDED)
-      - name: DATA RSYNC AND AUTO RESTART
+      # 9. LIVE DATA SYNC AND AUTO RESTART (SLEEP 5 SECONDS)
+      - name: Live data sync and auto restart
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -196,14 +162,13 @@ jobs:
             sudo rsync -a --delete container/ /root/container/
             echo "✅ Synced container/ folder to /root/container"
           fi
-          
-          echo "🚀 VM is now running. Keeping alive for 6 hours..."
-          END_TIME=$(( $(date +%s) + 355*60 ))
-          while [ $(date +%s) -lt $END_TIME ]; do
-            sleep 60
+          echo "🚀 VM running, keeping alive for 355 minutes (checking every 5 seconds)..."
+          end_time=$((SECONDS + 355*60))
+          while [ $SECONDS -lt $end_time ]; do
+            sleep 5
           done
-          
-          echo "⏰ Timeout reached → restarting workflow (using built-in GitHub token)..."
+          echo "⏰ Timeout reached, restarting workflow..."
           gh workflow run "${{ github.workflow }}" \
             --repo "${{ github.repository }}" \
             --ref "${{ github.ref_name }}"
+          echo "✅ Restart triggered"
