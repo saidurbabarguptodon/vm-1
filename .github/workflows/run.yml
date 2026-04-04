@@ -59,7 +59,7 @@ jobs:
             echo "✅ No old vm-1 device found"
           fi
 
-      # 4. INSTALL AND CONFIGURE TAILSCALE (WITH STATIC IP FROM SECRET)
+      # 4. INSTALL AND CONFIGURE TAILSCALE
       - name: Install and configure Tailscale
         run: |
           set -e
