@@ -162,19 +162,23 @@ jobs:
           EOF
           echo "✅ Aliases created (c, ts, tip)"
 
-      # 7. LIVE DATA SYNC EVERY 3 SECONDS (REPO -> VM, NO DELETE) + AUTO RESTART (355 MIN KEEP-ALIVE)
+      # 7. LIVE SYNC EVERY 3 SECONDS (GIT PULL + RSYNC TO /ROOT/CONTAINER) + AUTO RESTART
       - name: Live data sync every 3 seconds and auto restart (max timeout)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "🚀 VM running, keeping alive for 355 minutes (max timeout - 5 min buffer)..."
-          echo "🔄 Syncing repo container/ → /root/container/ every 3 seconds (no deletion of VM-only files)."
+          echo "🚀 VM running, keeping alive for 355 minutes..."
+          echo "🔄 Pulling latest from GitHub and syncing to /root/container/ every 3 seconds."
           end_time=$((SECONDS + 355*60))
           while [ $SECONDS -lt $end_time ]; do
+            # Fetch latest changes from remote repository
+            git fetch origin
+            git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
+            # Now sync the updated container/ folder to /root/container/
             if [ -d "container" ]; then
               sudo rsync -a container/ /root/container/ || true
-              # Log line commented to reduce noise – uncomment if needed
-              # echo "$(date): Sync completed"
+              # Optional: uncomment next line for debug logs
+              # echo "$(date): Pulled latest and synced"
             fi
             sleep 3
           done
