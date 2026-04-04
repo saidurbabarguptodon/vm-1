@@ -1,4 +1,4 @@
-name: Run vm-1 (Persistent Free VPS)
+name: run
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: Run-vm-1
+  group: run
   cancel-in-progress: false
 
 jobs:
