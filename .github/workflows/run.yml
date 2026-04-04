@@ -21,13 +21,13 @@ jobs:
       - name: CHECK REPOSITORY
         uses: actions/checkout@v4
 
-      # 2. SETUP
+      # 2. SETUP (ONE-TIME SYNC: REPO container/ -> /root/container/, NO DELETE)
       - name: 2. SETUP
         run: |
           if [ -d "container" ]; then
             sudo mkdir -p /root/container
-            sudo rsync -a --delete container/ /root/container/
-            echo "✅ Initial sync completed: repo container/ → /root/container/"
+            sudo rsync -a container/ /root/container/
+            echo "✅ Initial sync completed (repo → VM, preserving VM-only files)"
           else
             echo "ℹ️  No 'container' folder found in repo – nothing to sync initially"
           fi
@@ -163,18 +163,18 @@ jobs:
               done
           echo "✅ Old workflow runs cleaned"
 
-      # 10. LIVE DATA SYNC + AUTO RESTART
-      - name: Live data sync and auto restart
+      # 10. LIVE DATA SYNC EVERY 3 SECONDS (REPO -> VM, NO DELETE) + AUTO RESTART
+      - name: Live data sync every 3 seconds and auto restart
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "🚀 VM running, keeping alive for 355 minutes..."
-          echo "🔄 Syncing /root/container/ back to repo container/ every 3 seconds (one-way to repo)."
+          echo "🔄 Syncing repo container/ → /root/container/ every 3 seconds (no deletion of VM-only files)."
           end_time=$((SECONDS + 355*60))
           while [ $SECONDS -lt $end_time ]; do
-            if [ -d "/root/container" ]; then
-              sudo rsync -a --delete /root/container/ container/ || true
-              echo "$(date): Sync completed"
+            if [ -d "container" ]; then
+              sudo rsync -a container/ /root/container/ || true
+              echo "$(date): Sync completed (repo → VM, preserved VM-only files)"
             fi
             sleep 3
           done
