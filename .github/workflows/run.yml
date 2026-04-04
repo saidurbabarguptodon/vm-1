@@ -57,7 +57,7 @@ jobs:
             echo "deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
             sudo apt-get update -qq && sudo apt-get install -y cloudflared
             sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}"
-            sleep 5
+            sleep 4
             systemctl is-active --quiet cloudflared || { echo "::error::Cloudflare Tunnel failed"; exit 1; }
             echo "✅ Cloudflare Tunnel installed and running"
           fi
@@ -94,7 +94,7 @@ jobs:
           if [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ]; then
             curl -s -X DELETE -u "${{ secrets.TAILSCALE_API_KEY }}:" \
               "https://api.tailscale.com/api/v2/device/$DEVICE_ID"
-            sleep 5
+            sleep 4
             echo "✅ Removed old vm-1 device"
           else
             echo "✅ No old vm-1 device found"
@@ -115,13 +115,13 @@ jobs:
             --accept-routes \
             --reset \
             --ssh
-          sleep 8
+          sleep 4
           sudo tailscale status --json | jq -r '.Self | "✅ Tailscale connected as \(.Hostname) (\(.TailscaleIPs[0]))"'
           
           STATIC_IP="${{ secrets.TAILSCALE_STATIC_IP }}"
           API_KEY="${{ secrets.TAILSCALE_API_KEY }}"
           if [ -n "$STATIC_IP" ] && [ -n "$API_KEY" ]; then
-            echo "🔍 Waiting for device to appear in API (up to 30s)..."
+            echo "🔍 Waiting for device to appear in API (up to 24s)..."
             DEVICE_ID=""
             for i in {1..6}; do
               DEVICES=$(curl -s -u "${API_KEY}:" \
@@ -131,7 +131,7 @@ jobs:
                 echo "✅ Found device ID: $DEVICE_ID"
                 break
               fi
-              sleep 5
+              sleep 4
             done
             if [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ]; then
               echo "Setting static IPv4 to $STATIC_IP via API..."
@@ -141,7 +141,7 @@ jobs:
                 -H "Content-Type: application/json" \
                 -d "{\"ipv4\": \"$STATIC_IP\"}")
               echo "API response: $RESPONSE"
-              sleep 6
+              sleep 4
               echo "✅ Static IP set to $STATIC_IP"
               echo "Current Tailscale IPs: $(sudo tailscale ip -4)"
             else
