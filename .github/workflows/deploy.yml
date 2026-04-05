@@ -13,6 +13,7 @@ concurrency:
 
 env:
   VM_NAME: vm-1
+  GH_TOKEN: ${{ github.token }}   # Added for gh CLI
 
 jobs:
   vm-1:
@@ -26,8 +27,6 @@ jobs:
 
       # 2. Setup
       - name: Setup
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -e
           # Delete previous runs
@@ -84,7 +83,7 @@ jobs:
             [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ] && {
               curl -s -X POST "https://api.tailscale.com/api/v2/device/$DEVICE_ID/ip" -u "${{ secrets.TAILSCALE_API_KEY }}:" -H "Content-Type: application/json" -d "{\"ipv4\": \"${{ secrets.TAILSCALE_STATIC_IP }}\"}" >/dev/null
               sleep 2
-              echo "✓ Static IP set to ${{ secrets.TAILSCALE_STATIC_IP }} ($(sudo tailscale ip -4))"
+              echo "✓ Static IP assigned"
             } || echo "⚠ Could not find device ${{ env.VM_NAME }} for static IP"
           } || {
             echo "ℹ STATIC_IP or API_KEY missing – using dynamic IP"
