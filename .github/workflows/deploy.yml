@@ -1,4 +1,4 @@
-name: vm-11
+name: deploy
 
 on:
   workflow_dispatch:
