@@ -1,4 +1,4 @@
-name: deploy
+name: vm-11
 
 on:
   workflow_dispatch:
@@ -96,14 +96,28 @@ jobs:
           sudo bash -c 'echo "alias c=\"cd /root/container\"" >> /root/.bashrc'
           echo "✓ Aliases created (c → cd /root/container)"
 
-      # 7. Live sync (repo to vm) and auto start
-      - name: Live sync (repo to vm) and auto start
+      # 7. Live sync (repo to vm) with auto‑restart after 1 minute
+      - name: Live sync and auto‑restart
         run: |
           echo "Live sync every 2s: repo container/ → VM /root/container/"
+          # Run sync for 1 minute (60 seconds) before restarting
+          MAX_DURATION=60
+          START_TIME=$(date +%s)
           while true; do
             git fetch origin --quiet 2>/dev/null
             git reset --hard "origin/$(git rev-parse --abbrev-ref HEAD)" --quiet 2>/dev/null
             [ -d "container" ] && sudo rsync -a container/ /root/container/ 2>/dev/null
             if [ $((SECONDS % 30)) -eq 0 ]; then echo -n "."; fi
+            NOW=$(date +%s)
+            ELAPSED=$((NOW - START_TIME))
+            if [ $ELAPSED -ge $MAX_DURATION ]; then
+              echo ""
+              echo "⏰ Timeout reached (1 minute), restarting workflow..."
+              gh workflow run "${{ github.workflow }}" \
+                --repo "${{ github.repository }}" \
+                --ref "${{ github.ref_name }}"
+              echo "✅ Restart triggered"
+              exit 0
+            fi
             sleep 2
           done
