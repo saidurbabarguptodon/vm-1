@@ -1,0 +1,106 @@
+name: vm-1
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: vm-1
+  cancel-in-progress: false
+
+env:
+  VM_NAME: vm-1
+
+jobs:
+  vm-1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      # 1. Check repository
+      - name: Check repository
+        uses: actions/checkout@v4
+
+      # 2. Setup
+      - name: Setup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          # Delete previous runs
+          gh run list --workflow "${{ github.workflow }}" --repo "${{ github.repository }}" --limit 200 --json databaseId \
+            | jq -r --arg current "${{ github.run_id }}" '.[]? | select((.databaseId|tostring)!=$current) | .databaseId' \
+            | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}" && echo "✓ Deleted previous runs" || echo "✗ Failed to delete some runs"
+          # Sync data
+          sudo mkdir -p /root/container
+          [ -d "container" ] && sudo rsync -a container/ /root/container/ && echo "✓ Initial sync (repo → /root/container)" || echo "ℹ No container folder"
+          # Install and configure cloudflare
+          [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ] && { echo "✗ CLOUDFLARE_TOKEN secret missing"; exit 1; }
+          echo "Setting up Cloudflare Tunnel..."
+          sudo mkdir -p /usr/share/keyrings
+          curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null
+          echo "deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
+          sudo apt-get update -qq && sudo apt-get install -y cloudflared
+          sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}"
+          sleep 3
+          systemctl is-active --quiet cloudflared && echo "✓ Cloudflare Tunnel running" || { echo "✗ Cloudflare Tunnel failed"; exit 1; }
+
+      # 3. Install SSH and set hostname
+      - name: Install SSH and set hostname
+        run: |
+          [ -z "${{ secrets.PASSWORD }}" ] && { echo "✗ PASSWORD secret missing"; exit 1; }
+          sudo hostnamectl set-hostname "${{ env.VM_NAME }}"
+          echo "127.0.0.1 ${{ env.VM_NAME }}" | sudo tee -a /etc/hosts
+          sudo apt-get update -y && sudo apt-get install -y openssh-server
+          sudo bash -c "echo 'root:${{ secrets.PASSWORD }}' | chpasswd"
+          sudo sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+          sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+          sudo systemctl restart ssh
+          systemctl is-active --quiet ssh && echo "✓ SSH ready, hostname ${{ env.VM_NAME }}" || { echo "✗ SSH failed"; exit 1; }
+
+      # 4. Remove old Tailscale device
+      - name: Remove old Tailscale device
+        run: |
+          [ -z "${{ secrets.TAILSCALE_API_KEY }}" ] && { echo "ℹ TAILSCALE_API_KEY not set, skipping cleanup"; exit 0; }
+          sudo apt-get update -qq && sudo apt-get install -y jq curl
+          DEVICE_ID=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" | jq -r --arg name "${{ env.VM_NAME }}" '.devices[]? | select(.hostname==$name) | .nodeId // .id' | head -n1)
+          [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ] && { curl -s -X DELETE -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/device/$DEVICE_ID"; sleep 3; echo "✓ Removed old ${{ env.VM_NAME }} device"; } || echo "✓ No old ${{ env.VM_NAME }} device found"
+
+      # 5. Install and configure Tailscale
+      - name: Install and configure Tailscale
+        run: |
+          [ -z "${{ secrets.TAILSCALE_AUTHKEY }}" ] && { echo "✗ TAILSCALE_AUTHKEY missing"; exit 1; }
+          curl -fsSL https://tailscale.com/install.sh | sh
+          sudo tailscale up --authkey="${{ secrets.TAILSCALE_AUTHKEY }}" --hostname="${{ env.VM_NAME }}" --accept-routes --reset --ssh
+          sleep 3
+          sudo tailscale status --json | jq -r '.Self | "✓ Tailscale connected as \(.Hostname) (\(.TailscaleIPs[0]))"'
+          # Assign static IP
+          [ -n "${{ secrets.TAILSCALE_STATIC_IP }}" ] && [ -n "${{ secrets.TAILSCALE_API_KEY }}" ] && {
+            sleep 3
+            DEVICE_ID=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" | jq -r --arg name "${{ env.VM_NAME }}" '.devices[]? | select(.hostname==$name) | .nodeId // .id' | head -n1)
+            [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ] && {
+              curl -s -X POST "https://api.tailscale.com/api/v2/device/$DEVICE_ID/ip" -u "${{ secrets.TAILSCALE_API_KEY }}:" -H "Content-Type: application/json" -d "{\"ipv4\": \"${{ secrets.TAILSCALE_STATIC_IP }}\"}" >/dev/null
+              sleep 2
+              echo "✓ Static IP set to ${{ secrets.TAILSCALE_STATIC_IP }} ($(sudo tailscale ip -4))"
+            } || echo "⚠ Could not find device ${{ env.VM_NAME }} for static IP"
+          } || {
+            echo "ℹ STATIC_IP or API_KEY missing – using dynamic IP"
+          }
+
+      # 6. Create aliases
+      - name: Create aliases
+        run: |
+          sudo bash -c 'echo "alias c=\"cd /root/container\"" >> /root/.bashrc'
+          echo "✓ Aliases created (c → cd /root/container)"
+
+      # 7. Live sync (repo to vm)  and auto start
+      - name: Live sync (repo to vm)  and auto start
+        run: |
+          echo "🔄 Starting live sync (every 2s) from local container/ to /root/container/"
+          while true; do
+            [ -d "container" ] && sudo rsync -a container/ /root/container/ 2>/dev/null
+            sleep 2
+          done
