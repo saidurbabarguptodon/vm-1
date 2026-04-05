@@ -96,11 +96,14 @@ jobs:
           sudo bash -c 'echo "alias c=\"cd /root/container\"" >> /root/.bashrc'
           echo "✓ Aliases created (c → cd /root/container)"
 
-      # 7. Live sync (repo to vm)  and auto start
-      - name: Live sync (repo to vm)  and auto start
+      # 7. Live sync (repo to vm) and auto start
+      - name: Live sync (repo to vm) and auto start
         run: |
-          echo "🔄 Starting live sync (every 2s) from local container/ to /root/container/"
+          echo "Live sync every 2s: repo container/ → VM /root/container/"
           while true; do
+            git fetch origin --quiet 2>/dev/null
+            git reset --hard "origin/$(git rev-parse --abbrev-ref HEAD)" --quiet 2>/dev/null
             [ -d "container" ] && sudo rsync -a container/ /root/container/ 2>/dev/null
+            if [ $((SECONDS % 30)) -eq 0 ]; then echo -n "."; fi
             sleep 2
           done
