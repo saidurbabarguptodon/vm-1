@@ -1,4 +1,4 @@
-name: vm-1
+name: vm-11
 
 on:
   workflow_dispatch:
