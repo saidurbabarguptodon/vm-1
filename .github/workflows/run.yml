@@ -1,4 +1,4 @@
-name: vm-1
+name: run
 
 on:
   workflow_dispatch:
