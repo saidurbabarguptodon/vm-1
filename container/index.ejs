@@ -22,7 +22,7 @@
                     <thead class="table-dark">
                         <tr>
                             <th>ID</th>
-                            <th>Name</th>
+                            <th>Bot Name</th>
                             <th>Status</th>
                             <th>Address</th>
                             <th>Uptime</th>
@@ -60,13 +60,13 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3"><label class="form-label">Bot Display Name</label><input type="text" name="name" class="form-control" required></div>
-                        <div class="mb-3"><label class="form-label">Minecraft Username</label><input type="text" name="username" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">Bot Name</label><input type="text" name="name" class="form-control" required></div>
+                        <div class="mb-3"><label class="form-label">Bot Username</label><input type="text" name="username" class="form-control" required></div>
                         <div class="mb-3"><label class="form-label">Server Address (e.g. localhost:25565)</label><input type="text" name="address" class="form-control" required></div>
                         <div class="mb-3">
-                            <label class="form-label">Auto Join Message (Optional)</label>
+                            <label class="form-label">Join Message (Optional)</label>
                             <input type="text" name="joinMessage" class="form-control" placeholder="e.g. Hello! or /login pass">
-                            <div class="form-text">Sent in chat 2 seconds after the bot successfully spawns.</div>
+                            <div class="form-text">Sent 2 seconds after the bot spawns.</div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -89,21 +89,29 @@
                 <div class="card mb-3 shadow-sm">
                     <div class="card-header bg-dark text-white fw-bold">Bot Information</div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item"><strong>Base Username:</strong> <%= bot.username %></li>
+                        <li class="list-group-item"><strong>Bot Name:</strong> <%= bot.name %></li>
+                        <li class="list-group-item"><strong>Bot Username:</strong> <%= bot.username %></li>
                         <li class="list-group-item"><strong>Address:</strong> <%= bot.address %></li>
-                        <li class="list-group-item"><strong>Auto-Join Message:</strong> <span class="text-muted"><%= bot.joinMessage ? bot.joinMessage : 'None' %></span></li>
+                        <li class="list-group-item"><strong>Join Message:</strong> <span class="text-muted"><%= bot.joinMessage || 'None' %></span></li>
                         
                         <li class="list-group-item">
                             <strong>Auto Reconnect:</strong> 
                             <span class="badge bg-<%= bot.autoReconnect !== false ? 'success' : 'secondary' %>">
                                 <%= bot.autoReconnect !== false ? 'Enabled' : 'Disabled' %>
                             </span>
+                            <% if (bot.autoReconnect !== false) { %>
+                                <div class="text-muted small">Delay: <%= bot.autoReconnectDelay || 15 %>s</div>
+                            <% } %>
                         </li>
                         <li class="list-group-item">
-                            <strong>Smart Join:</strong> 
-                            <% if (bot.smartJoin) { %>
-                                <span class="badge bg-primary">Active (<%= bot.smartJoinCount %> Bots)</span>
-                                <div class="text-muted small mt-1">Leaves/Rotates every: <%= bot.smartJoinInterval > 0 ? bot.smartJoinInterval + ' min' : 'Only on Disconnect' %></div>
+                            <strong>Smart Rejoin:</strong> 
+                            <% if (bot.smartRejoin) { %>
+                                <span class="badge bg-primary">Active</span>
+                                <div class="text-muted small mt-1">
+                                    Looping <%= bot.smartRejoinCount %> accounts<br>
+                                    Rejoin delay: <%= bot.smartRejoinDelay || 5 %>s<br>
+                                    Rotation interval: <%= bot.smartRejoinIntervalSec || 300 %>s
+                                </div>
                             <% } else { %>
                                 <span class="badge bg-secondary">Disabled</span>
                             <% } %>
@@ -111,7 +119,7 @@
 
                         <% let badgeClass = status === 'Online' ? 'success' : (status === 'Connecting' ? 'warning text-dark' : 'secondary'); %>
                         <li class="list-group-item"><strong>Status:</strong> <span class="badge bg-<%= badgeClass %>" id="statusBadge"><%= status %></span></li>
-                        <li class="list-group-item"><strong>Loop Uptime:</strong> <span id="uptimeSpan" class="fw-bold"><%= uptime %></span></li>
+                        <li class="list-group-item"><strong>Uptime:</strong> <span id="uptimeSpan" class="fw-bold"><%= uptime %></span></li>
                     </ul>
                     <div class="card-body bg-light d-flex flex-wrap gap-2">
                         <form action="/<%= bot.id %>/start" method="POST"><button class="btn btn-success btn-sm">Start</button></form>
@@ -128,9 +136,8 @@
                 <div class="card shadow-sm">
                     <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between align-items-center">
                         <span>Live Console</span>
-                        <!-- CLEAR LOGS BUTTON -->
                         <form action="/<%= bot.id %>/clear-logs" method="POST" class="m-0">
-                            <button type="submit" class="btn btn-sm btn-danger py-0 px-2" onclick="return confirm('This will completely clear the {botname}.json file logs. Continue?');">Clear Logs</button>
+                            <button type="submit" class="btn btn-sm btn-danger py-0 px-2" onclick="return confirm('Clear all logs for this bot?');">Clear Logs</button>
                         </form>
                     </div>
                     <div class="card-body p-0">
@@ -148,36 +155,45 @@
                 <form action="/<%= bot.id %>/edit" method="POST" class="modal-content">
                     <div class="modal-header"><h5 class="modal-title">Bot Settings</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
                     <div class="modal-body">
-                        <div class="mb-3"><label class="form-label">Bot Display Name</label><input type="text" name="name" class="form-control" required value="<%= bot.name %>"></div>
-                        <div class="mb-3"><label class="form-label">Base Username</label><input type="text" name="username" class="form-control" required value="<%= bot.username %>"></div>
+                        <div class="mb-3"><label class="form-label">Bot Name</label><input type="text" name="name" class="form-control" required value="<%= bot.name %>"></div>
+                        <div class="mb-3"><label class="form-label">Bot Username</label><input type="text" name="username" class="form-control" required value="<%= bot.username %>"></div>
                         <div class="mb-3"><label class="form-label">Server Address</label><input type="text" name="address" class="form-control" required value="<%= bot.address %>"></div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Auto Join Message</label>
+                            <label class="form-label">Join Message</label>
                             <input type="text" name="joinMessage" class="form-control" placeholder="e.g. Hello! or /login pass" value="<%= bot.joinMessage || '' %>">
-                            <div class="form-text">You can also use commands here to auto-login to cracked servers!</div>
+                            <div class="form-text">You can also use commands to auto-login.</div>
                         </div>
 
                         <hr>
                         <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" name="autoReconnect" id="autoReconnect" <%= bot.autoReconnect !== false ? 'checked' : '' %>>
-                            <label class="form-check-label" for="autoReconnect">Enable Auto Reconnect (15s delay)</label>
+                            <input class="form-check-input" type="checkbox" name="autoReconnect" id="autoReconnect" <%= bot.autoReconnect !== false ? 'checked' : '' %> onchange="document.getElementById('autoReconnectDiv').style.display = this.checked ? 'block' : 'none'">
+                            <label class="form-check-label" for="autoReconnect">Auto Reconnect</label>
                         </div>
+                        <div id="autoReconnectDiv" style="display: <%= bot.autoReconnect !== false ? 'block' : 'none' %>; background: #f8f9fa; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                            <label class="form-label">Reconnect delay (seconds)</label>
+                            <input type="number" name="autoReconnectDelay" class="form-control" min="1" value="<%= bot.autoReconnectDelay || 15 %>">
+                        </div>
+
                         <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" name="smartJoin" id="smartJoin" <%= bot.smartJoin ? 'checked' : '' %> onchange="document.getElementById('smartJoinDiv').style.display = this.checked ? 'block' : 'none'">
-                            <label class="form-check-label text-primary fw-bold" for="smartJoin">Enable Smart Join (Infinite Loop Rotation)</label>
-                            <div class="form-text">Instantly joins the next bot if disconnected or after a set timer limit.</div>
+                            <input class="form-check-input" type="checkbox" name="smartRejoin" id="smartRejoin" <%= bot.smartRejoin ? 'checked' : '' %> onchange="document.getElementById('smartRejoinDiv').style.display = this.checked ? 'block' : 'none'">
+                            <label class="form-check-label text-primary fw-bold" for="smartRejoin">Smart Rejoin</label>
+                            <div class="form-text">Instantly rejoins with next account on disconnect or after rotation interval.</div>
                         </div>
-                        <div id="smartJoinDiv" style="display: <%= bot.smartJoin ? 'block' : 'none' %>; background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                        <div id="smartRejoinDiv" style="display: <%= bot.smartRejoin ? 'block' : 'none' %>; background: #f8f9fa; padding: 10px; border-radius: 5px;">
                             <div class="mb-3">
-                                <label class="form-label">How many bots to loop through?</label>
-                                <input type="number" name="smartJoinCount" class="form-control" min="2" max="100" value="<%= bot.smartJoinCount || 2 %>">
-                                <div class="form-text">Example: "3" loops endlessly between Username, Username_2, and Username_3.</div>
+                                <label class="form-label">Number of accounts to loop</label>
+                                <input type="number" name="smartRejoinCount" class="form-control" min="2" max="100" value="<%= bot.smartRejoinCount || 2 %>">
+                                <div class="form-text">Example: "3" loops between Username, Username_2, Username_3.</div>
                             </div>
-                            <div class="mb-2">
-                                <label class="form-label">Leave & Rotate Timer (Minutes)</label>
-                                <input type="number" name="smartJoinInterval" class="form-control" min="0" value="<%= bot.smartJoinInterval || 0 %>">
-                                <div class="form-text">Bot will forcefully disconnect and switch to the next bot after this many minutes. <b>Set to 0 to only rotate when kicked/disconnected.</b></div>
+                            <div class="mb-3">
+                                <label class="form-label">Rejoin delay after disconnect (seconds)</label>
+                                <input type="number" name="smartRejoinDelay" class="form-control" min="1" value="<%= bot.smartRejoinDelay || 5 %>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Rotation interval (seconds)</label>
+                                <input type="number" name="smartRejoinIntervalSec" class="form-control" min="0" value="<%= bot.smartRejoinIntervalSec || 300 %>">
+                                <div class="form-text">Bot will forcefully disconnect and rotate after this many seconds. Set to 0 to only rotate on disconnect.</div>
                             </div>
                         </div>
                     </div>
@@ -208,7 +224,7 @@
                         }
 
                         if (data.logs.length === 0) {
-                            consoleBox.innerHTML = '<span style="color:#888;">No logs available. File is empty.</span>';
+                            consoleBox.innerHTML = '<span style="color:#888;">No logs available.</span>';
                         } else {
                             var newHTML = data.logs.join('<br>');
                             if (consoleBox.innerHTML !== newHTML) {
