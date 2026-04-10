@@ -2,15 +2,14 @@ const express = require('express');
 const mineflayer = require('mineflayer');
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto'); // Built-in Node.js module
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 9000;
 const DATA_FILE = path.join(__dirname, 'bots.json');
 
 // --- Middleware ---
-// Tell Express to look for EJS files in the current directory instead of a /views/ folder
-app.set('views', __dirname); 
+app.set('views', __dirname); // Looks for index.ejs in the same folder
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json());
@@ -32,7 +31,7 @@ function formatUptime(ms) {
 }
 
 // --- Data Persistence ---
-let botConfigs =[];
+let botConfigs = [];
 if (fs.existsSync(DATA_FILE)) {
     try {
         botConfigs = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
@@ -54,7 +53,7 @@ class McBot {
         this.bot = null;
         this.status = 'Offline';
         this.startTime = null;
-        this.logs =[];
+        this.logs = [];
         this.intendedState = 'stopped'; 
         this.accountIndex = 0; 
         
@@ -101,7 +100,8 @@ class McBot {
                 host: host,
                 port: port,
                 username: currentUsername,
-                version: false 
+                // Use specified version or auto-detect if blank
+                version: this.config.version ? this.config.version : false 
             });
 
             this.setupEvents();
@@ -135,12 +135,25 @@ class McBot {
             }
         });
 
+        // FIXED: Converts chat messages to clean text instead of ugly ANSI color codes
         this.bot.on('message', (message) => {
-            this.log(`[CHAT] ${message.toAnsi()}`); 
+            this.log(`[CHAT] ${message.toString()}`); 
         });
 
+        // FIXED: Parses ugly JSON/Compound kick messages into readable text
         this.bot.on('kicked', (reason) => {
             let reasonStr = typeof reason === 'object' ? JSON.stringify(reason) : reason;
+            try {
+                if (typeof reason === 'string' && reason.startsWith('{')) {
+                    const parsed = JSON.parse(reason);
+                    if (parsed.translate) reasonStr = parsed.translate;
+                    else if (parsed.text) reasonStr = parsed.text;
+                    else if (parsed.type === 'compound' && parsed.value && parsed.value.translate) {
+                        reasonStr = parsed.value.translate.value;
+                    }
+                }
+            } catch (e) {}
+            
             this.log(`Kicked from server. Reason: ${reasonStr}`);
         });
 
@@ -234,6 +247,7 @@ app.post('/create', (req, res) => {
         name: req.body.name,
         username: req.body.username,
         address: req.body.address,
+        version: req.body.version || "",
         joinMessage: req.body.joinMessage || "",
         autoReconnect: true,
         autoReconnectDelay: 15,
@@ -311,7 +325,7 @@ app.post('/:id/delete', (req, res) => {
 
 app.post('/:id/clear-logs', (req, res) => {
     const active = activeBots[req.params.id];
-    if (active) active.logs =[];
+    if (active) active.logs = [];
     res.redirect(`/${req.params.id}`);
 });
 
@@ -329,6 +343,7 @@ app.post('/:id/edit', (req, res) => {
         name: req.body.name,
         username: req.body.username,
         address: req.body.address,
+        version: req.body.version || "",
         joinMessage: req.body.joinMessage,
         
         autoReconnect: isAutoReconnect,
