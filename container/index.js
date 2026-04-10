@@ -380,5 +380,5 @@ app.get('/:id', (req, res) => {
     res.render('index', { view: 'manage', bot, status: getStatus(id), uptime: getUptime(id), bots:[] });
 });
 
-const PORT = process.env.PORT || 7592;
+const PORT = process.env.PORT || 9000;
 app.listen(PORT, '0.0.0.0', () => console.log(`Manager running at http://0.0.0.0:${PORT}`));
