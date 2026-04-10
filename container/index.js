@@ -18,7 +18,6 @@ let savedBots = [];
 if (fs.existsSync(BOTS_FILE)) {
     try {
         savedBots = JSON.parse(fs.readFileSync(BOTS_FILE, 'utf8'));
-        // Ensure logs array exists
         savedBots.forEach(bot => { if (!bot.logs) bot.logs = []; });
     } catch (e) {
         savedBots = [];
@@ -129,7 +128,13 @@ function startBot(id) {
     logToBot(numId, `Connecting ${actualUsername} to ${host}${port ? ':'+port : ''}...`);
 
     try {
-        const botOptions = { host: host, username: actualUsername, hideErrors: true };
+        // FIX: Disable physics to prevent "Invalid move player packet received" errors
+        const botOptions = { 
+            host: host, 
+            username: actualUsername, 
+            hideErrors: true,
+            physics: false 
+        };
         if (port) botOptions.port = port;
 
         const bot = mineflayer.createBot(botOptions);
@@ -171,6 +176,7 @@ function startBot(id) {
                 }, smartRejoinIntervalSec);
             }
 
+            // Anti-AFK (sneak toggle) - works even with physics: false
             activeBots[numId].afkInterval = setInterval(() => {
                 if (activeBots[numId] && activeBots[numId].botInstance && activeBots[numId].status === 'Online') {
                     try {
