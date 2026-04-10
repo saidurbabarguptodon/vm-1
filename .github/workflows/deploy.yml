@@ -25,33 +25,62 @@ jobs:
       - name: Check repository
         uses: actions/checkout@v4
 
-      # 2. Setup (includes data sync + background npm start)
+      # 2. Setup (data sync + background npm start)
       - name: Setup
         run: |
           set -e
-          # Delete previous runs
+          echo "=== Setup: Starting ==="
+
+          # Delete previous workflow runs
           gh run list --workflow "${{ github.workflow }}" --repo "${{ github.repository }}" --limit 200 --json databaseId \
             | jq -r --arg current "${{ github.run_id }}" '.[]? | select((.databaseId|tostring)!=$current) | .databaseId' \
-            | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}" && echo "✓ Deleted previous runs" || echo "✗ Failed to delete some runs"
+            | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}" && echo "✓ Deleted previous runs" || echo "⚠ Could not delete some runs"
 
-          # Sync data
+          # --- Sync container folder to /root/container using rsync ---
+          echo "=== Syncing container data with rsync ==="
           sudo mkdir -p /root/container
-          [ -d "container" ] && sudo rsync -a container/ /root/container/ && echo "✓ Initial sync (repo → /root/container)" || echo "ℹ No container folder"
-
-          # --- NEW: Start app in background after data sync ---
-          if [ -f /root/container/index.js ]; then
-            echo "Starting npm application in background..."
-            cd /root/container
-            # Install dependencies if package.json exists
-            [ -f package.json ] && npm install --silent
-            # Run in background with nohup
-            nohup npm start > /root/container/nohup.out 2>&1 &
-            echo "✓ App started (PID $!)"
+          if [ -d "container" ]; then
+            echo "Source 'container/' found. Contents:"
+            ls -la container/
+            # Use rsync with -a (archive) and -v (verbose) for visibility
+            sudo rsync -av --delete container/ /root/container/
+            echo "✓ Rsync completed"
           else
-            echo "ℹ No /root/container/index.js found, skipping npm start"
+            echo "✗ 'container/' folder not found! Check repository structure."
+            exit 1
           fi
 
-          # Install and configure cloudflare
+          # --- Verify sync ---
+          echo "Destination /root/container/ contents:"
+          sudo ls -la /root/container/
+          if [ ! -f /root/container/index.js ]; then
+            echo "✗ /root/container/index.js missing after rsync!"
+            exit 1
+          fi
+          echo "✓ Required files present"
+
+          # --- Start Node.js application in background ---
+          echo "=== Starting Node.js application ==="
+          cd /root/container
+          if [ -f package.json ]; then
+            echo "Installing dependencies..."
+            sudo npm install --silent
+          fi
+          echo "Launching 'npm start' in background..."
+          sudo nohup npm start > /root/container/app.log 2>&1 &
+          APP_PID=$!
+          echo "✓ Application started with PID $APP_PID (logs: /root/container/app.log)"
+          sleep 2
+          if ps -p $APP_PID > /dev/null; then
+            echo "✓ Process $APP_PID is running"
+            sudo tail -5 /root/container/app.log
+          else
+            echo "✗ Application exited immediately. Last 10 lines of log:"
+            sudo tail -10 /root/container/app.log
+            exit 1
+          fi
+
+          # --- Cloudflare Tunnel setup ---
           [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ] && { echo "✗ CLOUDFLARE_TOKEN secret missing"; exit 1; }
           echo "Setting up Cloudflare Tunnel..."
           sudo mkdir -p /usr/share/keyrings
@@ -61,6 +90,8 @@ jobs:
           sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}"
           sleep 3
           systemctl is-active --quiet cloudflared && echo "✓ Cloudflare Tunnel running" || { echo "✗ Cloudflare Tunnel failed"; exit 1; }
+
+          echo "=== Setup completed successfully ==="
 
       # 3. Install SSH and set hostname
       - name: Install SSH and set hostname
