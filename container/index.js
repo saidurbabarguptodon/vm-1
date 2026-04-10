@@ -128,7 +128,6 @@ function startBot(id) {
     logToBot(numId, `Connecting ${actualUsername} to ${host}${port ? ':'+port : ''}...`);
 
     try {
-        // FIX: Disable physics to prevent "Invalid move player packet received" errors
         const botOptions = { 
             host: host, 
             username: actualUsername, 
@@ -176,7 +175,6 @@ function startBot(id) {
                 }, smartRejoinIntervalSec);
             }
 
-            // Anti-AFK (sneak toggle) - works even with physics: false
             activeBots[numId].afkInterval = setInterval(() => {
                 if (activeBots[numId] && activeBots[numId].botInstance && activeBots[numId].status === 'Online') {
                     try {
@@ -198,15 +196,34 @@ function startBot(id) {
             logToBot(numId, `Bot died! Respawning...`);
         });
 
+        // ------------------ FIX IS HERE ------------------
         bot.on('kicked', (reason) => {
             if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
-            let parsedReason = reason;
+            let parsedReason = '';
             try {
-                const json = JSON.parse(reason);
-                parsedReason = json.text || json.translate || reason;
-            } catch (e) {}
+                const parsed = typeof reason === 'string' ? JSON.parse(reason) : reason;
+                
+                // Recursively extract text safely from raw complex chat components
+                const extractText = (obj) => {
+                    if (typeof obj === 'string') return obj;
+                    if (!obj) return '';
+                    let text = obj.text || obj.translate || '';
+                    if (Array.isArray(obj.extra)) text += obj.extra.map(extractText).join('');
+                    if (Array.isArray(obj.with)) text += obj.with.map(extractText).join('');
+                    return text;
+                };
+                
+                parsedReason = extractText(parsed);
+                // Fallback to stringified JSON if somehow strictly empty
+                if (!parsedReason) parsedReason = JSON.stringify(parsed);
+                
+            } catch (e) {
+                // If it fails (e.g., standard text string causing JSON parse error) just cast it
+                parsedReason = typeof reason === 'object' ? JSON.stringify(reason) : String(reason);
+            }
             logToBot(numId, `Kicked: ${parsedReason}`);
         });
+        // -------------------------------------------------
 
         bot.on('error', err => {
             if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
