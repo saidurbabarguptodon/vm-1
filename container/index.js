@@ -5,11 +5,12 @@ const path = require('path');
 const crypto = require('crypto'); // Built-in Node.js module
 
 const app = express();
-// PORT UPDATED TO 9000
 const PORT = process.env.PORT || 9000;
 const DATA_FILE = path.join(__dirname, 'bots.json');
 
 // --- Middleware ---
+// Tell Express to look for EJS files in the current directory instead of a /views/ folder
+app.set('views', __dirname); 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.json());
