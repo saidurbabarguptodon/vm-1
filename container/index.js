@@ -1,5 +1,6 @@
 const express = require('express');
 const mineflayer = require('mineflayer');
+const { pathfinder, Movements } = require('mineflayer-pathfinder');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -9,9 +10,9 @@ const PORT = process.env.PORT || 9000;
 const DATA_FILE = path.join(__dirname, 'bots.json');
 
 // --- Middleware ---
-app.set('views', __dirname); // Looks for index.ejs in the same folder
+app.set('views', __dirname);
 app.set('view engine', 'ejs');
-app.use(express.urlencoded({ extended: true })); 
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // --- Utilities ---
@@ -81,7 +82,7 @@ class McBot {
         let currentUsername = this.config.username;
         if (this.config.smartRejoin) {
             const suffix = this.accountIndex === 0 ? '' : `_${this.accountIndex + 1}`;
-            currentUsername = `${this.config.username}${suffix}`;
+            currentUsername = `\( {this.config.username} \){suffix}`;
         }
 
         let host = this.config.address;
@@ -93,15 +94,25 @@ class McBot {
         }
 
         this.status = 'Connecting';
-        this.log(`Attempting to connect as ${currentUsername} to ${host}:${port}...`);
+        this.log(`Attempting to connect as ${currentUsername} to \( {host}: \){port}...`);
 
         try {
             this.bot = mineflayer.createBot({
                 host: host,
                 port: port,
                 username: currentUsername,
-                // Use specified version or auto-detect if blank
-                version: this.config.version ? this.config.version : false 
+                version: this.config.version ? this.config.version : false,
+                
+                // === ANTI-KICK FIXES ===
+                checkTimeoutInterval: 30000,
+                skipValidation: true,
+                hideErrors: false,
+                physics: {
+                    maxGroundSpeed: 0.215,
+                    maxAirSpeed: 0.215,
+                    gravity: 0.08,
+                    terminalVelocity: 3.92,
+                }
             });
 
             this.setupEvents();
@@ -115,7 +126,25 @@ class McBot {
         this.bot.once('spawn', () => {
             this.status = 'Online';
             this.startTime = Date.now();
-            this.log(`Bot spawned successfully in the world!`);
+            this.log(`✅ Bot spawned successfully!`);
+
+            // === LOAD PATHFINDER (fixes "invalid_player_movement" kick) ===
+            this.bot.loadPlugin(pathfinder);
+            const mcData = require('minecraft-data')(this.bot.version);
+            const defaultMove = new Movements(this.bot, mcData);
+            
+            defaultMove.canDig = false;           // prevent accidental digging
+            defaultMove.scaffoldingBlocks = [];   // more natural movement
+            this.bot.pathfinder.setMovements(defaultMove);
+
+            this.log(`✅ Pathfinder loaded - realistic movement enabled`);
+
+            // Small human-like look after spawn
+            setTimeout(() => {
+                if (this.bot && this.status === 'Online') {
+                    this.bot.look(Math.random() * 2 * Math.PI, (Math.random() * Math.PI / 2) - Math.PI / 4);
+                }
+            }, 2500);
 
             if (this.config.joinMessage) {
                 this.joinMessageTimer = setTimeout(() => {
@@ -129,18 +158,16 @@ class McBot {
             if (this.config.smartRejoin && this.config.smartRejoinIntervalSec > 0) {
                 this.rotationTimer = setTimeout(() => {
                     this.log(`Rotation interval reached (${this.config.smartRejoinIntervalSec}s). Rotating account...`);
-                    this.stop(true); 
+                    this.stop(true);
                     this.rotateAccount();
                 }, this.config.smartRejoinIntervalSec * 1000);
             }
         });
 
-        // FIXED: Converts chat messages to clean text instead of ugly ANSI color codes
         this.bot.on('message', (message) => {
-            this.log(`[CHAT] ${message.toString()}`); 
+            this.log(`[CHAT] ${message.toString()}`);
         });
 
-        // FIXED: Parses ugly JSON/Compound kick messages into readable text
         this.bot.on('kicked', (reason) => {
             let reasonStr = typeof reason === 'object' ? JSON.stringify(reason) : reason;
             try {
@@ -148,9 +175,6 @@ class McBot {
                     const parsed = JSON.parse(reason);
                     if (parsed.translate) reasonStr = parsed.translate;
                     else if (parsed.text) reasonStr = parsed.text;
-                    else if (parsed.type === 'compound' && parsed.value && parsed.value.translate) {
-                        reasonStr = parsed.value.translate.value;
-                    }
                 }
             } catch (e) {}
             
@@ -224,7 +248,6 @@ class McBot {
 }
 
 // --- Routes ---
-
 app.get('/', (req, res) => {
     const botsData = botConfigs.map(c => {
         const active = activeBots[c.id];
@@ -237,7 +260,6 @@ app.get('/', (req, res) => {
             uptime: active ? active.getUptime() : '0s'
         };
     });
-
     res.render('index', { view: 'home', bots: botsData });
 });
 
