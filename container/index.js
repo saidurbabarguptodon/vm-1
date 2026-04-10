@@ -381,4 +381,18 @@ app.get('/:id', (req, res) => {
 });
 
 const PORT = process.env.PORT || 9000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Manager running at http://0.0.0.0:${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Manager running at http://0.0.0.0:${PORT}`);
+    
+    // --- Start all bots on boot automatically ---
+    if (savedBots.length > 0) {
+        console.log(`Auto-starting ${savedBots.length} saved bot(s)...`);
+        
+        savedBots.forEach((bot, index) => {
+            // Add a staggered delay (1.5 seconds) per bot to avoid network throttling or lag spikes
+            setTimeout(() => {
+                startBot(bot.id);
+            }, index * 1500); 
+        });
+    }
+});
