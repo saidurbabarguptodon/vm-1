@@ -4,6 +4,7 @@ const { pathfinder, Movements } = require('mineflayer-pathfinder');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const net = require('net');
 
 const app = express();
 const PORT = process.env.PORT || 9000;
@@ -31,6 +32,27 @@ function formatUptime(ms) {
     return `${hours}h ${minutes}m ${seconds}s`;
 }
 
+// --- Port checker (NEW) ---
+function checkPort(host, port, timeout = 5000) {
+    return new Promise((resolve) => {
+        const socket = new net.Socket();
+        socket.setTimeout(timeout);
+
+        socket.on('connect', () => {
+            socket.destroy();
+            resolve(true);
+        });
+
+        socket.on('error', () => resolve(false));
+        socket.on('timeout', () => {
+            socket.destroy();
+            resolve(false);
+        });
+
+        socket.connect(port, host);
+    });
+}
+
 // --- Data Persistence ---
 let botConfigs = [];
 if (fs.existsSync(DATA_FILE)) {
@@ -45,8 +67,8 @@ function saveConfigs() {
     fs.writeFileSync(DATA_FILE, JSON.stringify(botConfigs, null, 4));
 }
 
-// --- Advanced Minecraft Bot Controller ---
-const activeBots = {}; 
+// --- Bot System ---
+const activeBots = {};
 
 class McBot {
     constructor(config) {
@@ -55,9 +77,9 @@ class McBot {
         this.status = 'Offline';
         this.startTime = null;
         this.logs = [];
-        this.intendedState = 'stopped'; 
-        this.accountIndex = 0; 
-        
+        this.intendedState = 'stopped';
+        this.accountIndex = 0;
+
         this.reconnectTimer = null;
         this.rotationTimer = null;
         this.joinMessageTimer = null;
@@ -65,59 +87,62 @@ class McBot {
 
     log(msg) {
         const timestamp = new Date().toLocaleTimeString();
-        const safeMsg = escapeHTML(msg);
-        this.logs.push(`[${timestamp}] ${safeMsg}`);
+        this.logs.push(`[${timestamp}] ${escapeHTML(msg)}`);
         if (this.logs.length > 200) this.logs.shift();
     }
 
-    start() {
+    async start() {
         this.intendedState = 'running';
         this.clearTimers();
-        
-        if (this.bot) {
-            this.bot.quit();
-            this.bot = null;
+
+        // SAFE quit
+        if (this.bot && typeof this.bot.quit === 'function') {
+            try { this.bot.quit(); } catch {}
         }
+        this.bot = null;
 
         let currentUsername = this.config.username;
         if (this.config.smartRejoin) {
             const suffix = this.accountIndex === 0 ? '' : `_${this.accountIndex + 1}`;
-            currentUsername = `\( {this.config.username} \){suffix}`;
+            currentUsername = `${this.config.username}${suffix}`;
         }
 
         let host = this.config.address;
         let port = 25565;
+
         if (host.includes(':')) {
             const parts = host.split(':');
             host = parts[0];
             port = parseInt(parts[1]);
         }
 
+        this.status = 'Checking Server';
+        this.log(`Checking ${host}:${port}...`);
+
+        const isOpen = await checkPort(host, port);
+        if (!isOpen) {
+            this.log(`❌ Cannot connect (server offline / port closed)`);
+            this.scheduleReconnect();
+            return;
+        }
+
         this.status = 'Connecting';
-        this.log(`Attempting to connect as ${currentUsername} to \( {host}: \){port}...`);
+        this.log(`Connecting as ${currentUsername} to ${host}:${port}`);
 
         try {
             this.bot = mineflayer.createBot({
-                host: host,
-                port: port,
+                host,
+                port,
                 username: currentUsername,
-                version: this.config.version ? this.config.version : false,
-                
-                // Anti-kick fixes
+                version: this.config.version || false,
                 checkTimeoutInterval: 30000,
                 skipValidation: true,
-                hideErrors: false,
-                physics: {
-                    maxGroundSpeed: 0.215,
-                    maxAirSpeed: 0.215,
-                    gravity: 0.08,
-                    terminalVelocity: 3.92,
-                }
+                hideErrors: false
             });
 
             this.setupEvents();
         } catch (err) {
-            this.log(`Failed to create bot: ${err.message}`);
+            this.log(`Create error: ${err.message}`);
             this.scheduleReconnect();
         }
     }
@@ -126,109 +151,60 @@ class McBot {
         this.bot.once('spawn', () => {
             this.status = 'Online';
             this.startTime = Date.now();
-            this.log(`✅ Bot spawned successfully!`);
+            this.log(`✅ Spawned`);
 
-            // === FIXED PATHFINDER (no more mcData null error) ===
             this.bot.loadPlugin(pathfinder);
-            
-            const defaultMove = new Movements(this.bot);   // ← Just pass the bot (recommended way)
-            
+            const defaultMove = new Movements(this.bot);
             defaultMove.canDig = false;
             defaultMove.scaffoldingBlocks = [];
             this.bot.pathfinder.setMovements(defaultMove);
 
-            this.log(`✅ Pathfinder loaded - realistic movement enabled (anti-kick)`);
-
-            // Small human-like head movement
-            setTimeout(() => {
-                if (this.bot && this.status === 'Online') {
-                    this.bot.look(Math.random() * 2 * Math.PI, (Math.random() * Math.PI / 2) - Math.PI / 4);
-                }
-            }, 2500);
-
             if (this.config.joinMessage) {
                 this.joinMessageTimer = setTimeout(() => {
-                    if (this.bot && this.status === 'Online') {
-                        this.bot.chat(this.config.joinMessage);
-                        this.log(`Sent join message: ${this.config.joinMessage}`);
-                    }
+                    if (this.bot) this.bot.chat(this.config.joinMessage);
                 }, 2000);
             }
-
-            if (this.config.smartRejoin && this.config.smartRejoinIntervalSec > 0) {
-                this.rotationTimer = setTimeout(() => {
-                    this.log(`Rotation interval reached (${this.config.smartRejoinIntervalSec}s). Rotating account...`);
-                    this.stop(true);
-                    this.rotateAccount();
-                }, this.config.smartRejoinIntervalSec * 1000);
-            }
         });
 
-        this.bot.on('message', (message) => {
-            this.log(`[CHAT] ${message.toString()}`);
-        });
+        this.bot.on('message', msg => this.log(`[CHAT] ${msg.toString()}`));
 
-        this.bot.on('kicked', (reason) => {
-            let reasonStr = typeof reason === 'object' ? JSON.stringify(reason) : reason;
-            try {
-                if (typeof reason === 'string' && reason.startsWith('{')) {
-                    const parsed = JSON.parse(reason);
-                    if (parsed.translate) reasonStr = parsed.translate;
-                    else if (parsed.text) reasonStr = parsed.text;
-                }
-            } catch (e) {}
-            this.log(`Kicked from server. Reason: ${reasonStr}`);
-        });
+        this.bot.on('kicked', r => this.log(`Kicked: ${r}`));
 
-        this.bot.on('error', (err) => {
-            this.log(`Bot Error: ${err.message}`);
-        });
+        this.bot.on('error', err => this.log(`❌ ${err.message}`));
 
         this.bot.on('end', () => {
             this.status = 'Offline';
             this.startTime = null;
-            this.log(`Disconnected from server.`);
+            this.log(`Disconnected`);
             this.clearTimers();
 
             if (this.intendedState === 'running') {
-                if (this.config.smartRejoin) {
-                    this.rotateAccount();
-                } else {
-                    this.scheduleReconnect();
-                }
+                this.scheduleReconnect();
             }
         });
     }
 
-    rotateAccount() {
-        this.accountIndex = (this.accountIndex + 1) % (this.config.smartRejoinCount || 2);
-        const delayMs = (this.config.smartRejoinDelay || 5) * 1000;
-        this.log(`Smart Rejoin: Waiting ${delayMs/1000}s before joining with next account...`);
-        this.reconnectTimer = setTimeout(() => this.start(), Math.max(delayMs, 1000));
-    }
-
     scheduleReconnect() {
-        if (!this.config.autoReconnect && !this.config.smartRejoin) {
-            this.log("Auto-reconnect is disabled. Bot will stay offline.");
-            this.intendedState = 'stopped';
-            return;
-        }
-
-        const delayMs = (this.config.autoReconnectDelay || 15) * 1000;
-        this.log(`Auto Reconnect: Waiting ${delayMs/1000}s before reconnecting...`);
-        this.reconnectTimer = setTimeout(() => this.start(), Math.max(delayMs, 1000));
+        const delay = (this.config.autoReconnectDelay || 15) * 1000;
+        this.log(`Reconnect in ${delay / 1000}s`);
+        this.reconnectTimer = setTimeout(() => this.start(), delay);
     }
 
     stop(internal = false) {
         if (!internal) {
             this.intendedState = 'stopped';
-            this.log(`Bot manually stopped.`);
+            this.log(`Stopped`);
         }
+
         this.clearTimers();
-        if (this.bot) {
-            this.bot.quit();
-            this.bot = null;
+
+        if (this.bot && typeof this.bot.quit === 'function') {
+            try { this.bot.quit(); } catch (e) {
+                this.log(`Quit error: ${e.message}`);
+            }
         }
+
+        this.bot = null;
         this.status = 'Offline';
         this.startTime = null;
     }
@@ -240,20 +216,17 @@ class McBot {
     }
 
     getUptime() {
-        if (this.status !== 'Online' || !this.startTime) return '0s';
+        if (!this.startTime) return '0s';
         return formatUptime(Date.now() - this.startTime);
     }
 }
 
-// --- Routes (unchanged) ---
+// --- Routes ---
 app.get('/', (req, res) => {
     const botsData = botConfigs.map(c => {
         const active = activeBots[c.id];
         return {
-            id: c.id,
-            name: c.name,
-            username: c.username,
-            address: c.address,
+            ...c,
             status: active ? active.status : 'Offline',
             uptime: active ? active.getUptime() : '0s'
         };
@@ -269,116 +242,29 @@ app.post('/create', (req, res) => {
         address: req.body.address,
         version: req.body.version || "",
         joinMessage: req.body.joinMessage || "",
-        autoReconnect: true,
-        autoReconnectDelay: 15,
-        smartRejoin: false,
-        smartRejoinCount: 2,
-        smartRejoinDelay: 5,
-        smartRejoinIntervalSec: 300
+        autoReconnectDelay: 15
     };
     botConfigs.push(newBot);
     saveConfigs();
     res.redirect('/');
 });
 
-app.get('/:id', (req, res) => {
-    const botConfig = botConfigs.find(b => b.id === req.params.id);
-    if (!botConfig) return res.status(404).send("Bot not found");
-    const active = activeBots[botConfig.id];
-    res.render('index', { 
-        view: 'manage', 
-        bot: botConfig,
-        status: active ? active.status : 'Offline',
-        uptime: active ? active.getUptime() : '0s'
-    });
-});
-
-app.get('/:id/logs', (req, res) => {
-    const active = activeBots[req.params.id];
-    if (!active) {
-        return res.json({ status: 'Offline', uptime: '0s', logs: ['System: Bot is offline. Click Start.'] });
-    }
-    res.json({
-        status: active.status,
-        uptime: active.getUptime(),
-        logs: active.logs
-    });
-});
-
 app.post('/:id/start', (req, res) => {
-    const botConfig = botConfigs.find(b => b.id === req.params.id);
-    if (botConfig) {
-        if (!activeBots[botConfig.id]) {
-            activeBots[botConfig.id] = new McBot(botConfig);
-        }
-        activeBots[botConfig.id].start();
+    const cfg = botConfigs.find(b => b.id === req.params.id);
+    if (cfg) {
+        if (!activeBots[cfg.id]) activeBots[cfg.id] = new McBot(cfg);
+        activeBots[cfg.id].start();
     }
-    res.redirect(`/${req.params.id}`);
-});
-
-app.post('/:id/stop', (req, res) => {
-    const active = activeBots[req.params.id];
-    if (active) active.stop();
-    res.redirect(`/${req.params.id}`);
-});
-
-app.post('/:id/restart', (req, res) => {
-    const active = activeBots[req.params.id];
-    if (active) {
-        active.stop();
-        setTimeout(() => active.start(), 1000);
-    }
-    res.redirect(`/${req.params.id}`);
-});
-
-app.post('/:id/delete', (req, res) => {
-    const active = activeBots[req.params.id];
-    if (active) active.stop();
-    delete activeBots[req.params.id];
-    botConfigs = botConfigs.filter(b => b.id !== req.params.id);
-    saveConfigs();
     res.redirect('/');
 });
 
-app.post('/:id/clear-logs', (req, res) => {
-    const active = activeBots[req.params.id];
-    if (active) active.logs = [];
-    res.redirect(`/${req.params.id}`);
+app.post('/:id/stop', (req, res) => {
+    const bot = activeBots[req.params.id];
+    if (bot) bot.stop();
+    res.redirect('/');
 });
 
-app.post('/:id/edit', (req, res) => {
-    const botIndex = botConfigs.findIndex(b => b.id === req.params.id);
-    if (botIndex === -1) return res.redirect('/');
-    const oldConfig = botConfigs[botIndex];
-    const isAutoReconnect = req.body.autoReconnect === 'on';
-    const isSmartRejoin = req.body.smartRejoin === 'on';
-
-    botConfigs[botIndex] = {
-        ...oldConfig,
-        name: req.body.name,
-        username: req.body.username,
-        address: req.body.address,
-        version: req.body.version || "",
-        joinMessage: req.body.joinMessage,
-        autoReconnect: isAutoReconnect,
-        autoReconnectDelay: parseInt(req.body.autoReconnectDelay) || 15,
-        smartRejoin: isSmartRejoin,
-        smartRejoinCount: parseInt(req.body.smartRejoinCount) || 2,
-        smartRejoinDelay: parseInt(req.body.smartRejoinDelay) || 5,
-        smartRejoinIntervalSec: parseInt(req.body.smartRejoinIntervalSec) || 300
-    };
-
-    saveConfigs();
-    if (activeBots[req.params.id]) {
-        activeBots[req.params.id].config = botConfigs[botIndex];
-    }
-    res.redirect(`/${req.params.id}`);
-});
-
-// --- Start Server ---
+// --- Start ---
 app.listen(PORT, () => {
-    console.log(`==========================================`);
-    console.log(`🚀 Minecraft Bot Manager is running!`);
-    console.log(`👉 Access the dashboard at: http://localhost:${PORT}`);
-    console.log(`==========================================`);
+    console.log(`🚀 Running on http://localhost:${PORT}`);
 });
