@@ -25,7 +25,7 @@ jobs:
       - name: Check repository
         uses: actions/checkout@v4
 
-      # 2. Setup (data sync + background npm start)
+      # 2. Setup (data sync + background npm start as root)
       - name: Setup
         run: |
           set -e
@@ -42,7 +42,6 @@ jobs:
           if [ -d "container" ]; then
             echo "Source 'container/' found. Contents:"
             ls -la container/
-            # Use rsync with -a (archive) and -v (verbose) for visibility
             sudo rsync -av --delete container/ /root/container/
             echo "✓ Rsync completed"
           else
@@ -50,7 +49,7 @@ jobs:
             exit 1
           fi
 
-          # --- Verify sync (use sudo for /root access) ---
+          # --- Verify sync ---
           echo "Destination /root/container/ contents:"
           sudo ls -la /root/container/
           if ! sudo test -f /root/container/index.js; then
@@ -59,26 +58,28 @@ jobs:
           fi
           echo "✓ Required files present"
 
-          # --- Start Node.js application in background ---
+          # --- Start Node.js application in background (as root) ---
           echo "=== Starting Node.js application ==="
-          cd /root/container
-          if [ -f package.json ] || [ -f packages.json ]; then
-            echo "Installing dependencies..."
-            sudo npm install --silent
-          fi
-          echo "Launching 'npm start' in background..."
-          sudo nohup npm start > /root/container/app.log 2>&1 &
-          APP_PID=$!
-          echo "✓ Application started with PID $APP_PID (logs: /root/container/app.log)"
-          sleep 2
-          if sudo ps -p $APP_PID > /dev/null; then
-            echo "✓ Process $APP_PID is running"
-            sudo tail -5 /root/container/app.log
-          else
-            echo "✗ Application exited immediately. Last 10 lines of log:"
-            sudo tail -10 /root/container/app.log
-            exit 1
-          fi
+          sudo bash -c '
+            cd /root/container
+            if [ -f package.json ] || [ -f packages.json ]; then
+              echo "Installing dependencies..."
+              npm install --silent
+            fi
+            echo "Launching '\''npm start'\'' in background..."
+            nohup npm start > /root/container/app.log 2>&1 &
+            APP_PID=$!
+            echo "✓ Application started with PID $APP_PID (logs: /root/container/app.log)"
+            sleep 2
+            if ps -p $APP_PID > /dev/null; then
+              echo "✓ Process $APP_PID is running"
+              tail -5 /root/container/app.log
+            else
+              echo "✗ Application exited immediately. Last 10 lines of log:"
+              tail -10 /root/container/app.log
+              exit 1
+            fi
+          '
 
           # --- Cloudflare Tunnel setup ---
           [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ] && { echo "✗ CLOUDFLARE_TOKEN secret missing"; exit 1; }
