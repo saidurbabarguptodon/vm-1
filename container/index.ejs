@@ -63,6 +63,13 @@
                         <div class="mb-3"><label class="form-label">Bot Name</label><input type="text" name="name" class="form-control" required></div>
                         <div class="mb-3"><label class="form-label">Bot Username</label><input type="text" name="username" class="form-control" required></div>
                         <div class="mb-3"><label class="form-label">Server Address (e.g. localhost:25565)</label><input type="text" name="address" class="form-control" required></div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Minecraft Version (Optional)</label>
+                            <input type="text" name="version" class="form-control" placeholder="Leave blank for Auto (e.g. 1.20.4)">
+                            <div class="form-text">Specify this if the bot instantly gets kicked for movement/physics!</div>
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label">Join Message (Optional)</label>
                             <input type="text" name="joinMessage" class="form-control" placeholder="e.g. Hello! or /login pass">
@@ -92,6 +99,7 @@
                         <li class="list-group-item"><strong>Bot Name:</strong> <%= bot.name %></li>
                         <li class="list-group-item"><strong>Bot Username:</strong> <%= bot.username %></li>
                         <li class="list-group-item"><strong>Address:</strong> <%= bot.address %></li>
+                        <li class="list-group-item"><strong>Version:</strong> <%= bot.version || 'Auto-Detect' %></li>
                         <li class="list-group-item"><strong>Join Message:</strong> <span class="text-muted"><%= bot.joinMessage || 'None' %></span></li>
                         
                         <li class="list-group-item">
@@ -136,7 +144,6 @@
                 <div class="card shadow-sm">
                     <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between align-items-center">
                         <span>Live Console</span>
-                        <!-- CHANGED HERE: Grouped Buttons -->
                         <div class="d-flex gap-2">
                             <button class="btn btn-sm btn-secondary py-0 px-2" id="copyLogsBtn" onclick="copyLogs()">Copy Logs</button>
                             <form action="/<%= bot.id %>/clear-logs" method="POST" class="m-0">
@@ -163,6 +170,11 @@
                         <div class="mb-3"><label class="form-label">Bot Username</label><input type="text" name="username" class="form-control" required value="<%= bot.username %>"></div>
                         <div class="mb-3"><label class="form-label">Server Address</label><input type="text" name="address" class="form-control" required value="<%= bot.address %>"></div>
                         
+                        <div class="mb-3">
+                            <label class="form-label">Minecraft Version</label>
+                            <input type="text" name="version" class="form-control" placeholder="Leave blank for Auto (e.g. 1.20.4)" value="<%= bot.version || '' %>">
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label">Join Message</label>
                             <input type="text" name="joinMessage" class="form-control" placeholder="e.g. Hello! or /login pass" value="<%= bot.joinMessage || '' %>">
@@ -241,13 +253,12 @@
             }
             setInterval(fetchLogs, 1000); fetchLogs();
 
-            // CHANGED HERE: Added copy to clipboard functionality
             function copyLogs() {
                 var btn = document.getElementById('copyLogsBtn');
                 var textToCopy = consoleBox.innerText;
 
                 if(textToCopy === 'Loading console logs...' || textToCopy === 'No logs available.') {
-                    textToCopy = ''; // Don't copy placeholder text
+                    textToCopy = ''; 
                 }
 
                 navigator.clipboard.writeText(textToCopy).then(function() {
