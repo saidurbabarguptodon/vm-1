@@ -103,7 +103,7 @@ class McBot {
                 username: currentUsername,
                 version: this.config.version ? this.config.version : false,
                 
-                // === ANTI-KICK FIXES ===
+                // Anti-kick fixes
                 checkTimeoutInterval: 30000,
                 skipValidation: true,
                 hideErrors: false,
@@ -128,18 +128,18 @@ class McBot {
             this.startTime = Date.now();
             this.log(`✅ Bot spawned successfully!`);
 
-            // === LOAD PATHFINDER (fixes "invalid_player_movement" kick) ===
+            // === FIXED PATHFINDER (no more mcData null error) ===
             this.bot.loadPlugin(pathfinder);
-            const mcData = require('minecraft-data')(this.bot.version);
-            const defaultMove = new Movements(this.bot, mcData);
             
-            defaultMove.canDig = false;           // prevent accidental digging
-            defaultMove.scaffoldingBlocks = [];   // more natural movement
+            const defaultMove = new Movements(this.bot);   // ← Just pass the bot (recommended way)
+            
+            defaultMove.canDig = false;
+            defaultMove.scaffoldingBlocks = [];
             this.bot.pathfinder.setMovements(defaultMove);
 
-            this.log(`✅ Pathfinder loaded - realistic movement enabled`);
+            this.log(`✅ Pathfinder loaded - realistic movement enabled (anti-kick)`);
 
-            // Small human-like look after spawn
+            // Small human-like head movement
             setTimeout(() => {
                 if (this.bot && this.status === 'Online') {
                     this.bot.look(Math.random() * 2 * Math.PI, (Math.random() * Math.PI / 2) - Math.PI / 4);
@@ -177,7 +177,6 @@ class McBot {
                     else if (parsed.text) reasonStr = parsed.text;
                 }
             } catch (e) {}
-            
             this.log(`Kicked from server. Reason: ${reasonStr}`);
         });
 
@@ -204,7 +203,6 @@ class McBot {
     rotateAccount() {
         this.accountIndex = (this.accountIndex + 1) % (this.config.smartRejoinCount || 2);
         const delayMs = (this.config.smartRejoinDelay || 5) * 1000;
-        
         this.log(`Smart Rejoin: Waiting ${delayMs/1000}s before joining with next account...`);
         this.reconnectTimer = setTimeout(() => this.start(), Math.max(delayMs, 1000));
     }
@@ -247,7 +245,7 @@ class McBot {
     }
 }
 
-// --- Routes ---
+// --- Routes (unchanged) ---
 app.get('/', (req, res) => {
     const botsData = botConfigs.map(c => {
         const active = activeBots[c.id];
@@ -278,7 +276,6 @@ app.post('/create', (req, res) => {
         smartRejoinDelay: 5,
         smartRejoinIntervalSec: 300
     };
-    
     botConfigs.push(newBot);
     saveConfigs();
     res.redirect('/');
@@ -287,7 +284,6 @@ app.post('/create', (req, res) => {
 app.get('/:id', (req, res) => {
     const botConfig = botConfigs.find(b => b.id === req.params.id);
     if (!botConfig) return res.status(404).send("Bot not found");
-
     const active = activeBots[botConfig.id];
     res.render('index', { 
         view: 'manage', 
@@ -339,7 +335,6 @@ app.post('/:id/delete', (req, res) => {
     const active = activeBots[req.params.id];
     if (active) active.stop();
     delete activeBots[req.params.id];
-
     botConfigs = botConfigs.filter(b => b.id !== req.params.id);
     saveConfigs();
     res.redirect('/');
@@ -354,9 +349,7 @@ app.post('/:id/clear-logs', (req, res) => {
 app.post('/:id/edit', (req, res) => {
     const botIndex = botConfigs.findIndex(b => b.id === req.params.id);
     if (botIndex === -1) return res.redirect('/');
-
     const oldConfig = botConfigs[botIndex];
-    
     const isAutoReconnect = req.body.autoReconnect === 'on';
     const isSmartRejoin = req.body.smartRejoin === 'on';
 
@@ -367,10 +360,8 @@ app.post('/:id/edit', (req, res) => {
         address: req.body.address,
         version: req.body.version || "",
         joinMessage: req.body.joinMessage,
-        
         autoReconnect: isAutoReconnect,
         autoReconnectDelay: parseInt(req.body.autoReconnectDelay) || 15,
-        
         smartRejoin: isSmartRejoin,
         smartRejoinCount: parseInt(req.body.smartRejoinCount) || 2,
         smartRejoinDelay: parseInt(req.body.smartRejoinDelay) || 5,
@@ -378,11 +369,9 @@ app.post('/:id/edit', (req, res) => {
     };
 
     saveConfigs();
-
     if (activeBots[req.params.id]) {
         activeBots[req.params.id].config = botConfigs[botIndex];
     }
-
     res.redirect(`/${req.params.id}`);
 });
 
