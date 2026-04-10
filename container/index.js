@@ -63,11 +63,13 @@ function clearBotTimers(id) {
         clearTimeout(activeBots[id].reconnectTimer);
         clearTimeout(activeBots[id].loginTimeout);
         clearTimeout(activeBots[id].smartRejoinTimer);
+        clearTimeout(activeBots[id].safeSpawnTimer);
         clearInterval(activeBots[id].afkInterval);
 
         activeBots[id].reconnectTimer = null;
         activeBots[id].loginTimeout = null;
         activeBots[id].smartRejoinTimer = null;
+        activeBots[id].safeSpawnTimer = null;
         activeBots[id].afkInterval = null;
     }
 }
@@ -82,19 +84,10 @@ function killBotInstance(id) {
 
 function startBot(id) {
     const numId = parseInt(id);
-    console.log(`[Manager] Attempting to start bot ID: ${numId}`);
-    
     const botConfig = savedBots.find(b => b.id === numId);
-    if (!botConfig) {
-        console.log(`[Manager] Bot ID ${numId} not found in saved configs.`);
-        return;
-    }
+    if (!botConfig) return;
 
-    // If it's already running, don't start it again
-    if (activeBots[numId] && (activeBots[numId].status === 'Online' || activeBots[numId].status === 'Connecting')) {
-        console.log(`[Manager] Bot ${numId} is already ${activeBots[numId].status}.`);
-        return;
-    }
+    if (activeBots[numId] && (activeBots[numId].status === 'Online' || activeBots[numId].status === 'Connecting')) return;
 
     const autoReconnect = botConfig.autoReconnect !== false;
     const autoReconnectDelay = (parseInt(botConfig.autoReconnectDelay) || 15) * 1000;
@@ -123,6 +116,7 @@ function startBot(id) {
         reconnectTimer: null,
         loginTimeout: null,
         smartRejoinTimer: null,
+        safeSpawnTimer: null,
         afkInterval: null,
         currentSmartIndex: currentSmartIndex,
         session: currentSession
@@ -134,160 +128,208 @@ function startBot(id) {
         activeBots[numId].currentSmartIndex = (currentSmartIndex % smartRejoinCount) + 1;
     }
 
-    logToBot(numId, `Connecting ${actualUsername} to ${host}${port ? ':'+port : ''}...`);
+    logToBot(numId, `Pinging ${host}${port ? ':'+port : ''} to detect native version...`);
 
-    try {
-        const botOptions = { 
-            host: host, 
-            username: actualUsername, 
-            hideErrors: true
-            // Physics removed so the bot falls normally and isn't kicked for invalid movement
-        };
-        if (port) botOptions.port = port;
-
-        const bot = mineflayer.createBot(botOptions);
-        activeBots[numId].botInstance = bot;
-
-        activeBots[numId].loginTimeout = setTimeout(() => {
-            if (activeBots[numId] && activeBots[numId].session === currentSession && activeBots[numId].status !== 'Online') {
-                logToBot(numId, `Connection timed out. Forcing end...`);
-                if (activeBots[numId].botInstance) activeBots[numId].botInstance.end('Timeout');
+    // PING SERVER TO DETECT VERSION FIRST
+    mineflayer.ping({ host: host, port: port || 25565 })
+        .then((result) => {
+            let targetVersion = false;
+            if (result && result.version && result.version.name) {
+                // Extracts the first version number it sees (e.g., "1.16.5" from "Requires 1.16.5 - 1.20")
+                const match = String(result.version.name).match(/(\d+\.\d+(?:\.\d+)?)/);
+                if (match) {
+                    targetVersion = match[1];
+                    // Mineflayer specifically needs 1.8.9 if the server says 1.8
+                    if (targetVersion === '1.8') targetVersion = '1.8.9';
+                    logToBot(numId, `Server reports: "${result.version.name}". Locking to ${targetVersion} to prevent Anti-Cheat mismatch.`);
+                } else {
+                    logToBot(numId, `Could not parse version from ping, using Auto.`);
+                }
+            } else {
+                logToBot(numId, `No version info in ping, using Auto.`);
             }
-        }, 35000);
+            launchBot(targetVersion);
+        })
+        .catch((err) => {
+            logToBot(numId, `Ping failed, attempting connection anyway using Auto.`);
+            launchBot(false);
+        });
 
-        bot.on('spawn', () => {
-            if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
 
-            clearTimeout(activeBots[numId].loginTimeout);
-            clearInterval(activeBots[numId].afkInterval);
-            clearTimeout(activeBots[numId].smartRejoinTimer);
+    // FUNCTION TO ACTUALLY LAUNCH ONCE VERSION IS KNOWN
+    function launchBot(detectedVersion) {
+        if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
+        
+        logToBot(numId, `Connecting ${actualUsername} to ${host}${port ? ':'+port : ''}...`);
 
-            logToBot(numId, `Successfully spawned as ${actualUsername}!`);
-            activeBots[numId].status = 'Online';
+        try {
+            const botOptions = { 
+                host: host, 
+                username: actualUsername, 
+                hideErrors: true
+            };
+            if (port) botOptions.port = port;
+            if (detectedVersion) botOptions.version = detectedVersion;
 
-            if (botConfig.joinMessage && botConfig.joinMessage.trim() !== '') {
-                setTimeout(() => {
+            // Allow manual override if you explicitly typed one in bots.json
+            if (botConfig.version && botConfig.version !== 'Auto' && botConfig.version !== '') {
+                botOptions.version = botConfig.version;
+            }
+
+            const bot = mineflayer.createBot(botOptions);
+            activeBots[numId].botInstance = bot;
+
+            // --- ANTI-CHEAT SAFE SPAWN ---
+            bot.physicsEnabled = false;
+            bot.on('forcedMove', () => {
+                if (bot.entity && bot.entity.velocity) {
+                    bot.entity.velocity.x = 0; bot.entity.velocity.y = 0; bot.entity.velocity.z = 0;
+                }
+            });
+
+            activeBots[numId].loginTimeout = setTimeout(() => {
+                if (activeBots[numId] && activeBots[numId].session === currentSession && activeBots[numId].status !== 'Online') {
+                    logToBot(numId, `Connection timed out. Forcing end...`);
+                    if (activeBots[numId].botInstance) activeBots[numId].botInstance.end('Timeout');
+                }
+            }, 35000);
+
+            bot.on('spawn', () => {
+                if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
+
+                clearTimeout(activeBots[numId].loginTimeout);
+                clearInterval(activeBots[numId].afkInterval);
+                clearTimeout(activeBots[numId].smartRejoinTimer);
+                clearTimeout(activeBots[numId].safeSpawnTimer);
+
+                logToBot(numId, `Successfully spawned as ${actualUsername}!`);
+                activeBots[numId].status = 'Online';
+
+                // Re-enable physics safely 2 seconds after spawning to prevent void kicks
+                activeBots[numId].safeSpawnTimer = setTimeout(() => {
                     if (activeBots[numId] && activeBots[numId].botInstance && activeBots[numId].status === 'Online') {
-                        activeBots[numId].botInstance.chat(botConfig.joinMessage);
-                        logToBot(numId, `Sent join message: ${botConfig.joinMessage}`);
+                        activeBots[numId].botInstance.clearControlStates();
+                        activeBots[numId].botInstance.physicsEnabled = true;
                     }
                 }, 2000);
-            }
 
-            if (smartRejoin && smartRejoinIntervalSec > 0) {
-                logToBot(numId, `Smart Rejoin timer: rotating in ${smartRejoinIntervalSec / 1000}s.`);
-                activeBots[numId].smartRejoinTimer = setTimeout(() => {
+                if (botConfig.joinMessage && botConfig.joinMessage.trim() !== '') {
+                    setTimeout(() => {
+                        if (activeBots[numId] && activeBots[numId].botInstance && activeBots[numId].status === 'Online') {
+                            activeBots[numId].botInstance.chat(botConfig.joinMessage);
+                            logToBot(numId, `Sent join message: ${botConfig.joinMessage}`);
+                        }
+                    }, 3000);
+                }
+
+                if (smartRejoin && smartRejoinIntervalSec > 0) {
+                    logToBot(numId, `Smart Rejoin timer: rotating in ${smartRejoinIntervalSec / 1000}s.`);
+                    activeBots[numId].smartRejoinTimer = setTimeout(() => {
+                        if (activeBots[numId] && activeBots[numId].botInstance && activeBots[numId].status === 'Online') {
+                            logToBot(numId, `Smart Rejoin interval reached. Disconnecting to rotate...`);
+                            activeBots[numId].botInstance.end('SmartRejoinRotation');
+                        }
+                    }, smartRejoinIntervalSec);
+                }
+
+                activeBots[numId].afkInterval = setInterval(() => {
                     if (activeBots[numId] && activeBots[numId].botInstance && activeBots[numId].status === 'Online') {
-                        logToBot(numId, `Smart Rejoin interval reached. Disconnecting to rotate...`);
-                        activeBots[numId].botInstance.end('SmartRejoinRotation');
+                        try {
+                            if (activeBots[numId].botInstance.entity) {
+                                activeBots[numId].botInstance.setControlState('sneak', true);
+                                setTimeout(() => {
+                                    if (activeBots[numId] && activeBots[numId].botInstance && activeBots[numId].botInstance.entity) {
+                                        activeBots[numId].botInstance.setControlState('sneak', false);
+                                    }
+                                }, 500);
+                            }
+                        } catch (err) {}
                     }
-                }, smartRejoinIntervalSec);
-            }
+                }, 300000);
+            });
 
-            activeBots[numId].afkInterval = setInterval(() => {
-                if (activeBots[numId] && activeBots[numId].botInstance && activeBots[numId].status === 'Online') {
-                    try {
-                        if (activeBots[numId].botInstance.entity) {
-                            activeBots[numId].botInstance.setControlState('sneak', true);
-                            setTimeout(() => {
-                                if (activeBots[numId] && activeBots[numId].botInstance && activeBots[numId].botInstance.entity) {
-                                    activeBots[numId].botInstance.setControlState('sneak', false);
-                                }
-                            }, 500);
-                        }
-                    } catch (err) {}
+            bot.on('death', () => {
+                if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
+                logToBot(numId, `Bot died! Respawning...`);
+            });
+
+            bot.on('kicked', (reason) => {
+                if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
+                let parsedReason = '';
+                try {
+                    const parsed = typeof reason === 'string' ? JSON.parse(reason) : reason;
+                    const extractText = (obj, depth = 0) => {
+                        if (depth > 10) return ''; 
+                        if (typeof obj === 'string') return obj;
+                        if (!obj || typeof obj !== 'object') return '';
+                        if (obj.type && obj.value !== undefined) return extractText(obj.value, depth + 1);
+                        
+                        let text = obj.text || obj.translate || '';
+                        if (typeof text === 'object') text = extractText(text, depth + 1);
+                        if (Array.isArray(obj.extra)) text += obj.extra.map(o => extractText(o, depth + 1)).join('');
+                        if (Array.isArray(obj.with)) text += obj.with.map(o => extractText(o, depth + 1)).join('');
+                        if (Array.isArray(obj)) text += obj.map(o => extractText(o, depth + 1)).join('');
+                        return text;
+                    };
+                    parsedReason = extractText(parsed);
+                    if (!parsedReason) parsedReason = JSON.stringify(parsed);
+                } catch (e) {
+                    parsedReason = typeof reason === 'object' ? JSON.stringify(reason) : String(reason);
                 }
-            }, 300000);
-        });
+                logToBot(numId, `Kicked: ${parsedReason}`);
+            });
 
-        bot.on('death', () => {
-            if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
-            logToBot(numId, `Bot died! Respawning...`);
-        });
+            bot.on('error', err => {
+                if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
+                logToBot(numId, `Network Error: ${err.message}`);
+            });
 
-        bot.on('kicked', (reason) => {
-            if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
-            let parsedReason = '';
-            try {
-                const parsed = typeof reason === 'string' ? JSON.parse(reason) : reason;
-                
-                // Safe, depth-limited text extractor to prevent freezing
-                const extractText = (obj, depth = 0) => {
-                    if (depth > 10) return ''; // Prevent infinite loops
-                    if (typeof obj === 'string') return obj;
-                    if (!obj || typeof obj !== 'object') return '';
-                    
-                    if (obj.type && obj.value !== undefined) return extractText(obj.value, depth + 1);
-                    
-                    let text = obj.text || obj.translate || '';
-                    if (typeof text === 'object') text = extractText(text, depth + 1);
+            bot.on('end', (reason) => {
+                if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
 
-                    if (Array.isArray(obj.extra)) text += obj.extra.map(o => extractText(o, depth + 1)).join('');
-                    if (Array.isArray(obj.with)) text += obj.with.map(o => extractText(o, depth + 1)).join('');
-                    if (Array.isArray(obj)) text += obj.map(o => extractText(o, depth + 1)).join('');
-                    
-                    return text;
-                };
-                
-                parsedReason = extractText(parsed);
-                if (!parsedReason) parsedReason = JSON.stringify(parsed);
-            } catch (e) {
-                parsedReason = typeof reason === 'object' ? JSON.stringify(reason) : String(reason);
-            }
-            logToBot(numId, `Kicked: ${parsedReason}`);
-        });
-
-        bot.on('error', err => {
-            if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
-            logToBot(numId, `Network Error: ${err.message}`);
-        });
-
-        bot.on('end', (reason) => {
-            if (!activeBots[numId] || activeBots[numId].session !== currentSession) return;
-
-            if (reason !== 'socketClosed') {
-                logToBot(numId, `Disconnected. Reason: ${reason}`);
-            }
-
-            activeBots[numId].status = 'Offline';
-            activeBots[numId].botInstance = null;
-            clearBotTimers(numId);
-
-            if (!activeBots[numId].intentionalDisconnect) {
-                let delay;
-                if (smartRejoin) {
-                    delay = smartRejoinDelay;
-                    logToBot(numId, `Smart Rejoin: reconnecting in ${smartRejoinDelay / 1000}s...`);
-                } else if (autoReconnect) {
-                    delay = autoReconnectDelay;
-                    logToBot(numId, `Auto Reconnect: reconnecting in ${autoReconnectDelay / 1000}s...`);
+                if (reason !== 'socketClosed') {
+                    logToBot(numId, `Disconnected. Reason: ${reason}`);
                 }
 
-                if (delay) {
-                    activeBots[numId].reconnectTimer = setTimeout(() => {
-                        if (activeBots[numId] && !activeBots[numId].intentionalDisconnect) {
-                            startBot(numId);
-                        }
-                    }, delay);
+                activeBots[numId].status = 'Offline';
+                activeBots[numId].botInstance = null;
+                clearBotTimers(numId);
+
+                if (!activeBots[numId].intentionalDisconnect) {
+                    let delay;
+                    if (smartRejoin) {
+                        delay = smartRejoinDelay;
+                        logToBot(numId, `Smart Rejoin: reconnecting in ${smartRejoinDelay / 1000}s...`);
+                    } else if (autoReconnect) {
+                        delay = autoReconnectDelay;
+                        logToBot(numId, `Auto Reconnect: reconnecting in ${autoReconnectDelay / 1000}s...`);
+                    }
+
+                    if (delay) {
+                        activeBots[numId].reconnectTimer = setTimeout(() => {
+                            if (activeBots[numId] && !activeBots[numId].intentionalDisconnect) {
+                                startBot(numId);
+                            }
+                        }, delay);
+                    } else {
+                        activeBots[numId].processStartTime = null;
+                    }
                 } else {
                     activeBots[numId].processStartTime = null;
                 }
-            } else {
-                activeBots[numId].processStartTime = null;
-            }
-        });
-    } catch (err) {
-        console.error(`[Manager] Bot ${numId} threw an error immediately:`, err);
-        if (activeBots[numId] && activeBots[numId].session === currentSession) {
-            logToBot(numId, `Critical Failure: ${err.message}`);
-            activeBots[numId].status = 'Offline';
+            });
+        } catch (err) {
+            if (activeBots[numId] && activeBots[numId].session === currentSession) {
+                logToBot(numId, `Critical Failure: ${err.message}`);
+                activeBots[numId].status = 'Offline';
 
-            if (!activeBots[numId].intentionalDisconnect && (autoReconnect || smartRejoin)) {
-                const delay = smartRejoin ? smartRejoinDelay : autoReconnectDelay;
-                logToBot(numId, `Retrying in ${delay / 1000}s...`);
-                activeBots[numId].reconnectTimer = setTimeout(() => startBot(numId), delay);
-            } else {
-                activeBots[numId].processStartTime = null;
+                if (!activeBots[numId].intentionalDisconnect && (autoReconnect || smartRejoin)) {
+                    const delay = smartRejoin ? smartRejoinDelay : autoReconnectDelay;
+                    logToBot(numId, `Retrying in ${delay / 1000}s...`);
+                    activeBots[numId].reconnectTimer = setTimeout(() => startBot(numId), delay);
+                } else {
+                    activeBots[numId].processStartTime = null;
+                }
             }
         }
     }
@@ -360,7 +402,6 @@ app.post('/:id/clear-logs', (req, res) => {
 });
 
 app.post('/:id/start', (req, res) => { 
-    // Force status clearance just in case it got stuck
     if (activeBots[req.params.id]) activeBots[req.params.id].status = 'Offline';
     startBot(req.params.id); 
     res.redirect(`/${req.params.id}`); 
@@ -374,7 +415,7 @@ app.post('/:id/restart', (req, res) => {
     setTimeout(() => { 
         if(activeBots[id]) {
             activeBots[id].intentionalDisconnect = false; 
-            activeBots[id].status = 'Offline'; // Reset status
+            activeBots[id].status = 'Offline';
         }
         startBot(id); 
     }, 2500);
