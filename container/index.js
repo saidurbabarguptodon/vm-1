@@ -2,15 +2,16 @@ const express = require('express');
 const mineflayer = require('mineflayer');
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto'); // For generating UUIDs
+const crypto = require('crypto'); // Built-in Node.js module
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// PORT UPDATED TO 9000
+const PORT = process.env.PORT || 9000;
 const DATA_FILE = path.join(__dirname, 'bots.json');
 
 // --- Middleware ---
 app.set('view engine', 'ejs');
-app.use(express.urlencoded({ extended: true })); // Parse form data
+app.use(express.urlencoded({ extended: true })); 
 app.use(express.json());
 
 // --- Utilities ---
@@ -44,7 +45,7 @@ function saveConfigs() {
 }
 
 // --- Advanced Minecraft Bot Controller ---
-const activeBots = {}; // Memory storage for active running bot instances
+const activeBots = {}; 
 
 class McBot {
     constructor(config) {
@@ -53,10 +54,9 @@ class McBot {
         this.status = 'Offline';
         this.startTime = null;
         this.logs =[];
-        this.intendedState = 'stopped'; // 'running' or 'stopped'
-        this.accountIndex = 0; // For Smart Rejoin looping
+        this.intendedState = 'stopped'; 
+        this.accountIndex = 0; 
         
-        // Timers
         this.reconnectTimer = null;
         this.rotationTimer = null;
         this.joinMessageTimer = null;
@@ -66,7 +66,6 @@ class McBot {
         const timestamp = new Date().toLocaleTimeString();
         const safeMsg = escapeHTML(msg);
         this.logs.push(`[${timestamp}] ${safeMsg}`);
-        // Memory leak prevention: Keep only the last 200 logs
         if (this.logs.length > 200) this.logs.shift();
     }
 
@@ -79,14 +78,12 @@ class McBot {
             this.bot = null;
         }
 
-        // Handle Smart Rejoin Username
         let currentUsername = this.config.username;
         if (this.config.smartRejoin) {
             const suffix = this.accountIndex === 0 ? '' : `_${this.accountIndex + 1}`;
             currentUsername = `${this.config.username}${suffix}`;
         }
 
-        // Parse host and port
         let host = this.config.address;
         let port = 25565;
         if (host.includes(':')) {
@@ -103,7 +100,7 @@ class McBot {
                 host: host,
                 port: port,
                 username: currentUsername,
-                version: false // Auto-detect
+                version: false 
             });
 
             this.setupEvents();
@@ -119,7 +116,6 @@ class McBot {
             this.startTime = Date.now();
             this.log(`Bot spawned successfully in the world!`);
 
-            // Join Message Logic
             if (this.config.joinMessage) {
                 this.joinMessageTimer = setTimeout(() => {
                     if (this.bot && this.status === 'Online') {
@@ -129,18 +125,17 @@ class McBot {
                 }, 2000);
             }
 
-            // Smart Rejoin Interval Logic (Force Rotation)
             if (this.config.smartRejoin && this.config.smartRejoinIntervalSec > 0) {
                 this.rotationTimer = setTimeout(() => {
                     this.log(`Rotation interval reached (${this.config.smartRejoinIntervalSec}s). Rotating account...`);
-                    this.stop(true); // Stop but intent remains 'running'
+                    this.stop(true); 
                     this.rotateAccount();
                 }, this.config.smartRejoinIntervalSec * 1000);
             }
         });
 
         this.bot.on('message', (message) => {
-            this.log(`[CHAT] ${message.toAnsi()}`); // Retains basic text representation
+            this.log(`[CHAT] ${message.toAnsi()}`); 
         });
 
         this.bot.on('kicked', (reason) => {
@@ -216,9 +211,7 @@ class McBot {
 
 // --- Routes ---
 
-// 1. Dashboard Home
 app.get('/', (req, res) => {
-    // Map configs to include active status data
     const botsData = botConfigs.map(c => {
         const active = activeBots[c.id];
         return {
@@ -234,7 +227,6 @@ app.get('/', (req, res) => {
     res.render('index', { view: 'home', bots: botsData });
 });
 
-// 2. Create Bot
 app.post('/create', (req, res) => {
     const newBot = {
         id: crypto.randomUUID().substring(0, 8),
@@ -255,7 +247,6 @@ app.post('/create', (req, res) => {
     res.redirect('/');
 });
 
-// 3. Manage Bot View
 app.get('/:id', (req, res) => {
     const botConfig = botConfigs.find(b => b.id === req.params.id);
     if (!botConfig) return res.status(404).send("Bot not found");
@@ -269,11 +260,10 @@ app.get('/:id', (req, res) => {
     });
 });
 
-// 4. API: Fetch Live Logs & Status
 app.get('/:id/logs', (req, res) => {
     const active = activeBots[req.params.id];
     if (!active) {
-        return res.json({ status: 'Offline', uptime: '0s', logs:['System: Bot is offline. Click Start.'] });
+        return res.json({ status: 'Offline', uptime: '0s', logs: ['System: Bot is offline. Click Start.'] });
     }
     res.json({
         status: active.status,
@@ -282,7 +272,6 @@ app.get('/:id/logs', (req, res) => {
     });
 });
 
-// 5. Action: Start Bot
 app.post('/:id/start', (req, res) => {
     const botConfig = botConfigs.find(b => b.id === req.params.id);
     if (botConfig) {
@@ -294,14 +283,12 @@ app.post('/:id/start', (req, res) => {
     res.redirect(`/${req.params.id}`);
 });
 
-// 6. Action: Stop Bot
 app.post('/:id/stop', (req, res) => {
     const active = activeBots[req.params.id];
     if (active) active.stop();
     res.redirect(`/${req.params.id}`);
 });
 
-// 7. Action: Restart Bot
 app.post('/:id/restart', (req, res) => {
     const active = activeBots[req.params.id];
     if (active) {
@@ -311,7 +298,6 @@ app.post('/:id/restart', (req, res) => {
     res.redirect(`/${req.params.id}`);
 });
 
-// 8. Action: Delete Bot
 app.post('/:id/delete', (req, res) => {
     const active = activeBots[req.params.id];
     if (active) active.stop();
@@ -322,21 +308,18 @@ app.post('/:id/delete', (req, res) => {
     res.redirect('/');
 });
 
-// 9. Action: Clear Logs
 app.post('/:id/clear-logs', (req, res) => {
     const active = activeBots[req.params.id];
     if (active) active.logs =[];
     res.redirect(`/${req.params.id}`);
 });
 
-// 10. Edit Bot Settings
 app.post('/:id/edit', (req, res) => {
     const botIndex = botConfigs.findIndex(b => b.id === req.params.id);
     if (botIndex === -1) return res.redirect('/');
 
     const oldConfig = botConfigs[botIndex];
     
-    // Process Checkboxes (HTML forms only send 'on' if checked)
     const isAutoReconnect = req.body.autoReconnect === 'on';
     const isSmartRejoin = req.body.smartRejoin === 'on';
 
@@ -358,7 +341,6 @@ app.post('/:id/edit', (req, res) => {
 
     saveConfigs();
 
-    // Hot-reload configuration if the bot is actively running
     if (activeBots[req.params.id]) {
         activeBots[req.params.id].config = botConfigs[botIndex];
     }
