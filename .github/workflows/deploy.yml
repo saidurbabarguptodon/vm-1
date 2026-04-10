@@ -25,7 +25,7 @@ jobs:
       - name: Check repository
         uses: actions/checkout@v4
 
-      # 2. Setup
+      # 2. Setup (includes data sync + background npm start)
       - name: Setup
         run: |
           set -e
@@ -33,9 +33,24 @@ jobs:
           gh run list --workflow "${{ github.workflow }}" --repo "${{ github.repository }}" --limit 200 --json databaseId \
             | jq -r --arg current "${{ github.run_id }}" '.[]? | select((.databaseId|tostring)!=$current) | .databaseId' \
             | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}" && echo "✓ Deleted previous runs" || echo "✗ Failed to delete some runs"
+
           # Sync data
           sudo mkdir -p /root/container
           [ -d "container" ] && sudo rsync -a container/ /root/container/ && echo "✓ Initial sync (repo → /root/container)" || echo "ℹ No container folder"
+
+          # --- NEW: Start app in background after data sync ---
+          if [ -f /root/container/index.js ]; then
+            echo "Starting npm application in background..."
+            cd /root/container
+            # Install dependencies if package.json exists
+            [ -f package.json ] && npm install --silent
+            # Run in background with nohup
+            nohup npm start > /root/container/nohup.out 2>&1 &
+            echo "✓ App started (PID $!)"
+          else
+            echo "ℹ No /root/container/index.js found, skipping npm start"
+          fi
+
           # Install and configure cloudflare
           [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ] && { echo "✗ CLOUDFLARE_TOKEN secret missing"; exit 1; }
           echo "Setting up Cloudflare Tunnel..."
