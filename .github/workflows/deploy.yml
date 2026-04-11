@@ -25,16 +25,11 @@ jobs:
       - name: Check repository
         uses: actions/checkout@v4
 
-      # 2. Setup (data sync + background npm start as root)
+      # 2. Setup (sync + PM2 start + Cloudflare + delete old runs)
       - name: Setup
         run: |
           set -e
           echo "=== Setup: Starting ==="
-
-          # Delete previous workflow runs
-          gh run list --workflow "${{ github.workflow }}" --repo "${{ github.repository }}" --limit 200 --json databaseId \
-            | jq -r --arg current "${{ github.run_id }}" '.[]? | select((.databaseId|tostring)!=$current) | .databaseId' \
-            | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}" && echo "✓ Deleted previous runs" || echo "⚠ Could not delete some runs"
 
           # --- Sync container folder to /root/container using rsync ---
           echo "=== Syncing container data with rsync ==="
@@ -58,27 +53,31 @@ jobs:
           fi
           echo "✓ Required files present"
 
-          # --- Start Node.js application in background (as root) ---
-          echo "=== Starting Node.js application ==="
+          # --- Start Node.js application with PM2 ---
+          echo "=== Starting Node.js application with PM2 ==="
           sudo bash -c '
             cd /root/container
+
+            # Install npm dependencies
             if [ -f package.json ] || [ -f packages.json ]; then
               echo "Installing dependencies..."
               npm install --silent
             fi
-            echo "Launching '\''npm start'\'' in background..."
-            nohup npm start > /root/container/app.log 2>&1 &
-            APP_PID=$!
-            echo "✓ Application started with PID $APP_PID (logs: /root/container/app.log)"
-            sleep 2
-            if ps -p $APP_PID > /dev/null; then
-              echo "✓ Process $APP_PID is running"
-              tail -5 /root/container/app.log
-            else
-              echo "✗ Application exited immediately. Last 10 lines of log:"
-              tail -10 /root/container/app.log
-              exit 1
-            fi
+
+            # Install PM2 globally
+            echo "Installing PM2..."
+            npm install -g pm2 --silent
+
+            # Stop and delete any old instance (idempotent)
+            pm2 delete mainweb 2>/dev/null || true
+
+            # Start the app with PM2
+            echo "Starting app via PM2..."
+            pm2 start index.js --name mainweb
+            pm2 save
+            pm2 list
+
+            echo "✓ Application started with PM2 (name: mainweb)"
           '
 
           # --- Cloudflare Tunnel setup ---
@@ -91,6 +90,12 @@ jobs:
           sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}"
           sleep 3
           systemctl is-active --quiet cloudflared && echo "✓ Cloudflare Tunnel running" || { echo "✗ Cloudflare Tunnel failed"; exit 1; }
+
+          # --- Delete previous workflow runs (now at the end) ---
+          echo "=== Cleaning up old workflow runs ==="
+          gh run list --workflow "${{ github.workflow }}" --repo "${{ github.repository }}" --limit 200 --json databaseId \
+            | jq -r --arg current "${{ github.run_id }}" '.[]? | select((.databaseId|tostring)!=$current) | .databaseId' \
+            | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}" && echo "✓ Deleted previous runs" || echo "⚠ Could not delete some runs (or none to delete)"
 
           echo "=== Setup completed successfully ==="
 
