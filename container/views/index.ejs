@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>KexCloud | Header Only</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icon CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* VARIABLES */
+    :root {
+      --bg-dark: #05050A;
+      --header-bg: rgba(8, 8, 12, 0.85);
+      --purple-glow: #A855F7;
+      --text-light: #EDEDF2;
+      --gradient-1: linear-gradient(135deg, #8B5CF6 0%, #C084FC 100%);
+    }
+
+    /* RESET */
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      -webkit-tap-highlight-color: transparent; 
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* LAYOUT */
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+    }
+
+    /* HEADER */
+    .header {
+      width: 100%;
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 36px; /* Container height */
+    }
+    .header-logo img {
+      height: 100%;
+      width: 100%;
+      object-fit: contain;
+    }
+    .header-alticon {
+      font-size: 1.4rem;
+      color: var(--purple-glow);
+    }
+    .header-alttext {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: var(--gradient-1);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container">
+      <nav class="navbar">
+        <div class="header-logo" id="header-logo-container">
+          <% if (header.logourl && header.logourl !== "") { %>
+            <img 
+              src="<%= header.logourl %>" 
+              alt="Logo" 
+              id="header-logo-img"
+              onerror="this.onerror=null; fallbackToIconMode()"
+            >
+          <% } else { %>
+            <% if (header.alticon && header.alticon !== "") { %>
+              <i class="<%= header.alticon %> header-alticon" id="header-alticon"></i>
+            <% } %>
+            <% if (header.alttext && header.alttext !== "") { %>
+              <span class="header-alttext" id="header-alttext"><%= header.alttext %></span>
+            <% } %>
+          <% } %>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <script>
+    /* HEADER */
+    function fallbackToIconMode() {
+      const container = document.getElementById('header-logo-container');
+      if (!container) return;
+      
+      const alticon = '<%= header.alticon && header.alticon !== "" ? header.alticon : "" %>';
+      const alttext = '<%= header.alttext && header.alttext !== "" ? header.alttext : "" %>';
+      
+      const iconHtml = alticon !== "" ? `<i class="${alticon} header-alticon"></i>` : "";
+      const textHtml = alttext !== "" ? `<span class="header-alttext">${alttext}</span>` : "";
+      
+      container.innerHTML = iconHtml + textHtml;
+    }
+  </script>
+
+</body>
+</html>
