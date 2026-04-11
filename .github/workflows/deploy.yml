@@ -25,7 +25,7 @@ jobs:
       - name: Check repository
         uses: actions/checkout@v4
 
-      # 2. Setup (sync + PM2 start + Cloudflare + delete old runs)
+      # 2. Setup (sync + PM2 start + Cloudflare + delete old runs + static file server)
       - name: Setup
         run: |
           set -e
@@ -91,7 +91,12 @@ jobs:
           sleep 3
           systemctl is-active --quiet cloudflared && echo "✓ Cloudflare Tunnel running" || { echo "✗ Cloudflare Tunnel failed"; exit 1; }
 
-          # --- Delete previous workflow runs (now at the end) ---
+          # --- Start static HTTP server for status JSON (port 8080) ---
+          echo "Starting static file server on port 8080..."
+          sudo nohup python3 -m http.server 8080 --directory /tmp > /tmp/httpserver.log 2>&1 &
+          echo "✓ Status JSON will be available at http://<ip>:8080/restart_status.json"
+
+          # --- Delete previous workflow runs (at the end) ---
           echo "=== Cleaning up old workflow runs ==="
           gh run list --workflow "${{ github.workflow }}" --repo "${{ github.repository }}" --limit 200 --json databaseId \
             | jq -r --arg current "${{ github.run_id }}" '.[]? | select((.databaseId|tostring)!=$current) | .databaseId' \
@@ -147,28 +152,49 @@ jobs:
           sudo bash -c 'echo "alias c=\"cd /root/container\"" >> /root/.bashrc'
           echo "✓ Aliases created (c → cd /root/container)"
 
-      # 7. Live sync (repo to vm) with auto‑restart before timeout
+      # 7. Live sync (repo to vm) with auto‑restart after 5:30h + JSON status every second
       - name: Live sync and auto‑restart
         run: |
-          echo "Live sync every 2s: repo container/ → VM /root/container/"
-          # Run sync for 355 minutes (21,300 seconds) – max safe duration
-          MAX_DURATION=$((355 * 60))
+          echo "Live sync every 1s: repo container/ → VM /root/container/"
+          MAX_DURATION=$((330 * 60))   # 5h30m in seconds
           START_TIME=$(date +%s)
+          DEADLINE=$((START_TIME + MAX_DURATION))
+
           while true; do
+            # --- Sync code from repo ---
             git fetch origin --quiet 2>/dev/null
             git reset --hard "origin/$(git rev-parse --abbrev-ref HEAD)" --quiet 2>/dev/null
             [ -d "container" ] && sudo rsync -a container/ /root/container/ 2>/dev/null
-            if [ $((SECONDS % 30)) -eq 0 ]; then echo -n "."; fi
+
+            # --- Update restart status JSON file ---
             NOW=$(date +%s)
-            ELAPSED=$((NOW - START_TIME))
-            if [ $ELAPSED -ge $MAX_DURATION ]; then
+            REMAINING=$((DEADLINE - NOW))
+            [ $REMAINING -lt 0 ] && REMAINING=0
+
+            cat <<EOF | sudo tee /tmp/restart_status.json > /dev/null
+{
+  "deadline_unix": $DEADLINE,
+  "deadline_iso": "$(date -Iseconds -d @$DEADLINE)",
+  "remaining_seconds": $REMAINING,
+  "remaining_minutes": $((REMAINING / 60)),
+  "human": "$((REMAINING / 3600))h $(( (REMAINING % 3600) / 60 ))m $((REMAINING % 60))s",
+  "last_updated": "$(date -Iseconds)"
+}
+EOF
+
+            # Print progress dot every 30 seconds
+            if [ $((SECONDS % 30)) -eq 0 ]; then echo -n "."; fi
+
+            # --- Check if restart is needed ---
+            if [ $NOW -ge $DEADLINE ]; then
               echo ""
-              echo "⏰ Timeout reached (355 minutes), restarting workflow..."
+              echo "⏰ Timeout reached (5h 30m), restarting workflow..."
               gh workflow run "${{ github.workflow }}" \
                 --repo "${{ github.repository }}" \
                 --ref "${{ github.ref_name }}"
               echo "✅ Restart triggered"
               exit 0
             fi
-            sleep 2
+
+            sleep 1
           done
