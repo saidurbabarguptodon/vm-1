@@ -1,4 +1,4 @@
-name: run
+name: vm-1
 
 on:
   workflow_dispatch:
@@ -11,179 +11,190 @@ concurrency:
   group: vm-1
   cancel-in-progress: false
 
+env:
+  VM_NAME: vm-1
+  GH_TOKEN: ${{ github.token }}
+
 jobs:
   vm-1:
     runs-on: ubuntu-latest
     timeout-minutes: 360
 
     steps:
-      # 1. CHECK REPOSITORY
-      - name: CHECK REPOSITORY
+      # 1. Check repository
+      - name: Check repository
         uses: actions/checkout@v4
 
-      # 2. SETUP (DELETE OLD RUNS + INITIAL DATA SYNC + CLOUDFLARE TUNNEL)
-      - name: 2. SETUP
-        env:
-          GH_TOKEN: ${{ github.token }}
+      # 2. Setup (sync + PM2 start + Cloudflare + delete old runs + static file server)
+      - name: Setup
         run: |
-          # DELETE ALL PREVIOUS WORKFLOW RUNS (ANY STATUS) EXCEPT CURRENT
-          echo "🗑️  Removing all previous runs (any status) of this workflow..."
-          gh run list --workflow "${{ github.workflow }}" \
-            --repo "${{ github.repository }}" \
-            --limit 200 --json databaseId,status \
-            | jq -r --arg current "${{ github.run_id }}" '
-              .[]? | select((.databaseId|tostring)!=$current) | .databaseId' \
-            | while read id; do
-                echo "Deleting run $id ..."
-                gh run delete "$id" --repo "${{ github.repository }}" || true
-              done
-          echo "✅ All previous runs cleaned (current run ${{ github.run_id }} kept)"
-          
-          # INITIAL DATA SYNC (REPO container/ -> /root/container/, NO DELETE)
+          set -e
+          echo "=== Setup: Starting ==="
+
+          # --- Sync container folder to /root/container using rsync ---
+          echo "=== Syncing container data with rsync ==="
+          sudo mkdir -p /root/container
           if [ -d "container" ]; then
-            sudo mkdir -p /root/container
-            sudo rsync -a container/ /root/container/
-            echo "✅ Initial sync completed (repo → VM, preserving VM-only files)"
+            echo "Source 'container/' found. Contents:"
+            ls -la container/
+            sudo rsync -av --delete container/ /root/container/
+            echo "✓ Rsync completed"
           else
-            echo "ℹ️  No 'container' folder found in repo – nothing to sync initially"
-          fi
-
-          # INSTALL AND CONFIGURE CLOUDFLARE TUNNEL
-          if [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ]; then
-            echo "::warning::CLOUDFLARE_TOKEN not set → skipping Cloudflare Tunnel"
-          else
-            sudo mkdir -p /usr/share/keyrings
-            curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null
-            echo "deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
-            sudo apt-get update -qq && sudo apt-get install -y cloudflared
-            sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}"
-            sleep 4
-            systemctl is-active --quiet cloudflared || { echo "::error::Cloudflare Tunnel failed"; exit 1; }
-            echo "✅ Cloudflare Tunnel installed and running"
-          fi
-
-      # 3. INSTALL SSH AND CONFIGURE SSH + HOSTNAME (VM-1)
-      - name: Install SSH and set hostname
-        run: |
-          sudo hostnamectl set-hostname vm-1
-          echo "127.0.0.1 vm-1" | sudo tee -a /etc/hosts
-          if [ -z "${{ secrets.PASSWORD }}" ]; then
-            echo "::error::PASSWORD secret missing."
+            echo "✗ 'container/' folder not found! Check repository structure."
             exit 1
           fi
-          sudo apt-get update -y
-          sudo apt-get install -y openssh-server
+
+          # --- Verify sync ---
+          echo "Destination /root/container/ contents:"
+          sudo ls -la /root/container/
+          if ! sudo test -f /root/container/index.js; then
+            echo "✗ /root/container/index.js missing after rsync!"
+            exit 1
+          fi
+          echo "✓ Required files present"
+
+          # --- Start Node.js application with PM2 ---
+          echo "=== Starting Node.js application with PM2 ==="
+          sudo bash -c '
+            cd /root/container
+
+            # Install npm dependencies
+            if [ -f package.json ] || [ -f packages.json ]; then
+              echo "Installing dependencies..."
+              npm install --silent
+            fi
+
+            # Install PM2 globally
+            echo "Installing PM2..."
+            npm install -g pm2 --silent
+
+            # Stop and delete any old instance (idempotent)
+            pm2 delete mainweb 2>/dev/null || true
+
+            # Start the app with PM2
+            echo "Starting app via PM2..."
+            pm2 start index.js --name mainweb
+            pm2 save
+            pm2 list
+
+            echo "✓ Application started with PM2 (name: mainweb)"
+          '
+
+          # --- Cloudflare Tunnel setup ---
+          [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ] && { echo "✗ CLOUDFLARE_TOKEN secret missing"; exit 1; }
+          echo "Setting up Cloudflare Tunnel..."
+          sudo mkdir -p /usr/share/keyrings
+          curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null
+          echo "deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
+          sudo apt-get update -qq && sudo apt-get install -y cloudflared
+          sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}"
+          sleep 3
+          systemctl is-active --quiet cloudflared && echo "✓ Cloudflare Tunnel running" || { echo "✗ Cloudflare Tunnel failed"; exit 1; }
+
+          # --- Start static HTTP server for status JSON (port 8080) ---
+          echo "Starting static file server on port 8080..."
+          sudo nohup python3 -m http.server 8080 --directory /tmp > /tmp/httpserver.log 2>&1 &
+          echo "✓ Status JSON will be available at http://<ip>:8080/restart_status.json"
+
+          # --- Delete previous workflow runs (at the end) ---
+          echo "=== Cleaning up old workflow runs ==="
+          gh run list --workflow "${{ github.workflow }}" --repo "${{ github.repository }}" --limit 200 --json databaseId \
+            | jq -r --arg current "${{ github.run_id }}" '.[]? | select((.databaseId|tostring)!=$current) | .databaseId' \
+            | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}" && echo "✓ Deleted previous runs" || echo "⚠ Could not delete some runs (or none to delete)"
+
+          echo "=== Setup completed successfully ==="
+
+      # 3. Install SSH and set hostname
+      - name: Install SSH and set hostname
+        run: |
+          [ -z "${{ secrets.PASSWORD }}" ] && { echo "✗ PASSWORD secret missing"; exit 1; }
+          sudo hostnamectl set-hostname "${{ env.VM_NAME }}"
+          echo "127.0.0.1 ${{ env.VM_NAME }}" | sudo tee -a /etc/hosts
+          sudo apt-get update -y && sudo apt-get install -y openssh-server
           sudo bash -c "echo 'root:${{ secrets.PASSWORD }}' | chpasswd"
           sudo sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
           sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
           sudo systemctl restart ssh
-          systemctl is-active --quiet ssh || { echo "::error::SSH failed"; exit 1; }
-          echo "✅ SSH ready, hostname vm-1"
+          systemctl is-active --quiet ssh && echo "✓ SSH ready, hostname ${{ env.VM_NAME }}" || { echo "✗ SSH failed"; exit 1; }
 
-      # 4. REMOVE TAILSCALE DEVICE (VM-1)
+      # 4. Remove old Tailscale device
       - name: Remove old Tailscale device
         run: |
-          if [ -z "${{ secrets.TAILSCALE_API_KEY }}" ]; then
-            echo "::warning::TAILSCALE_API_KEY not set. Skipping cleanup."
-            exit 0
-          fi
+          [ -z "${{ secrets.TAILSCALE_API_KEY }}" ] && { echo "ℹ TAILSCALE_API_KEY not set, skipping cleanup"; exit 0; }
           sudo apt-get update -qq && sudo apt-get install -y jq curl
-          DEVICES=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" \
-            "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" || echo '{"devices":[]}')
-          DEVICE_ID=$(echo "$DEVICES" | jq -r '.devices[]? | select(.hostname=="vm-1") | .nodeId // .id' | head -n1)
-          if [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ]; then
-            curl -s -X DELETE -u "${{ secrets.TAILSCALE_API_KEY }}:" \
-              "https://api.tailscale.com/api/v2/device/$DEVICE_ID"
-            sleep 4
-            echo "✅ Removed old vm-1 device"
-          else
-            echo "✅ No old vm-1 device found"
-          fi
+          DEVICE_ID=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" | jq -r --arg name "${{ env.VM_NAME }}" '.devices[]? | select(.hostname==$name) | .nodeId // .id' | head -n1)
+          [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ] && { curl -s -X DELETE -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/device/$DEVICE_ID"; sleep 3; echo "✓ Removed old ${{ env.VM_NAME }} device"; } || echo "✓ No old ${{ env.VM_NAME }} device found"
 
-      # 5. INSTALL AND CONFIGURE TAILSCALE (WITH STATIC IP FROM SECRET)
+      # 5. Install and configure Tailscale
       - name: Install and configure Tailscale
         run: |
-          set -e
-          if [ -z "${{ secrets.TAILSCALE_AUTHKEY }}" ]; then
-            echo "::error::TAILSCALE_AUTHKEY missing."
-            exit 1
-          fi
+          [ -z "${{ secrets.TAILSCALE_AUTHKEY }}" ] && { echo "✗ TAILSCALE_AUTHKEY missing"; exit 1; }
           curl -fsSL https://tailscale.com/install.sh | sh
-          sudo tailscale up \
-            --authkey="${{ secrets.TAILSCALE_AUTHKEY }}" \
-            --hostname="vm-1" \
-            --accept-routes \
-            --reset \
-            --ssh
-          sleep 4
-          sudo tailscale status --json | jq -r '.Self | "✅ Tailscale connected as \(.Hostname) (\(.TailscaleIPs[0]))"'
-          
-          STATIC_IP="${{ secrets.TAILSCALE_STATIC_IP }}"
-          API_KEY="${{ secrets.TAILSCALE_API_KEY }}"
-          if [ -n "$STATIC_IP" ] && [ -n "$API_KEY" ]; then
-            echo "🔍 Waiting for device to appear in API (up to 24s)..."
-            DEVICE_ID=""
-            for i in {1..6}; do
-              DEVICES=$(curl -s -u "${API_KEY}:" \
-                "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" || echo '{"devices":[]}')
-              DEVICE_ID=$(echo "$DEVICES" | jq -r '.devices[]? | select(.hostname=="vm-1") | .nodeId // .id' | head -n1)
-              if [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ]; then
-                echo "✅ Found device ID: $DEVICE_ID"
-                break
-              fi
-              sleep 4
-            done
-            if [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ]; then
-              echo "Setting static IPv4 to $STATIC_IP via API..."
-              RESPONSE=$(curl -s -X POST \
-                "https://api.tailscale.com/api/v2/device/$DEVICE_ID/ip" \
-                -u "${API_KEY}:" \
-                -H "Content-Type: application/json" \
-                -d "{\"ipv4\": \"$STATIC_IP\"}")
-              echo "API response: $RESPONSE"
-              sleep 4
-              echo "✅ Static IP set to $STATIC_IP"
-              echo "Current Tailscale IPs: $(sudo tailscale ip -4)"
-            else
-              echo "::warning::Could not find vm-1 in API, static IP not set"
-            fi
-          else
-            echo "⏭️  TAILSCALE_STATIC_IP or TAILSCALE_API_KEY not set - skipping static IP"
-          fi
+          sudo tailscale up --authkey="${{ secrets.TAILSCALE_AUTHKEY }}" --hostname="${{ env.VM_NAME }}" --accept-routes --reset --ssh
+          sleep 3
+          sudo tailscale status --json | jq -r '.Self | "✓ Tailscale connected as \(.Hostname) (\(.TailscaleIPs[0]))"'
+          # Assign static IP
+          [ -n "${{ secrets.TAILSCALE_STATIC_IP }}" ] && [ -n "${{ secrets.TAILSCALE_API_KEY }}" ] && {
+            sleep 3
+            DEVICE_ID=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" | jq -r --arg name "${{ env.VM_NAME }}" '.devices[]? | select(.hostname==$name) | .nodeId // .id' | head -n1)
+            [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ] && {
+              curl -s -X POST "https://api.tailscale.com/api/v2/device/$DEVICE_ID/ip" -u "${{ secrets.TAILSCALE_API_KEY }}:" -H "Content-Type: application/json" -d "{\"ipv4\": \"${{ secrets.TAILSCALE_STATIC_IP }}\"}" >/dev/null
+              sleep 2
+              echo "✓ Static IP assigned"
+            } || echo "⚠ Could not find device ${{ env.VM_NAME }} for static IP"
+          } || {
+            echo "ℹ STATIC_IP or API_KEY missing – using dynamic IP"
+          }
 
-      # 6. CREATE ALIASES
+      # 6. Create aliases
       - name: Create aliases
         run: |
-          sudo mkdir -p /root/container
-          cat <<EOF | sudo tee -a /root/.bashrc
-          alias c='cd /root/container'
-          alias ts='tailscale status'
-          alias tip='tailscale ip -4'
-          EOF
-          echo "✅ Aliases created (c, ts, tip)"
+          sudo bash -c 'echo "alias c=\"cd /root/container\"" >> /root/.bashrc'
+          echo "✓ Aliases created (c → cd /root/container)"
 
-      # 7. LIVE SYNC EVERY 3 SECONDS (GIT PULL + RSYNC TO /ROOT/CONTAINER) + AUTO RESTART
-      - name: Live data sync every 3 seconds and auto restart (max timeout)
-        env:
-          GH_TOKEN: ${{ github.token }}
+      # 7. Live sync (repo to vm) with auto‑restart after 5:30h + JSON status every second
+      - name: Live sync and auto‑restart
         run: |
-          echo "🚀 VM running, keeping alive for 355 minutes..."
-          echo "🔄 Pulling latest from GitHub and syncing to /root/container/ every 3 seconds."
-          end_time=$((SECONDS + 355*60))
-          while [ $SECONDS -lt $end_time ]; do
-            # Fetch latest changes from remote repository
-            git fetch origin
-            git reset --hard origin/$(git rev-parse --abbrev-ref HEAD)
-            # Now sync the updated container/ folder to /root/container/
-            if [ -d "container" ]; then
-              sudo rsync -a container/ /root/container/ || true
-              # Optional: uncomment next line for debug logs
-              # echo "$(date): Pulled latest and synced"
+          echo "Live sync every 1s: repo container/ → VM /root/container/"
+          MAX_DURATION=$((330 * 60))   # 5h30m in seconds
+          START_TIME=$(date +%s)
+          DEADLINE=$((START_TIME + MAX_DURATION))
+
+          while true; do
+            # --- Sync code from repo ---
+            git fetch origin --quiet 2>/dev/null
+            git reset --hard "origin/$(git rev-parse --abbrev-ref HEAD)" --quiet 2>/dev/null
+            [ -d "container" ] && sudo rsync -a container/ /root/container/ 2>/dev/null
+
+            # --- Update restart status JSON file ---
+            NOW=$(date +%s)
+            REMAINING=$((DEADLINE - NOW))
+            [ $REMAINING -lt 0 ] && REMAINING=0
+
+            cat <<EOF | sudo tee /tmp/restart_status.json > /dev/null
+{
+  "deadline_unix": $DEADLINE,
+  "deadline_iso": "$(date -Iseconds -d @$DEADLINE)",
+  "remaining_seconds": $REMAINING,
+  "remaining_minutes": $((REMAINING / 60)),
+  "human": "$((REMAINING / 3600))h $(( (REMAINING % 3600) / 60 ))m $((REMAINING % 60))s",
+  "last_updated": "$(date -Iseconds)"
+}
+EOF
+
+            # Print progress dot every 30 seconds
+            if [ $((SECONDS % 30)) -eq 0 ]; then echo -n "."; fi
+
+            # --- Check if restart is needed ---
+            if [ $NOW -ge $DEADLINE ]; then
+              echo ""
+              echo "⏰ Timeout reached (5h 30m), restarting workflow..."
+              gh workflow run "${{ github.workflow }}" \
+                --repo "${{ github.repository }}" \
+                --ref "${{ github.ref_name }}"
+              echo "✅ Restart triggered"
+              exit 0
             fi
-            sleep 3
+
+            sleep 1
           done
-          echo "⏰ Timeout reached, restarting workflow..."
-          gh workflow run "${{ github.workflow }}" \
-            --repo "${{ github.repository }}" \
-            --ref "${{ github.ref_name }}"
-          echo "✅ Restart triggered"
