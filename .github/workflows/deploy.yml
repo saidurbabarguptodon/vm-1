@@ -189,15 +189,15 @@ jobs:
             [ $REMAINING -lt 0 ] && REMAINING=0
 
             cat <<EOF | sudo tee /tmp/restart_status.json > /dev/null
-            {
-              "deadline_unix": $DEADLINE,
-              "deadline_iso": "$(date -Iseconds -d @$DEADLINE)",
-              "remaining_seconds": $REMAINING,
-              "remaining_minutes": $((REMAINING / 60)),
-              "human": "$((REMAINING / 3600))h $(( (REMAINING % 3600) / 60 ))m $((REMAINING % 60))s",
-              "last_updated": "$(date -Iseconds)"
-            }
-            EOF
+{
+  "deadline_unix": $DEADLINE,
+  "deadline_iso": "$(date -Iseconds -d @$DEADLINE)",
+  "remaining_seconds": $REMAINING,
+  "remaining_minutes": $((REMAINING / 60)),
+  "human": "$((REMAINING / 3600))h $(( (REMAINING % 3600) / 60 ))m $((REMAINING % 60))s",
+  "last_updated": "$(date -Iseconds)"
+}
+EOF
 
             # Print a progress dot every 30 seconds (once per mark)
             if [ $((NOW % 30)) -eq 0 ] && [ $NOW -ne $LAST_DOT ]; then
