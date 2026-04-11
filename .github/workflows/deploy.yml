@@ -45,38 +45,37 @@ jobs:
           # --- Verify sync ---
           echo "Destination /root/container/ contents:"
           sudo ls -la /root/container/
-          if ! sudo test -f /root/container/index.js; then
-            echo "✗ /root/container/index.js missing after rsync!"
-            exit 1
-          fi
-          echo "✓ Required files present"
 
-          # --- Start Node.js application with PM2 ---
-          echo "=== Starting Node.js application with PM2 ==="
-          sudo bash -c '
-            cd /root/container
+          # --- Start Node.js application with PM2 (only if index.js and package.json exist) ---
+          echo "=== Checking Node.js application prerequisites ==="
+          if sudo test -f /root/container/index.js && \
+             (sudo test -f /root/container/package.json || sudo test -f /root/container/packages.json); then
+            echo "✓ index.js and package.json found. Starting Node.js app with PM2..."
+            sudo bash -c '
+              cd /root/container
 
-            # Install npm dependencies
-            if [ -f package.json ] || [ -f packages.json ]; then
+              # Install npm dependencies
               echo "Installing dependencies..."
               npm install --silent
-            fi
 
-            # Install PM2 globally
-            echo "Installing PM2..."
-            npm install -g pm2 --silent
+              # Install PM2 globally
+              echo "Installing PM2..."
+              npm install -g pm2 --silent
 
-            # Stop and delete any old instance (idempotent)
-            pm2 delete mainweb 2>/dev/null || true
+              # Stop and delete any old instance (idempotent)
+              pm2 delete mainweb 2>/dev/null || true
 
-            # Start the app with PM2
-            echo "Starting app via PM2..."
-            pm2 start index.js --name mainweb
-            pm2 save
-            pm2 list
+              # Start the app with PM2
+              echo "Starting app via PM2..."
+              pm2 start index.js --name mainweb
+              pm2 save
+              pm2 list
 
-            echo "✓ Application started with PM2 (name: mainweb)"
-          '
+              echo "✓ Application started with PM2 (name: mainweb)"
+            '
+          else
+            echo "⚠ index.js or package.json not found in /root/container. Skipping Node.js application setup."
+          fi
 
           # --- Cloudflare Tunnel setup ---
           [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ] && { echo "✗ CLOUDFLARE_TOKEN secret missing"; exit 1; }
@@ -96,7 +95,6 @@ jobs:
 
           # --- Delete previous workflow runs (at the end) ---
           echo "=== Cleaning up old workflow runs ==="
-          # Install jq (just in case)
           sudo apt-get install -y jq
           OLD_RUNS=$(gh run list --workflow "${{ github.workflow }}" --repo "${{ github.repository }}" --limit 200 --json databaseId \
             | jq -r --arg current "${{ github.run_id }}" '.[]? | select((.databaseId|tostring)!=$current) | .databaseId')
@@ -141,7 +139,6 @@ jobs:
           sudo tailscale up --authkey="${{ secrets.TAILSCALE_AUTHKEY }}" --hostname="${{ env.VM_NAME }}" --accept-routes --reset --ssh
           sleep 3
           sudo tailscale status --json | jq -r '.Self | "✓ Tailscale connected as \(.Hostname) (\(.TailscaleIPs[0]))"'
-          # Assign static IP if configured
           if [ -n "${{ secrets.TAILSCALE_STATIC_IP }}" ] && [ -n "${{ secrets.TAILSCALE_API_KEY }}" ]; then
             sleep 3
             DEVICE_ID=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" | jq -r --arg name "${{ env.VM_NAME }}" '.devices[]? | select(.hostname==$name) | .nodeId // .id' | head -n1)
@@ -170,7 +167,7 @@ jobs:
           MAX_DURATION=$((330 * 60))   # 5h30m in seconds
           START_TIME=$(date +%s)
           DEADLINE=$((START_TIME + MAX_DURATION))
-          LAST_DOT=0  # Track when we last printed a progress dot
+          LAST_DOT=0
 
           while true; do
             # --- Sync code from repo ---
