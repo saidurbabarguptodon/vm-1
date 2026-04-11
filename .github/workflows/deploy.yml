@@ -21,9 +21,11 @@ jobs:
     timeout-minutes: 360
 
     steps:
+      # 1. Check repository
       - name: Check repository
         uses: actions/checkout@v4
 
+      # 2. Setup (sync + PM2 start + Cloudflare + delete old runs + static file server)
       - name: Setup
         run: |
           set -e
@@ -46,11 +48,11 @@ jobs:
           echo "Destination /root/container/ contents:"
           sudo ls -la /root/container/
 
-          # --- Start Node.js application with PM2 (only if index.js and package.json exist) ---
+          # --- Start Node.js application with PM2 (only if server.js and package.json exist) ---
           echo "=== Checking Node.js application prerequisites ==="
-          if sudo test -f /root/container/index.js && \
+          if sudo test -f /root/container/server.js && \
              (sudo test -f /root/container/package.json || sudo test -f /root/container/packages.json); then
-            echo "✓ index.js and package.json found. Starting Node.js app with PM2..."
+            echo "✓ server.js and package.json found. Starting Node.js app with PM2..."
             sudo bash -c '
               cd /root/container
 
@@ -67,14 +69,14 @@ jobs:
 
               # Start the app with PM2
               echo "Starting app via PM2..."
-              pm2 start index.js --name mainweb
+              pm2 start server.js --name mainweb
               pm2 save
               pm2 list
 
               echo "✓ Application started with PM2 (name: mainweb)"
             '
           else
-            echo "⚠ index.js or package.json not found in /root/container. Skipping Node.js application setup."
+            echo "⚠ server.js or package.json not found in /root/container. Skipping Node.js application setup."
           fi
 
           # --- Cloudflare Tunnel setup ---
@@ -93,13 +95,13 @@ jobs:
           sudo nohup python3 -m http.server 8080 --directory /tmp > /tmp/httpserver.log 2>&1 &
           echo "✓ Status JSON will be available at http://<ip>:8080/restart_status.json"
 
-          # --- Delete previous workflow runs (at the end) ---
+          # --- Delete previous workflow runs ---
           echo "=== Cleaning up old workflow runs ==="
           sudo apt-get install -y jq
           OLD_RUNS=$(gh run list --workflow "${{ github.workflow }}" --repo "${{ github.repository }}" --limit 200 --json databaseId \
             | jq -r --arg current "${{ github.run_id }}" '.[]? | select((.databaseId|tostring)!=$current) | .databaseId')
           if [ -n "$OLD_RUNS" ]; then
-            echo "$OLD_RUNS" | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}" --yes
+            echo "$OLD_RUNS" | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}"
             echo "✓ Deleted previous runs"
           else
             echo "✓ No previous runs to delete"
@@ -107,6 +109,7 @@ jobs:
 
           echo "=== Setup completed successfully ==="
 
+      # 3. Install SSH and set hostname
       - name: Install SSH and set hostname
         run: |
           [ -z "${{ secrets.PASSWORD }}" ] && { echo "✗ PASSWORD secret missing"; exit 1; }
@@ -119,6 +122,7 @@ jobs:
           sudo systemctl restart ssh
           systemctl is-active --quiet ssh && echo "✓ SSH ready, hostname ${{ env.VM_NAME }}" || { echo "✗ SSH failed"; exit 1; }
 
+      # 4. Remove old Tailscale device
       - name: Remove old Tailscale device
         run: |
           [ -z "${{ secrets.TAILSCALE_API_KEY }}" ] && { echo "ℹ TAILSCALE_API_KEY not set, skipping cleanup"; exit 0; }
@@ -132,6 +136,7 @@ jobs:
             echo "✓ No old ${{ env.VM_NAME }} device found"
           fi
 
+      # 5. Install and configure Tailscale
       - name: Install and configure Tailscale
         run: |
           [ -z "${{ secrets.TAILSCALE_AUTHKEY }}" ] && { echo "✗ TAILSCALE_AUTHKEY missing"; exit 1; }
@@ -139,6 +144,7 @@ jobs:
           sudo tailscale up --authkey="${{ secrets.TAILSCALE_AUTHKEY }}" --hostname="${{ env.VM_NAME }}" --accept-routes --reset --ssh
           sleep 3
           sudo tailscale status --json | jq -r '.Self | "✓ Tailscale connected as \(.Hostname) (\(.TailscaleIPs[0]))"'
+          # Assign static IP if configured
           if [ -n "${{ secrets.TAILSCALE_STATIC_IP }}" ] && [ -n "${{ secrets.TAILSCALE_API_KEY }}" ]; then
             sleep 3
             DEVICE_ID=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" | jq -r --arg name "${{ env.VM_NAME }}" '.devices[]? | select(.hostname==$name) | .nodeId // .id' | head -n1)
@@ -156,11 +162,13 @@ jobs:
             echo "ℹ STATIC_IP or API_KEY missing – using dynamic IP"
           fi
 
+      # 6. Create aliases
       - name: Create aliases
         run: |
           sudo bash -c 'echo "alias c=\"cd /root/container\"" >> /root/.bashrc'
           echo "✓ Aliases created (c → cd /root/container)"
 
+      # 7. Live sync and auto‑restart (every 5 seconds)
       - name: Live sync and auto‑restart
         run: |
           echo "Live sync every 5s: repo container/ → VM /root/container/"
