@@ -17,7 +17,6 @@
       --bg-dark: #05050A;
       --header-bg: rgba(8, 8, 12, 0.85);
       --purple-glow: #A855F7;
-      --dark-purple-lamp: #4c1d95; /* Deep, moody purple */
       --text-light: #EDEDF2;
       --gradient-1: linear-gradient(135deg, #8B5CF6 0%, #C084FC 100%);
     }
@@ -65,29 +64,34 @@
       z-index: 100;
     }
 
-    /* ADDED: Dark Purple Lamp purely below the header */
+    /* ADDED: Park Lamp Cone Glow */
     .header::after {
       content: "";
       position: absolute;
-      top: 100%; /* Anchor exactly to the bottom line of the header */
+      top: calc(100% - 1px); /* Tucked just 1px behind the bottom edge */
       left: 50%;
-      transform: translateX(-50%); /* Centered horizontally only */
+      transform: translateX(-50%);
       
-      width: 320px; /* Size of the lamp core */
-      height: 45px; /* Downward stretch of the light */
+      width: 180px; /* Width of the beam at the very bottom */
+      height: 75px; /* Short height so it doesn't take up the whole screen */
       
-      background: var(--dark-purple-lamp); /* Dark, rich purple */
-      filter: blur(35px); /* Soft, ambient spread */
-      -webkit-filter: blur(35px);
-      border-radius: 50%;
+      /* Cuts the rectangle into a cone/pyramid shape (narrow top, wide bottom) */
+      clip-path: polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%);
       
-      z-index: -1; /* Placed behind */
-      opacity: 0.9;
+      /* Dark purple fading to transparent, mimicking real light falloff */
+      background: linear-gradient(
+        to bottom, 
+        rgba(76, 29, 149, 0.95) 0%, 
+        rgba(76, 29, 149, 0.3) 60%, 
+        transparent 100%
+      );
+      
+      /* Softens the sharp geometric lines into soft, rounded bottom corners */
+      filter: blur(5px);
+      -webkit-filter: blur(5px);
+      
+      z-index: -1; /* Stays hidden nicely behind the header */
       pointer-events: none;
-      
-      /* CRUCIAL: This slices the blur perfectly at the header's bottom border. 
-         0 upward bleed is allowed, so it NEVER overlaps inside the header. */
-      clip-path: inset(0 -500px -500px -500px);
     }
 
     .header-logo {
