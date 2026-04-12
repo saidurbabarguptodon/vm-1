@@ -59,17 +59,32 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       
-      /* Updated border to match the glow slightly better */
-      border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+      /* Restored softer border */
+      border-bottom: 1px solid rgba(139, 92, 246, 0.15);
       
-      /* ADDED: Thick Purple Glow */
-      box-shadow: 0 10px 30px -10px rgba(168, 85, 247, 0.6), 
-                  0 0 15px rgba(168, 85, 247, 0.2);
-                  
       position: sticky;
       top: 0;
       z-index: 100;
     }
+
+    /* ADDED: Centered, Rounded Glow using a pseudo-element */
+    .header::after {
+      content: "";
+      position: absolute;
+      top: 100%; /* Positions it at the bottom edge of the header */
+      left: 50%;
+      transform: translate(-50%, -50%); /* Centers it horizontally and vertically on the line */
+      width: 350px; /* Controls how wide the center glow is */
+      height: 40px; /* Base height of the glowing oval */
+      background: var(--purple-glow);
+      filter: blur(40px); /* Heavy blur creates the soft, ambient effect */
+      -webkit-filter: blur(40px);
+      opacity: 0.65; /* Adjust for brightness */
+      border-radius: 50%; /* Makes the shape an oval */
+      z-index: -1; /* Pushes it behind the header content */
+      pointer-events: none;
+    }
+
     .header-logo {
       display: flex;
       align-items: center;
