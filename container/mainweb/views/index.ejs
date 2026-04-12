@@ -17,7 +17,7 @@
       --bg-dark: #05050A; 
       --header-bg: rgba(5, 5, 10, 0.65); 
       --sidebar-bg: #0A0A14; 
-      --header-border: rgba(139, 92, 246, 0.15); 
+      --header-border: rgba(139, 92, 246, 0.2); /* Slightly more visible for the divider */
       
       --accent-violet: #8B5CF6; 
       --accent-blue: #3B82F6;   
@@ -60,20 +60,22 @@
       padding: 10px 0; 
     }
 
-    /* ✦ HEADER GLASS & SHADOW ✦ */
+    /* ✦ HEADER GLASS & DIVIDER SHADOW ✦ */
     .header {
       width: 100%;
       background: var(--header-bg);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--header-border);
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.5);
+      
+      /* ADDED: Clean dividing line & soft purple shadow below the header */
+      border-bottom: 1px solid var(--header-border);
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.08); /* Replaced the heavy dark shadow */
     }
 
-    /* ✦ MULTI-COLOR AURORA GLOW ✦ */
+    /* ✦ MULTI-COLOR AURORA GLOW (Untouched) ✦ */
     .header::after {
       content: "";
       position: absolute;
@@ -168,11 +170,11 @@
     .sidebar {
       position: fixed;
       top: 0;
-      bottom: 0; /* Anchors it cleanly */
+      bottom: 0; 
       left: 0;
       
-      /* FIXED HEIGHT: 100dvh forces it to respect the mobile system navbar exactly */
-      height: 100vh; /* Fallback for very old browsers */
+      /* FIXED HEIGHT: 100dvh for mobile system navbar support */
+      height: 100vh; 
       height: 100dvh; 
       
       width: 320px;
@@ -184,14 +186,12 @@
       
       border-top-right-radius: 24px;
       border-bottom-right-radius: 24px;
-      
       border-right: 1px solid rgba(139, 92, 246, 0.35); 
       
-      /* ADDED: "Full Weight" Shadow */
       box-shadow: 
-        30px 0 60px rgba(0, 0, 0, 0.95), /* Massive dark spread */
-        8px 0 20px rgba(0, 0, 0, 1),     /* Intense black core right at the edge */
-        inset -2px 0 15px rgba(139, 92, 246, 0.15); /* Purple inner edge highlight */
+        30px 0 60px rgba(0, 0, 0, 0.95), 
+        8px 0 20px rgba(0, 0, 0, 1),     
+        inset -2px 0 15px rgba(139, 92, 246, 0.15); 
       
       transform: translateX(-100%);
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
@@ -238,7 +238,6 @@
 
     .sidebar-footer {
       padding: 24px;
-      /* Ensures content in footer isn't hidden by system UI */
       padding-bottom: calc(24px + env(safe-area-inset-bottom)); 
       border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
