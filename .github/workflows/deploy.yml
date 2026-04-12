@@ -27,61 +27,70 @@ jobs:
         run: |
           set -e
 
-          # 1. Create target directory and sync container/ from repo
-          sudo mkdir -p /root/container
+          # 1. Sync container/ from repo to /root/container
           echo "=== Syncing container/ ==="
           if [ -d "container" ]; then
             ls -la container/
-            sudo rsync -av --delete container/ /root/container/ >/dev/null
+            sudo mkdir -p /root/container
+            sudo rsync -aq --delete container/ /root/container/
+            sudo ls -la /root/container/
           else
             echo "⚠ container/ not found – creating empty target"
+            sudo mkdir -p /root/container
           fi
 
           # 2. Handle mainweb application
           MAINWEB_DIR="/root/container/mainweb"
           echo "=== Checking mainweb app ==="
-          if [ -d "$MAINWEB_DIR" ]; then
-            ls -la "$MAINWEB_DIR"
-            if [ -f "$MAINWEB_DIR/index.js" ]; then
+          if sudo test -d "$MAINWEB_DIR"; then
+            sudo ls -la "$MAINWEB_DIR"
+            if sudo test -f "$MAINWEB_DIR/index.js"; then
               echo "Starting mainweb with PM2..."
               sudo bash -c "
                 cd $MAINWEB_DIR
-                npm install --silent
-                npm install -g pm2 --silent
+                npm install --silent 2>/dev/null
+                npm install -g pm2 --silent 2>/dev/null
                 pm2 delete mainweb 2>/dev/null || true
-                pm2 start index.js --name mainweb
-                pm2 save
-              "
-              pm2 list
+                pm2 start index.js --name mainweb --silent
+                pm2 save --silent
+              " >/dev/null 2>&1
+              sudo pm2 list
             else
               echo "ℹ index.js not found – skipping PM2 start"
-              if [ -f "$MAINWEB_DIR/package.json" ]; then
+              if sudo test -f "$MAINWEB_DIR/package.json"; then
                 echo "Installing npm dependencies..."
-                sudo bash -c "cd $MAINWEB_DIR && npm install --silent"
+                sudo bash -c "cd $MAINWEB_DIR && npm install --silent" >/dev/null 2>&1
               fi
             fi
           else
             echo "ℹ /root/container/mainweb/ does not exist – skipping app setup"
           fi
 
-          # 3. Cloudflare Tunnel setup (unchanged)
+          # 3. Cloudflare Tunnel setup (silent install, only final check)
           echo "=== Setting up Cloudflare Tunnel ==="
           [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ] && { echo "✗ CLOUDFLARE_TOKEN missing"; exit 1; }
           sudo mkdir -p /usr/share/keyrings
-          curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null
-          echo "deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main" | sudo tee /etc/apt/sources.list.d/cloudflared.list
-          sudo apt-get update -qq && sudo apt-get install -y cloudflared
-          sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}"
+          curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null 2>&1
+          echo "deb [signed-by=/usr/share/keyrings/cloudflare-public-v2.gpg] https://pkg.cloudflare.com/cloudflared any main" | sudo tee /etc/apt/sources.list.d/cloudflared.list >/dev/null
+          sudo apt-get update -qq >/dev/null 2>&1
+          sudo apt-get install -y -qq cloudflared >/dev/null 2>&1
+          sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}" >/dev/null 2>&1
           sleep 3
-          systemctl is-active --quiet cloudflared && echo "✓ Cloudflare Tunnel running" || { echo "✗ Cloudflare Tunnel failed"; exit 1; }
+          if systemctl is-active --quiet cloudflared; then
+            echo "✓ Cloudflare Tunnel running"
+          else
+            echo "✗ Cloudflare Tunnel failed"
+            exit 1
+          fi
 
-          # 4. Cleanup old workflow runs (unchanged)
+          # 4. Cleanup old workflow runs
           echo "=== Cleaning old workflow runs ==="
-          sudo apt-get install -y jq
+          export GH_TOKEN="${{ github.token }}"
+          sudo apt-get install -y -qq jq >/dev/null 2>&1
           OLD_RUNS=$(gh run list --workflow "${{ github.workflow }}" --repo "${{ github.repository }}" --limit 100 --json databaseId \
             | jq -r --arg current "${{ github.run_id }}" '.[]? | select((.databaseId|tostring)!=$current) | .databaseId')
           if [ -n "$OLD_RUNS" ]; then
-            echo "$OLD_RUNS" | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}"
+            echo "$OLD_RUNS" | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}" >/dev/null 2>&1
             echo "✓ Old runs deleted"
           else
             echo "✓ No old runs to delete"
@@ -92,25 +101,32 @@ jobs:
       - name: Install SSH and set hostname
         run: |
           [ -z "${{ secrets.PASSWORD }}" ] && { echo "✗ PASSWORD secret missing"; exit 1; }
-          sudo hostnamectl set-hostname "${{ env.VM_NAME }}"
-          echo "127.0.0.1 ${{ env.VM_NAME }}" | sudo tee -a /etc/hosts
-          sudo apt-get update -y && sudo apt-get install -y openssh-server
-          sudo bash -c "echo 'root:${{ secrets.PASSWORD }}' | chpasswd"
+          sudo hostnamectl set-hostname "${{ env.VM_NAME }}" >/dev/null 2>&1
+          echo "127.0.0.1 ${{ env.VM_NAME }}" | sudo tee -a /etc/hosts >/dev/null
+          sudo apt-get update -qq >/dev/null 2>&1
+          sudo apt-get install -y -qq openssh-server >/dev/null 2>&1
+          sudo bash -c "echo 'root:${{ secrets.PASSWORD }}' | chpasswd" >/dev/null 2>&1
           sudo sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
           sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
-          sudo systemctl restart ssh
-          systemctl is-active --quiet ssh && echo "✓ SSH ready (hostname: ${{ env.VM_NAME }})" || { echo "✗ SSH failed"; exit 1; }
+          sudo systemctl restart ssh >/dev/null 2>&1
+          if systemctl is-active --quiet ssh; then
+            echo "✓ SSH ready (hostname: ${{ env.VM_NAME }})"
+          else
+            echo "✗ SSH failed"
+            exit 1
+          fi
 
       - name: Remove old Tailscale device
         run: |
           if [ -z "${{ secrets.TAILSCALE_API_KEY }}" ]; then
             echo "ℹ TAILSCALE_API_KEY not set, skipping"
           else
-            sudo apt-get update -qq && sudo apt-get install -y jq curl
+            sudo apt-get update -qq >/dev/null 2>&1
+            sudo apt-get install -y -qq jq curl >/dev/null 2>&1
             DEVICE_ID=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" \
               | jq -r --arg name "${{ env.VM_NAME }}" '.devices[]? | select(.hostname==$name) | .nodeId // .id' | head -n1)
             if [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ]; then
-              curl -s -X DELETE -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/device/$DEVICE_ID"
+              curl -s -X DELETE -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/device/$DEVICE_ID" >/dev/null 2>&1
               echo "✓ Removed old Tailscale device"
             else
               echo "✓ No old device found"
@@ -120,8 +136,8 @@ jobs:
       - name: Install and configure Tailscale
         run: |
           [ -z "${{ secrets.TAILSCALE_AUTHKEY }}" ] && { echo "✗ TAILSCALE_AUTHKEY missing"; exit 1; }
-          curl -fsSL https://tailscale.com/install.sh | sh
-          sudo tailscale up --authkey="${{ secrets.TAILSCALE_AUTHKEY }}" --hostname="${{ env.VM_NAME }}" --accept-routes --reset --ssh
+          curl -fsSL https://tailscale.com/install.sh | sh >/dev/null 2>&1
+          sudo tailscale up --authkey="${{ secrets.TAILSCALE_AUTHKEY }}" --hostname="${{ env.VM_NAME }}" --accept-routes --reset --ssh >/dev/null 2>&1
           sleep 3
           sudo tailscale status --json | jq -r '.Self | "✓ Tailscale connected as \(.Hostname) (\(.TailscaleIPs[0]))"'
 
@@ -132,7 +148,7 @@ jobs:
               curl -s -X POST "https://api.tailscale.com/api/v2/device/$DEVICE_ID/ip" \
                 -u "${{ secrets.TAILSCALE_API_KEY }}:" \
                 -H "Content-Type: application/json" \
-                -d "{\"ipv4\": \"${{ secrets.TAILSCALE_STATIC_IP }}\"}"
+                -d "{\"ipv4\": \"${{ secrets.TAILSCALE_STATIC_IP }}\"}" >/dev/null 2>&1
               echo "✓ Static IP assigned"
             fi
           fi
@@ -153,7 +169,7 @@ jobs:
           while true; do
             git fetch origin --quiet 2>/dev/null || true
             git reset --hard "origin/$(git rev-parse --abbrev-ref HEAD)" --quiet 2>/dev/null || true
-            [ -d "container" ] && sudo rsync -a container/ /root/container/ 2>/dev/null || true
+            [ -d "container" ] && sudo rsync -aq container/ /root/container/ 2>/dev/null || true
 
             NOW=$(date +%s)
             REMAINING=$((DEADLINE - NOW))
@@ -167,7 +183,8 @@ jobs:
             if [ $NOW -ge $DEADLINE ]; then
               echo ""
               echo "⏰ 5h 30m reached → restarting workflow"
-              gh workflow run "${{ github.workflow }}" --repo "${{ github.repository }}" --ref "${{ github.ref_name }}"
+              export GH_TOKEN="${{ github.token }}"
+              gh workflow run "${{ github.workflow }}" --repo "${{ github.repository }}" --ref "${{ github.ref_name }}" >/dev/null 2>&1
               echo "✅ Restart triggered"
               exit 0
             fi
