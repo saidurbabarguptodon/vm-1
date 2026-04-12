@@ -7,7 +7,7 @@ const path = require('path');
 const { createHeader, getHeader } = require('./firebase');
 
 // ===============================
-// 2. CREATE HEADER DOCUMENT (run once on server start)
+// 2. CREATE HEADER DOCUMENT
 // ===============================
 createHeader().catch(console.error);
 
