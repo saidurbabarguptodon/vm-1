@@ -14,11 +14,19 @@
   <style>
     /* VARIABLES */
     :root {
-      --bg-dark: #05050A;
-      --header-bg: rgba(8, 8, 12, 0.85);
-      --purple-glow: #A855F7;
+      /* Converted to a deep, dark violet background */
+      --bg-dark: #090014; 
+      
+      /* Tinted the header glass to match the violet theme */
+      --header-bg: rgba(12, 0, 26, 0.85); 
+      
+      /* Your requested color */
+      --primary-violet: #7F00FF; 
+      
       --text-light: #EDEDF2;
-      --gradient-1: linear-gradient(135deg, #8B5CF6 0%, #C084FC 100%);
+      
+      /* Updated gradient to use your exact hex code */
+      --gradient-1: linear-gradient(135deg, #7F00FF 0%, #B266FF 100%);
     }
 
     /* RESET */
@@ -58,34 +66,36 @@
       background: var(--header-bg);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(139, 92, 246, 0.15);
+      
+      /* Border using the RGB of #7F00FF (127, 0, 255) at 25% opacity */
+      border-bottom: 1px solid rgba(127, 0, 255, 0.25);
+      
       position: sticky;
       top: 0;
       z-index: 100;
     }
 
-    /* ADDED: Ultra-Soft, Non-Solid Ambient Glow */
+    /* ULTRA-SOFT AMBIENT GLOW USING #7F00FF */
     .header::after {
       content: "";
       position: absolute;
-      top: 100%; /* Originates exactly at the bottom border line */
+      top: 100%;
       left: 50%;
       transform: translateX(-50%);
       
-      /* Very wide and deep to allow for an ultra-soft fade */
       width: 100vw; 
       max-width: 700px; 
       height: 300px; 
       
-      /* Pure gradient: No hard shapes, no solid geometry, 100% smooth light */
+      /* Pure gradient powered by #7F00FF (RGB: 127, 0, 255) */
       background: radial-gradient(
         50% 100% at 50% 0%, 
-        rgba(107, 33, 168, 0.6) 0%,   /* Rich, dark purple core */
-        rgba(126, 34, 206, 0.15) 50%, /* Highly diffused middle */
-        transparent 100%              /* Fades completely out with zero edges */
+        rgba(127, 0, 255, 0.45) 0%,   /* Vibrant core */
+        rgba(127, 0, 255, 0.12) 50%,  /* Highly diffused middle */
+        transparent 100%              /* Fades completely out */
       );
       
-      z-index: -1; /* Tucked behind so it doesn't overlap header glass */
+      z-index: -1;
       pointer-events: none;
     }
 
@@ -93,7 +103,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      height: 36px; /* Container height */
+      height: 36px;
     }
     .header-logo img {
       height: 100%;
@@ -102,7 +112,7 @@
     }
     .header-alticon {
       font-size: 1.4rem;
-      color: var(--purple-glow);
+      color: var(--primary-violet);
     }
     .header-alttext {
       font-size: 1.5rem;
