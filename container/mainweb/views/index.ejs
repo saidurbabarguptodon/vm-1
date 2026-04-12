@@ -70,12 +70,10 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      
-      /* ADDED: Deep drop-shadow to separate header from the background */
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.5);
     }
 
-    /* ✦ MULTI-COLOR AURORA GLOW (Untouched) ✦ */
+    /* ✦ MULTI-COLOR AURORA GLOW ✦ */
     .header::after {
       content: "";
       position: absolute;
@@ -148,18 +146,17 @@
       color: var(--text-light); 
     }
 
-    /* ✦ SIDEBAR OVERLAY (Freezes Page & Prevents Misclicks) ✦ */
+    /* ✦ SIDEBAR OVERLAY ✦ */
     .sidebar-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.7); /* Slightly darker to emphasize freezing */
+      background: rgba(0, 0, 0, 0.7); 
       backdrop-filter: blur(5px);
       -webkit-backdrop-filter: blur(5px);
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
       z-index: 998; 
-      /* Ensures clicking the background only interacts with the overlay */
       cursor: pointer; 
     }
     .sidebar-overlay.active {
@@ -171,8 +168,13 @@
     .sidebar {
       position: fixed;
       top: 0;
+      bottom: 0; /* Anchors it cleanly */
       left: 0;
-      height: 100vh;
+      
+      /* FIXED HEIGHT: 100dvh forces it to respect the mobile system navbar exactly */
+      height: 100vh; /* Fallback for very old browsers */
+      height: 100dvh; 
+      
       width: 320px;
       max-width: 85vw; 
       background: var(--sidebar-bg);
@@ -180,15 +182,16 @@
       display: flex;
       flex-direction: column;
       
-      /* ADDED: Rounded Right Corners */
       border-top-right-radius: 24px;
       border-bottom-right-radius: 24px;
       
-      /* ADDED: Visible edge highlights to make corners pop */
       border-right: 1px solid rgba(139, 92, 246, 0.35); 
+      
+      /* ADDED: "Full Weight" Shadow */
       box-shadow: 
-        15px 0 40px rgba(0, 0, 0, 0.7), /* Strong outer shadow */
-        inset -2px 0 15px rgba(139, 92, 246, 0.1); /* Subtle inner purple glow on edge */
+        30px 0 60px rgba(0, 0, 0, 0.95), /* Massive dark spread */
+        8px 0 20px rgba(0, 0, 0, 1),     /* Intense black core right at the edge */
+        inset -2px 0 15px rgba(139, 92, 246, 0.15); /* Purple inner edge highlight */
       
       transform: translateX(-100%);
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
@@ -235,13 +238,14 @@
 
     .sidebar-footer {
       padding: 24px;
+      /* Ensures content in footer isn't hidden by system UI */
+      padding-bottom: calc(24px + env(safe-area-inset-bottom)); 
       border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
     
-    /* Utility class to freeze body completely */
     body.menu-open {
       overflow: hidden;
-      touch-action: none; /* Disables mobile swipe gestures on the body */
+      touch-action: none; 
     }
   </style>
 </head>
@@ -322,27 +326,20 @@
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
 
-    // Function to open sidebar
     function openSidebar() {
       sidebar.classList.add('active');
       overlay.classList.add('active');
-      // Freezes background to prevent misclicks/scrolling
       document.body.classList.add('menu-open'); 
     }
 
-    // Function to close sidebar
     function closeSidebar() {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
-      // Unfreezes background
       document.body.classList.remove('menu-open'); 
     }
 
-    // Event Listeners
     openBtn.addEventListener('click', openSidebar);
     closeBtn.addEventListener('click', closeSidebar);
-    
-    // Clicking the dark overlay safely closes the menu without clicking anything behind it
     overlay.addEventListener('click', closeSidebar); 
   </script>
 
