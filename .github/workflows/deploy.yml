@@ -1,7 +1,8 @@
 name: Deploy VM-1
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:   # ← ONLY manual start
+
 permissions:
   actions: write
   contents: read
@@ -22,7 +23,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup (Sync + PM2 + Cloudflare + Static Server + Cleanup)
+      - name: Setup (Sync + PM2 + Cloudflare + Cleanup)
         run: |
           set -e
           echo "=== Setup started ==="
@@ -73,10 +74,6 @@ jobs:
           sudo cloudflared service install "${{ secrets.CLOUDFLARE_TOKEN }}"
           sleep 3
           systemctl is-active --quiet cloudflared && echo "✓ Cloudflare Tunnel running" || { echo "✗ Cloudflare Tunnel failed"; exit 1; }
-
-          # Static status server
-          echo "Starting status server on port 8080..."
-          sudo nohup python3 -m http.server 8080 --directory /tmp > /tmp/httpserver.log 2>&1 &
 
           # Cleanup old runs
           echo "Cleaning up old workflow runs..."
@@ -162,17 +159,7 @@ jobs:
             REMAINING=$((DEADLINE - NOW))
             [ $REMAINING -lt 0 ] && REMAINING=0
 
-            cat <<EOF | sudo tee /tmp/restart_status.json > /dev/null
-{
-  "deadline_unix": $DEADLINE,
-  "deadline_iso": "$(date -Iseconds -d @$DEADLINE)",
-  "remaining_seconds": $REMAINING,
-  "remaining_minutes": $((REMAINING / 60)),
-  "human": "$((REMAINING / 3600))h $(( (REMAINING % 3600) / 60 ))m $((REMAINING % 60))s",
-  "last_updated": "$(date -Iseconds)"
-}
-EOF
-
+            # Progress dots every 30 seconds
             if [ $((NOW % 30)) -eq 0 ] && [ $NOW -ne $LAST_DOT ]; then
               echo -n "."
               LAST_DOT=$NOW
