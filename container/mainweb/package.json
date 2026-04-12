@@ -1,19 +1,17 @@
 {
-  "name": "KexCloud landing",
+  "name": "mainweb",
   "version": "1.0.0",
-  "description": "",
+  "description": "Node.js Express server",
   "main": "server.js",
-  "type": "module",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
   "dependencies": {
-    "express": "^4.21.0",
-    "ejs": "^3.1.10",
-    "firebase": "^11.0.0",
-    "firebase-admin": "^12.0.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "firebase-admin": "^12.7.0",
+    "ejs": "^3.1.10"
   },
   "engines": {
     "node": ">=18"
