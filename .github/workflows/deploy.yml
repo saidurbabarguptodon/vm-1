@@ -23,49 +23,49 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup (Sync + PM2 + Cloudflare + Cleanup)
+      - name: Setup (Sync + App + Cloudflare + Cleanup)
         run: |
           set -e
-          echo "=== Setup started ==="
-          echo "Current repo contents:"
-          ls -la
 
-          # Sync container folder
-          echo "Syncing container/ to /root/container..."
+          # 1. Create target directory and sync container/ from repo
           sudo mkdir -p /root/container
+          echo "=== Syncing container/ ==="
           if [ -d "container" ]; then
-            echo "container/ folder found. Contents:"
             ls -la container/
-            sudo rsync -av --delete container/ /root/container/
-            echo "✓ Rsync completed"
-            echo "Destination contents:"
-            sudo ls -la /root/container/
+            sudo rsync -av --delete container/ /root/container/ >/dev/null
           else
-            echo "✗ container/ folder NOT found in repo root!"
-            pwd
-            ls -la
-            exit 1
+            echo "⚠ container/ not found – creating empty target"
           fi
 
-          # Start Node.js app with PM2
-          if [ -f "container/server.js" ] && [ -f "container/package.json" ]; then
-            echo "Starting Node.js app with PM2..."
-            sudo bash -c '
-              cd /root/container
-              npm install --silent
-              npm install -g pm2 --silent
-              pm2 delete mainweb 2>/dev/null || true
-              pm2 start server.js --name mainweb
-              pm2 save
+          # 2. Handle mainweb application
+          MAINWEB_DIR="/root/container/mainweb"
+          echo "=== Checking mainweb app ==="
+          if [ -d "$MAINWEB_DIR" ]; then
+            ls -la "$MAINWEB_DIR"
+            if [ -f "$MAINWEB_DIR/index.js" ]; then
+              echo "Starting mainweb with PM2..."
+              sudo bash -c "
+                cd $MAINWEB_DIR
+                npm install --silent
+                npm install -g pm2 --silent
+                pm2 delete mainweb 2>/dev/null || true
+                pm2 start index.js --name mainweb
+                pm2 save
+              "
               pm2 list
-              echo "✓ PM2 app started (mainweb)"
-            '
+            else
+              echo "ℹ index.js not found – skipping PM2 start"
+              if [ -f "$MAINWEB_DIR/package.json" ]; then
+                echo "Installing npm dependencies..."
+                sudo bash -c "cd $MAINWEB_DIR && npm install --silent"
+              fi
+            fi
           else
-            echo "⚠ server.js or package.json not found – skipping PM2"
+            echo "ℹ /root/container/mainweb/ does not exist – skipping app setup"
           fi
 
-          # Cloudflare Tunnel
-          echo "Setting up Cloudflare Tunnel..."
+          # 3. Cloudflare Tunnel setup (unchanged)
+          echo "=== Setting up Cloudflare Tunnel ==="
           [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ] && { echo "✗ CLOUDFLARE_TOKEN missing"; exit 1; }
           sudo mkdir -p /usr/share/keyrings
           curl -fsSL https://pkg.cloudflare.com/cloudflare-public-v2.gpg | sudo tee /usr/share/keyrings/cloudflare-public-v2.gpg >/dev/null
@@ -75,19 +75,19 @@ jobs:
           sleep 3
           systemctl is-active --quiet cloudflared && echo "✓ Cloudflare Tunnel running" || { echo "✗ Cloudflare Tunnel failed"; exit 1; }
 
-          # Cleanup old runs
-          echo "Cleaning up old workflow runs..."
+          # 4. Cleanup old workflow runs (unchanged)
+          echo "=== Cleaning old workflow runs ==="
           sudo apt-get install -y jq
-          OLD_RUNS=\( (gh run list --workflow " \){{ github.workflow }}" --repo "${{ github.repository }}" --limit 100 --json databaseId \
+          OLD_RUNS=$(gh run list --workflow "${{ github.workflow }}" --repo "${{ github.repository }}" --limit 100 --json databaseId \
             | jq -r --arg current "${{ github.run_id }}" '.[]? | select((.databaseId|tostring)!=$current) | .databaseId')
           if [ -n "$OLD_RUNS" ]; then
-            echo "\( OLD_RUNS" | xargs -r -I {} gh run delete {} --repo " \){{ github.repository }}"
+            echo "$OLD_RUNS" | xargs -r -I {} gh run delete {} --repo "${{ github.repository }}"
             echo "✓ Old runs deleted"
           else
             echo "✓ No old runs to delete"
           fi
 
-          echo "=== Setup completed successfully ==="
+          echo "=== Setup completed ==="
 
       - name: Install SSH and set hostname
         run: |
@@ -107,7 +107,7 @@ jobs:
             echo "ℹ TAILSCALE_API_KEY not set, skipping"
           else
             sudo apt-get update -qq && sudo apt-get install -y jq curl
-            DEVICE_ID=\( (curl -s -u " \){{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" \
+            DEVICE_ID=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" \
               | jq -r --arg name "${{ env.VM_NAME }}" '.devices[]? | select(.hostname==$name) | .nodeId // .id' | head -n1)
             if [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ]; then
               curl -s -X DELETE -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/device/$DEVICE_ID"
@@ -121,12 +121,12 @@ jobs:
         run: |
           [ -z "${{ secrets.TAILSCALE_AUTHKEY }}" ] && { echo "✗ TAILSCALE_AUTHKEY missing"; exit 1; }
           curl -fsSL https://tailscale.com/install.sh | sh
-          sudo tailscale up --authkey="\( {{ secrets.TAILSCALE_AUTHKEY }}" --hostname=" \){{ env.VM_NAME }}" --accept-routes --reset --ssh
+          sudo tailscale up --authkey="${{ secrets.TAILSCALE_AUTHKEY }}" --hostname="${{ env.VM_NAME }}" --accept-routes --reset --ssh
           sleep 3
           sudo tailscale status --json | jq -r '.Self | "✓ Tailscale connected as \(.Hostname) (\(.TailscaleIPs[0]))"'
 
-          if [ -n "\( {{ secrets.TAILSCALE_STATIC_IP }}" ] && [ -n " \){{ secrets.TAILSCALE_API_KEY }}" ]; then
-            DEVICE_ID=\( (curl -s -u " \){{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" \
+          if [ -n "${{ secrets.TAILSCALE_STATIC_IP }}" ] && [ -n "${{ secrets.TAILSCALE_API_KEY }}" ]; then
+            DEVICE_ID=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" \
               | jq -r --arg name "${{ env.VM_NAME }}" '.devices[]? | select(.hostname==$name) | .nodeId // .id' | head -n1)
             if [ -n "$DEVICE_ID" ] && [ "$DEVICE_ID" != "null" ]; then
               curl -s -X POST "https://api.tailscale.com/api/v2/device/$DEVICE_ID/ip" \
@@ -159,7 +159,6 @@ jobs:
             REMAINING=$((DEADLINE - NOW))
             [ $REMAINING -lt 0 ] && REMAINING=0
 
-            # Progress dots every 30 seconds
             if [ $((NOW % 30)) -eq 0 ] && [ $NOW -ne $LAST_DOT ]; then
               echo -n "."
               LAST_DOT=$NOW
@@ -168,7 +167,7 @@ jobs:
             if [ $NOW -ge $DEADLINE ]; then
               echo ""
               echo "⏰ 5h 30m reached → restarting workflow"
-              gh workflow run "\( {{ github.workflow }}" --repo " \){{ github.repository }}" --ref "${{ github.ref_name }}"
+              gh workflow run "${{ github.workflow }}" --repo "${{ github.repository }}" --ref "${{ github.ref_name }}"
               echo "✅ Restart triggered"
               exit 0
             fi
