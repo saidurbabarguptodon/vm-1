@@ -16,14 +16,14 @@
     :root {
       --bg-dark: #05050A; 
       --header-bg: rgba(5, 5, 10, 0.65); 
-      --sidebar-bg: #0A0A14; /* Slightly lighter than pure background for depth */
+      --sidebar-bg: #0A0A14; 
       --header-border: rgba(139, 92, 246, 0.15); 
       
       --accent-violet: #8B5CF6; 
       --accent-blue: #3B82F6;   
       
       --text-light: #F8FAFC;
-      --text-muted: #94A3B8;
+      --text-muted: #94A3B8; /* Premium Slate Gray used for elements */
       
       --gradient-logo: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
     }
@@ -124,11 +124,12 @@
       letter-spacing: -0.5px;
     }
 
-    /* ✦ HAMBURGER BUTTON (RIGHT SIDE) ✦ */
+    /* ✦ HAMBURGER BUTTON (OPEN) ✦ */
     .menu-toggle-btn {
       background: transparent;
       border: none;
-      color: var(--text-light);
+      /* Set to gray */
+      color: var(--text-muted); 
       font-size: 1.4rem;
       cursor: pointer;
       display: flex;
@@ -138,12 +139,12 @@
       height: 40px;
       border-radius: 8px;
       transition: all 0.2s ease;
-      /* Shifts right slightly to align with container edge nicely */
       margin-right: -8px; 
     }
     .menu-toggle-btn:hover {
-      background: rgba(139, 92, 246, 0.15);
-      color: var(--accent-violet);
+      background: rgba(255, 255, 255, 0.08);
+      /* Brightens up nicely on hover */
+      color: var(--text-light); 
     }
 
     /* ✦ SIDEBAR OVERLAY ✦ */
@@ -156,7 +157,7 @@
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
-      z-index: 998; /* Just below the sidebar */
+      z-index: 998; 
     }
     .sidebar-overlay.active {
       opacity: 1;
@@ -170,7 +171,7 @@
       left: 0;
       height: 100vh;
       width: 320px;
-      max-width: 85vw; /* Prevents taking up full screen on very small phones */
+      max-width: 85vw; 
       background: var(--sidebar-bg);
       border-right: 1px solid var(--header-border);
       box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
@@ -178,29 +179,29 @@
       display: flex;
       flex-direction: column;
       
-      /* Start entirely off-screen to the left */
       transform: translateX(-100%);
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Smooth premium ease */
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
     }
     .sidebar.active {
-      /* Slide into view */
       transform: translateX(0);
     }
 
     /* SIDEBAR SECTIONS */
     .sidebar-header {
       display: flex;
-      justify-content: flex-end; /* Puts close button on the right */
+      justify-content: flex-end; 
       align-items: center;
       padding: 20px 24px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      height: 73px; /* roughly matches main header height */
+      height: 73px; 
     }
     
+    /* ✦ HAMBURGER BUTTON (CLOSE) ✦ */
     .sidebar-close-btn {
       background: transparent;
       border: none;
-      color: var(--text-muted);
+      /* Set to gray */
+      color: var(--text-muted); 
       font-size: 1.5rem;
       cursor: pointer;
       width: 36px;
@@ -213,13 +214,14 @@
     }
     .sidebar-close-btn:hover {
       background: rgba(255, 255, 255, 0.08);
-      color: var(--text-light);
+      /* Brightens up nicely on hover */
+      color: var(--text-light); 
     }
 
     .sidebar-body {
-      flex: 1; /* Takes up all remaining middle space */
+      flex: 1; 
       padding: 24px;
-      overflow-y: auto; /* Allows scrolling if menu gets too long */
+      overflow-y: auto; 
     }
 
     .sidebar-footer {
@@ -309,20 +311,20 @@
     function openSidebar() {
       sidebar.classList.add('active');
       overlay.classList.add('active');
-      document.body.style.overflow = 'hidden'; // Prevents background scrolling when open
+      document.body.style.overflow = 'hidden'; 
     }
 
     // Function to close sidebar
     function closeSidebar() {
       sidebar.classList.remove('active');
       overlay.classList.remove('active');
-      document.body.style.overflow = ''; // Restores scrolling
+      document.body.style.overflow = ''; 
     }
 
     // Event Listeners
     openBtn.addEventListener('click', openSidebar);
     closeBtn.addEventListener('click', closeSidebar);
-    overlay.addEventListener('click', closeSidebar); // Clicking outside the menu closes it
+    overlay.addEventListener('click', closeSidebar); 
   </script>
 
 </body>
