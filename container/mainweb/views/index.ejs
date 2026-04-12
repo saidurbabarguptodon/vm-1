@@ -64,33 +64,28 @@
       z-index: 100;
     }
 
-    /* ADDED: Park Lamp Cone Glow */
+    /* ADDED: Ultra-Soft, Non-Solid Ambient Glow */
     .header::after {
       content: "";
       position: absolute;
-      top: calc(100% - 1px); /* Tucked just 1px behind the bottom edge */
+      top: 100%; /* Originates exactly at the bottom border line */
       left: 50%;
       transform: translateX(-50%);
       
-      width: 180px; /* Width of the beam at the very bottom */
-      height: 75px; /* Short height so it doesn't take up the whole screen */
+      /* Very wide and deep to allow for an ultra-soft fade */
+      width: 100vw; 
+      max-width: 700px; 
+      height: 300px; 
       
-      /* Cuts the rectangle into a cone/pyramid shape (narrow top, wide bottom) */
-      clip-path: polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%);
-      
-      /* Dark purple fading to transparent, mimicking real light falloff */
-      background: linear-gradient(
-        to bottom, 
-        rgba(76, 29, 149, 0.95) 0%, 
-        rgba(76, 29, 149, 0.3) 60%, 
-        transparent 100%
+      /* Pure gradient: No hard shapes, no solid geometry, 100% smooth light */
+      background: radial-gradient(
+        50% 100% at 50% 0%, 
+        rgba(107, 33, 168, 0.6) 0%,   /* Rich, dark purple core */
+        rgba(126, 34, 206, 0.15) 50%, /* Highly diffused middle */
+        transparent 100%              /* Fades completely out with zero edges */
       );
       
-      /* Softens the sharp geometric lines into soft, rounded bottom corners */
-      filter: blur(5px);
-      -webkit-filter: blur(5px);
-      
-      z-index: -1; /* Stays hidden nicely behind the header */
+      z-index: -1; /* Tucked behind so it doesn't overlap header glass */
       pointer-events: none;
     }
 
