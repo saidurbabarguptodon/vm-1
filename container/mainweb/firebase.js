@@ -36,7 +36,6 @@ const db = admin.firestore();
 // 4. HEADER DOCUMENT (web/header)
 // ===============================
 const headerDoc = {
-  // Create the document if it doesn't exist
   async create() {
     try {
       const docRef = db.collection('web').doc('header');
@@ -67,34 +66,33 @@ const headerDoc = {
 };
 
 // ===============================
-// 5. HAMBURGER DOCUMENT (web/hamburger)
+// 5. HAMBURGER HEADER DOCUMENT (web/hamburger/header)
 // ===============================
-const hamburgerDoc = {
-  // Create the document if it doesn't exist
+const hamburgerHeaderDoc = {
   async create() {
     try {
-      const docRef = db.collection('web').doc('hamburger');
+      const docRef = db.collection('web').doc('hamburger/header');
       const doc = await docRef.get();
       if (!doc.exists) {
         await docRef.set({ logourl: "", alticon: "", alttext: "" });
-        console.log(`✅ Hamburger document created at web/hamburger`);
+        console.log(`✅ Hamburger header created at web/hamburger/header`);
       } else {
         const data = doc.data();
-        console.log(`ℹ️ Hamburger document already exists at web/hamburger:`, data);
+        console.log(`ℹ️ Hamburger header already exists at web/hamburger/header:`, data);
       }
     } catch (err) {
-      console.error("Error in hamburger.create:", err);
+      console.error("Error in hamburgerHeader.create:", err);
     }
   },
 
   // Retrieve the document data
   async get() {
     try {
-      const docRef = db.collection('web').doc('hamburger');
+      const docRef = db.collection('web').doc('hamburger/header');
       const doc = await docRef.get();
       return doc.exists ? doc.data() : { logourl: "", alticon: "", alttext: "" };
     } catch (err) {
-      console.error("Error in hamburger.get:", err);
+      console.error("Error in hamburgerHeader.get:", err);
       return { logourl: "", alticon: "", alttext: "" };
     }
   }
@@ -105,7 +103,7 @@ const hamburgerDoc = {
 // ===============================
 async function initializeFirestore() {
   await headerDoc.create();
-  await hamburgerDoc.create();
+  await hamburgerHeaderDoc.create();
 }
 
 // ===============================
@@ -114,5 +112,5 @@ async function initializeFirestore() {
 module.exports = {
   initializeFirestore,
   getHeader: headerDoc.get,
-  getHamburger: hamburgerDoc.get
+  getHamburger: hamburgerHeaderDoc.get
 };
