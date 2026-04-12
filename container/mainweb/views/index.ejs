@@ -59,7 +59,7 @@
       padding: 10px 0; 
     }
 
-    /* ✦ HEADER GLASS & ENHANCED DIVIDER HR ✦ */
+    /* ✦ HEADER GLASS & DIVIDER HR ✦ */
     .header {
       width: 100%;
       background: var(--header-bg);
@@ -69,29 +69,25 @@
       top: 0;
       z-index: 100;
       
-      /* Glowing purple divider line */
       border-bottom: 1px solid rgba(168, 85, 247, 0.3);
-      
-      /* Downward header shadow to separate the nav from the body */
       box-shadow: 0 10px 20px -10px rgba(139, 92, 246, 0.35);
     }
 
-    /* ✦ REFINED & CONTAINED AURORA GLOW ✦ */
+    /* ✦ BALANCED AURORA GLOW ✦ */
     .header::after {
       content: "";
       position: absolute;
       top: 100%;
       left: 0;
       width: 100%; 
-      /* Reduced height from 350px down to 150px to prevent flooding the screen */
-      height: 150px; 
+      /* Height increased to 240px: Gives it a beautiful, visible drop without flooding the body */
+      height: 240px; 
       
-      /* Shaped into a contained ellipse that gracefully fades out */
       background: radial-gradient(
-        ellipse 60% 100% at 50% 0%, 
-        rgba(139, 92, 246, 0.15) 0%,   
-        rgba(59, 130, 246, 0.05) 60%,  
-        transparent 100%               
+        ellipse 80% 100% at 50% 0%, 
+        rgba(139, 92, 246, 0.22) 0%,   /* Vivid violet core */
+        rgba(59, 130, 246, 0.08) 55%,  /* Electric blue mid-fade */
+        transparent 100%               /* Clean fade to black */
       );
       
       z-index: -1;
@@ -113,7 +109,6 @@
       height: 100%;
       width: auto; 
       object-fit: contain;
-      /* Removed heavy drop-shadow from image to ensure clean white backgrounds */
     }
     .header-alticon {
       font-size: 1.6rem; 
@@ -145,6 +140,13 @@
       border-radius: 8px;
       transition: all 0.2s ease;
       margin-right: -8px; 
+    }
+    .menu-toggle-btn i {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    /* Add a smooth scale interaction when clicked */
+    .menu-toggle-btn:active i {
+      transform: scale(0.7);
     }
     .menu-toggle-btn:hover {
       background: rgba(255, 255, 255, 0.08);
@@ -190,7 +192,6 @@
       border-bottom-right-radius: 24px;
       border-right: 1px solid rgba(139, 92, 246, 0.35); 
       
-      /* Set to no shadow initially so it doesn't bleed onto the screen when hidden */
       box-shadow: none;
       
       transform: translateX(-100%);
@@ -198,11 +199,34 @@
     }
     .sidebar.active {
       transform: translateX(0);
-      /* Massive shadow ONLY activates when the menu is opened */
       box-shadow: 
         30px 0 60px rgba(0, 0, 0, 0.95), 
         8px 0 20px rgba(0, 0, 0, 1),     
         inset -2px 0 15px rgba(139, 92, 246, 0.15); 
+    }
+
+    /* ✦ SIDEBAR ENTRANCE ANIMATIONS (Staggered Fade/Slide Up) ✦ */
+    .sidebar-header, .sidebar-body, .sidebar-footer {
+      opacity: 0;
+      transform: translateY(15px); /* Start slightly lower */
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    /* When sidebar is active, trigger these sections to slide up & fade in one by one */
+    .sidebar.active .sidebar-header {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.1s; /* Quickest */
+    }
+    .sidebar.active .sidebar-body {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.18s; /* Slight delay */
+    }
+    .sidebar.active .sidebar-footer {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.26s; /* Last to load in */
     }
 
     /* SIDEBAR SECTIONS */
@@ -229,6 +253,13 @@
       align-items: center;
       justify-content: center;
       transition: all 0.2s ease;
+    }
+    .sidebar-close-btn i {
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    /* Spin animation when the menu opens */
+    .sidebar.active .sidebar-close-btn i {
+      transform: rotate(90deg);
     }
     .sidebar-close-btn:hover {
       background: rgba(255, 255, 255, 0.08);
