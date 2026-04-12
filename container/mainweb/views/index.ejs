@@ -310,10 +310,23 @@
   <header class="header">
     <div class="container">
       <nav class="navbar">
-        <!-- LOGO (Left) -->
+        <!-- LOGO (Left) — Dynamic DB fetch with fallback -->
         <a href="/" class="header-logo" id="header-logo-container">
-          <i class="fa-solid fa-cloud header-alticon" id="header-alticon"></i>
-          <span class="header-alttext" id="header-alttext">KexCloud</span>
+          <% if (header.logourl && header.logourl !== "") { %>
+            <img 
+              src="<%= header.logourl %>" 
+              alt="Logo" 
+              id="header-logo-img"
+              onerror="this.onerror=null; fallbackToIconMode()"
+            >
+          <% } else { %>
+            <% if (header.alticon && header.alticon !== "") { %>
+              <i class="<%= header.alticon %> header-alticon" id="header-alticon"></i>
+            <% } %>
+            <% if (header.alttext && header.alttext !== "") { %>
+              <span class="header-alttext" id="header-alttext"><%= header.alttext %></span>
+            <% } %>
+          <% } %>
         </a>
 
         <!-- HAMBURGER BUTTON (Right) -->
@@ -353,6 +366,20 @@
   </div>
 
   <script>
+    /* ✦ LOGO FALLBACK LOGIC — Restored from original DB fetch system ✦ */
+    function fallbackToIconMode() {
+      const container = document.getElementById('header-logo-container');
+      if (!container) return;
+      
+      const alticon = '<%= header.alticon && header.alticon !== "" ? header.alticon : "" %>';
+      const alttext = '<%= header.alttext && header.alttext !== "" ? header.alttext : "" %>';
+      
+      const iconHtml = alticon !== "" ? `<i class="${alticon} header-alticon"></i>` : "";
+      const textHtml = alttext !== "" ? `<span class="header-alttext">${alttext}</span>` : "";
+      
+      container.innerHTML = iconHtml + textHtml;
+    }
+
     /* ✦ SIDEBAR MENU LOGIC ✦ */
     const openBtn = document.getElementById('open-sidebar');
     const closeBtn = document.getElementById('close-sidebar');
