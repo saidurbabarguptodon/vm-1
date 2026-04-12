@@ -65,42 +65,38 @@ const headerDoc = {
 };
 
 // ===============================
-// 5. HAMBURGER HEADER DOCUMENT (web/hamburger/header)
+// 5. HAMBURGER DOCUMENT (web/hamburger) with header map field
 // ===============================
-const hamburgerHeaderDoc = {
+const hamburgerDoc = {
   async create() {
     try {
-      const docRef = db
-        .collection('web')
-        .doc('hamburger')
-        .collection('header')
-        .doc('data');
-      
+      const docRef = db.collection('web').doc('hamburger');
       const doc = await docRef.get();
       if (!doc.exists) {
-        await docRef.set({ logourl: "", alticon: "", alttext: "" });
-        console.log(`✅ Hamburger header created at web/hamburger/header/data`);
+        await docRef.set({
+          header: { logourl: "", alticon: "", alttext: "" }
+        });
+        console.log(`✅ Hamburger document created at web/hamburger with header map`);
       } else {
         const data = doc.data();
-        console.log(`ℹ️ Hamburger header already exists at web/hamburger/header/data:`, data);
+        console.log(`ℹ️ Hamburger document already exists at web/hamburger:`, data);
       }
     } catch (err) {
-      console.error("Error in hamburgerHeader.create:", err);
+      console.error("Error in hamburger.create:", err);
     }
   },
 
   async get() {
     try {
-      const docRef = db
-        .collection('web')
-        .doc('hamburger')
-        .collection('header')
-        .doc('data');
-      
+      const docRef = db.collection('web').doc('hamburger');
       const doc = await docRef.get();
-      return doc.exists ? doc.data() : { logourl: "", alticon: "", alttext: "" };
+      if (doc.exists) {
+        const data = doc.data();
+        return data.header || { logourl: "", alticon: "", alttext: "" };
+      }
+      return { logourl: "", alticon: "", alttext: "" };
     } catch (err) {
-      console.error("Error in hamburgerHeader.get:", err);
+      console.error("Error in hamburger.get:", err);
       return { logourl: "", alticon: "", alttext: "" };
     }
   }
@@ -111,7 +107,7 @@ const hamburgerHeaderDoc = {
 // ===============================
 async function initializeFirestore() {
   await headerDoc.create();
-  await hamburgerHeaderDoc.create();
+  await hamburgerDoc.create();
 }
 
 // ===============================
@@ -120,5 +116,5 @@ async function initializeFirestore() {
 module.exports = {
   initializeFirestore,
   getHeader: headerDoc.get,
-  getHamburger: hamburgerHeaderDoc.get
+  getHamburger: hamburgerDoc.get
 };
