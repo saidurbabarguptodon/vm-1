@@ -4,12 +4,12 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const { createHeader, getHeader } = require('./firebase');
+const { initializeFirestore, getHeader, getHamburger } = require('./firebase');
 
 // ===============================
-// 2. CREATE HEADER DOCUMENT
+// 2. INITIALIZE FIRESTORE DOCUMENTS
 // ===============================
-createHeader().catch(console.error);
+initializeFirestore().catch(console.error);
 
 // ===============================
 // 3. EXPRESS SETUP
@@ -29,7 +29,8 @@ app.use(express.static('public'));
 app.get('/', async (req, res) => {
   try {
     const header = await getHeader();
-    res.render('index', { header });
+    const hamburger = await getHamburger();
+    res.render('index', { header, hamburger });
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
@@ -37,7 +38,7 @@ app.get('/', async (req, res) => {
 });
 
 // ===============================
-// 5. START SERVER ON 0.0.0.0:7595
+// 5. START SERVER
 // ===============================
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
