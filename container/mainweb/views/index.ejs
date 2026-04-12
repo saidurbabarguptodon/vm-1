@@ -17,7 +17,6 @@
       --bg-dark: #05050A; 
       --header-bg: rgba(5, 5, 10, 0.65); 
       --sidebar-bg: #0A0A14; 
-      --header-border: rgba(139, 92, 246, 0.2); /* Slightly more visible for the divider */
       
       --accent-violet: #8B5CF6; 
       --accent-blue: #3B82F6;   
@@ -60,7 +59,7 @@
       padding: 10px 0; 
     }
 
-    /* ✦ HEADER GLASS & DIVIDER SHADOW ✦ */
+    /* ✦ HEADER GLASS & ENHANCED DIVIDER HR ✦ */
     .header {
       width: 100%;
       background: var(--header-bg);
@@ -70,12 +69,14 @@
       top: 0;
       z-index: 100;
       
-      /* ADDED: Clean dividing line & soft purple shadow below the header */
-      border-bottom: 1px solid var(--header-border);
-      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.08); /* Replaced the heavy dark shadow */
+      /* ENHANCED HR: A solid, brighter purple line to clearly divide the sections */
+      border-bottom: 1px solid rgba(168, 85, 247, 0.4);
+      
+      /* ENHANCED SHADOW: Casts a bright, wide purple glow downwards separating the header */
+      box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.5);
     }
 
-    /* ✦ MULTI-COLOR AURORA GLOW (Untouched) ✦ */
+    /* ✦ MULTI-COLOR AURORA GLOW ✦ */
     .header::after {
       content: "";
       position: absolute;
@@ -83,14 +84,16 @@
       left: 50%;
       transform: translateX(-50%);
       width: 100vw; 
-      max-width: 800px; 
       height: 350px; 
+      
+      /* FIXED: Stretched the horizontal radius to 100% so it doesn't leave dark shadows on the left/right edges */
       background: radial-gradient(
-        50% 100% at 50% 0%, 
+        100% 100% at 50% 0%, 
         rgba(139, 92, 246, 0.22) 0%,   
-        rgba(59, 130, 246, 0.08) 45%,  
+        rgba(59, 130, 246, 0.1) 70%,  
         transparent 100%               
       );
+      
       z-index: -1;
       pointer-events: none;
     }
@@ -173,7 +176,6 @@
       bottom: 0; 
       left: 0;
       
-      /* FIXED HEIGHT: 100dvh for mobile system navbar support */
       height: 100vh; 
       height: 100dvh; 
       
