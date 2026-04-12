@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>KexCloud | Premium Dark Header</title>
+  <title>KexCloud | Premium Dark Header & Menu</title>
   
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,20 +14,17 @@
   <style>
     /* ✦ PREMIUM COLOR PALETTE: "Midnight Aurora" ✦ */
     :root {
-      /* Deep Obsidian - much richer than plain black */
       --bg-dark: #05050A; 
-      
-      /* Smoked Glass Header */
       --header-bg: rgba(5, 5, 10, 0.65); 
+      --sidebar-bg: #0A0A14; /* Slightly lighter than pure background for depth */
       --header-border: rgba(139, 92, 246, 0.15); 
       
-      /* Core Accent Colors */
-      --accent-violet: #8B5CF6; /* Vibrant Purple */
-      --accent-blue: #3B82F6;   /* Electric Blue */
+      --accent-violet: #8B5CF6; 
+      --accent-blue: #3B82F6;   
       
       --text-light: #F8FAFC;
+      --text-muted: #94A3B8;
       
-      /* Premium Holographic Text Gradient */
       --gradient-logo: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
     }
 
@@ -60,14 +57,14 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0; /* Perfectly balanced padding */
+      padding: 10px 0; 
     }
 
     /* ✦ HEADER GLASS ✦ */
     .header {
       width: 100%;
       background: var(--header-bg);
-      backdrop-filter: blur(20px); /* Increased blur for higher-end frosted glass look */
+      backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--header-border);
       position: sticky;
@@ -82,19 +79,15 @@
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      
       width: 100vw; 
-      max-width: 800px; /* Widened slightly for a softer spread */
+      max-width: 800px; 
       height: 350px; 
-      
-      /* Blends from Violet to Blue to Transparent for a stunning ambient light */
       background: radial-gradient(
         50% 100% at 50% 0%, 
-        rgba(139, 92, 246, 0.22) 0%,   /* Violet Core */
-        rgba(59, 130, 246, 0.08) 45%,  /* Blue Mid-tone */
-        transparent 100%               /* Flawless fade out */
+        rgba(139, 92, 246, 0.22) 0%,   
+        rgba(59, 130, 246, 0.08) 45%,  
+        transparent 100%               
       );
-      
       z-index: -1;
       pointer-events: none;
     }
@@ -104,28 +97,23 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      height: 40px; /* Slightly refined height */
-      margin-left: -12px; /* Pulled slightly left as requested */
+      height: 40px; 
+      margin-left: -12px; 
       transition: opacity 0.2s ease;
+      text-decoration: none;
     }
-    .header-logo:hover {
-      opacity: 0.85; /* Premium hover effect */
-    }
+    .header-logo:hover { opacity: 0.85; }
     .header-logo img {
       height: 100%;
-      width: auto; /* Ensures image isn't warped */
+      width: auto; 
       object-fit: contain;
-      filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.3)); /* Adds a subtle glow behind image logos */
+      filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.3)); 
     }
-    
-    /* Icon Fallback Styling */
     .header-alticon {
       font-size: 1.6rem; 
       color: var(--accent-violet);
-      filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.5)); /* Glowing icon */
+      filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.5)); 
     }
-    
-    /* Text Fallback Styling */
     .header-alttext {
       font-size: 1.7rem; 
       font-weight: 800;
@@ -135,6 +123,109 @@
       color: transparent;
       letter-spacing: -0.5px;
     }
+
+    /* ✦ HAMBURGER BUTTON (RIGHT SIDE) ✦ */
+    .menu-toggle-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      /* Shifts right slightly to align with container edge nicely */
+      margin-right: -8px; 
+    }
+    .menu-toggle-btn:hover {
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--accent-violet);
+    }
+
+    /* ✦ SIDEBAR OVERLAY ✦ */
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 998; /* Just below the sidebar */
+    }
+    .sidebar-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* ✦ SIDEBAR MENU (LEFT TO RIGHT SLIDE) ✦ */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 320px;
+      max-width: 85vw; /* Prevents taking up full screen on very small phones */
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--header-border);
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      
+      /* Start entirely off-screen to the left */
+      transform: translateX(-100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Smooth premium ease */
+    }
+    .sidebar.active {
+      /* Slide into view */
+      transform: translateX(0);
+    }
+
+    /* SIDEBAR SECTIONS */
+    .sidebar-header {
+      display: flex;
+      justify-content: flex-end; /* Puts close button on the right */
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      height: 73px; /* roughly matches main header height */
+    }
+    
+    .sidebar-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .sidebar-close-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-light);
+    }
+
+    .sidebar-body {
+      flex: 1; /* Takes up all remaining middle space */
+      padding: 24px;
+      overflow-y: auto; /* Allows scrolling if menu gets too long */
+    }
+
+    .sidebar-footer {
+      padding: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
   </style>
 </head>
 <body>
@@ -143,7 +234,8 @@
   <header class="header">
     <div class="container">
       <nav class="navbar">
-        <div class="header-logo" id="header-logo-container">
+        <!-- LOGO (Left) -->
+        <a href="/" class="header-logo" id="header-logo-container">
           <% if (header.logourl && header.logourl !== "") { %>
             <img 
               src="<%= header.logourl %>" 
@@ -159,13 +251,41 @@
               <span class="header-alttext" id="header-alttext"><%= header.alttext %></span>
             <% } %>
           <% } %>
-        </div>
+        </a>
+
+        <!-- HAMBURGER BUTTON (Right) -->
+        <button class="menu-toggle-btn" id="open-sidebar" aria-label="Open Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
       </nav>
     </div>
   </header>
 
+  <!-- SIDEBAR OVERLAY -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- SIDEBAR MENU -->
+  <aside class="sidebar" id="sidebar">
+    <!-- SECTION 1: HEADER -->
+    <div class="sidebar-header">
+      <button class="sidebar-close-btn" id="close-sidebar" aria-label="Close Menu">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- SECTION 2: BODY -->
+    <div class="sidebar-body">
+      <!-- Empty for now, ready for navigation links -->
+    </div>
+
+    <!-- SECTION 3: FOOTER -->
+    <div class="sidebar-footer">
+      <!-- Empty for now, ready for socials/buttons -->
+    </div>
+  </aside>
+
   <script>
-    /* HEADER LOGO FALLBACK */
+    /* ✦ LOGO FALLBACK LOGIC ✦ */
     function fallbackToIconMode() {
       const container = document.getElementById('header-logo-container');
       if (!container) return;
@@ -178,6 +298,31 @@
       
       container.innerHTML = iconHtml + textHtml;
     }
+
+    /* ✦ SIDEBAR MENU LOGIC ✦ */
+    const openBtn = document.getElementById('open-sidebar');
+    const closeBtn = document.getElementById('close-sidebar');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    // Function to open sidebar
+    function openSidebar() {
+      sidebar.classList.add('active');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden'; // Prevents background scrolling when open
+    }
+
+    // Function to close sidebar
+    function closeSidebar() {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = ''; // Restores scrolling
+    }
+
+    // Event Listeners
+    openBtn.addEventListener('click', openSidebar);
+    closeBtn.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', closeSidebar); // Clicking outside the menu closes it
   </script>
 
 </body>
