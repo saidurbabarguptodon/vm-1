@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>KexCloud | Clean Dark Gray Sidebar & Slim Hamburger</title>
+  <title>KexCloud | Dynamic Header & Sidebar</title>
   
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -96,27 +96,27 @@
       pointer-events: none;
     }
 
-    /* ✦ LOGO STYLING ✦ */
-    .header-logo {
+    /* ✦ LOGO STYLING (shared) ✦ */
+    .header-logo, .sidebar-logo {
       display: flex;
       align-items: center;
       gap: 10px;
-      height: 40px; 
-      margin-left: -12px; 
       transition: opacity 0.2s ease;
       text-decoration: none;
     }
-    .header-logo:hover { opacity: 0.8; }
-    .header-logo img {
+    .header-logo { height: 40px; margin-left: -12px; }
+    .header-logo:hover, .sidebar-logo:hover { opacity: 0.8; }
+    
+    .header-logo img, .sidebar-logo img {
       height: 100%;
       width: auto; 
       object-fit: contain;
     }
-    .header-alticon {
+    .header-alticon, .sidebar-alticon {
       font-size: 1.6rem; 
       color: var(--accent-light);
     }
-    .header-alttext {
+    .header-alttext, .sidebar-alttext {
       font-size: 1.7rem; 
       font-weight: 800;
       background: var(--gradient-logo);
@@ -125,6 +125,7 @@
       color: transparent;
       letter-spacing: -0.5px;
     }
+    .sidebar-logo { height: 32px; margin-bottom: 16px; }
 
     /* ✦ SLIM HAMBURGER BUTTON — Lighter weight, no glow ✦ */
     .menu-toggle-btn {
@@ -142,16 +143,13 @@
       transition: all 0.15s ease;
       margin-right: -4px;
     }
-
     .menu-toggle-btn i {
       transition: transform 0.2s ease;
     }
-
     .menu-toggle-btn:hover {
       background: rgba(255, 255, 255, 0.06);
       color: #FFFFFF;
     }
-
     .menu-toggle-btn:active i {
       transform: scale(0.85);
     }
@@ -202,7 +200,6 @@
     }
     .sidebar.active {
       transform: translateX(0);
-      /* No box-shadow, no inset highlight */
       box-shadow: none;
     }
 
@@ -296,14 +293,14 @@
   <header class="header">
     <div class="container">
       <nav class="navbar">
-        <!-- LOGO (Left) — Dynamic DB fetch with fallback -->
+        <!-- MAIN LOGO — Dynamic from Firestore (web/header) -->
         <a href="/" class="header-logo" id="header-logo-container">
           <% if (header.logourl && header.logourl !== "") { %>
             <img 
               src="<%= header.logourl %>" 
               alt="Logo" 
               id="header-logo-img"
-              onerror="this.onerror=null; fallbackToIconMode()"
+              onerror="this.onerror=null; fallbackHeaderToIconMode()"
             >
           <% } else { %>
             <% if (header.alticon && header.alticon !== "") { %>
@@ -315,7 +312,7 @@
           <% } %>
         </a>
 
-        <!-- HAMBURGER BUTTON (Right) — Slimmer, no glow -->
+        <!-- SLIM HAMBURGER BUTTON -->
         <button class="menu-toggle-btn" id="open-sidebar" aria-label="Open Menu">
           <i class="fa-solid fa-bars"></i>
         </button>
@@ -328,16 +325,33 @@
 
   <!-- SIDEBAR MENU — Solid gray, no side glow -->
   <aside class="sidebar" id="sidebar">
-    <!-- SECTION 1: HEADER -->
+    <!-- SECTION 1: HEADER (Close button) -->
     <div class="sidebar-header">
       <button class="sidebar-close-btn" id="close-sidebar" aria-label="Close Menu">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
 
-    <!-- SECTION 2: BODY (empty for now) -->
+    <!-- SECTION 2: BODY — Contains dynamic sidebar logo from Firestore (web/hamburger) -->
     <div class="sidebar-body">
-      <!-- Navigation links can go here -->
+      <div class="sidebar-logo" id="sidebar-logo-container">
+        <% if (hamburger.logourl && hamburger.logourl !== "") { %>
+          <img 
+            src="<%= hamburger.logourl %>" 
+            alt="Sidebar Logo" 
+            id="sidebar-logo-img"
+            onerror="this.onerror=null; fallbackSidebarToIconMode()"
+          >
+        <% } else { %>
+          <% if (hamburger.alticon && hamburger.alticon !== "") { %>
+            <i class="<%= hamburger.alticon %> sidebar-alticon" id="sidebar-alticon"></i>
+          <% } %>
+          <% if (hamburger.alttext && hamburger.alttext !== "") { %>
+            <span class="sidebar-alttext" id="sidebar-alttext"><%= hamburger.alttext %></span>
+          <% } %>
+        <% } %>
+      </div>
+      <!-- Additional navigation links can go here -->
     </div>
 
     <!-- SECTION 3: FOOTER (empty for now) -->
@@ -348,12 +362,16 @@
 
   <!-- Optional demo spacer -->
   <div class="container demo-content">
-    <p style="opacity:0.5;">— Clean Dark Gray Sidebar + Slim Hamburger —</p>
+    <p style="opacity:0.5;">— Dark Gray Header + Sidebar with Dynamic Logos —</p>
   </div>
 
   <script>
-    /* ✦ LOGO FALLBACK LOGIC — Restored from original DB fetch system ✦ */
-    function fallbackToIconMode() {
+    // ===============================
+    // FALLBACK FUNCTIONS FOR LOGO IMAGES
+    // ===============================
+    
+    // Main header fallback (uses server‑side values from EJS)
+    function fallbackHeaderToIconMode() {
       const container = document.getElementById('header-logo-container');
       if (!container) return;
       
@@ -366,7 +384,23 @@
       container.innerHTML = iconHtml + textHtml;
     }
 
-    /* ✦ SIDEBAR MENU LOGIC ✦ */
+    // Sidebar fallback (uses server‑side values from EJS)
+    function fallbackSidebarToIconMode() {
+      const container = document.getElementById('sidebar-logo-container');
+      if (!container) return;
+      
+      const alticon = '<%= hamburger.alticon && hamburger.alticon !== "" ? hamburger.alticon : "" %>';
+      const alttext = '<%= hamburger.alttext && hamburger.alttext !== "" ? hamburger.alttext : "" %>';
+      
+      const iconHtml = alticon !== "" ? `<i class="${alticon} sidebar-alticon"></i>` : "";
+      const textHtml = alttext !== "" ? `<span class="sidebar-alttext">${alttext}</span>` : "";
+      
+      container.innerHTML = iconHtml + textHtml;
+    }
+
+    // ===============================
+    // SIDEBAR TOGGLE LOGIC
+    // ===============================
     const openBtn = document.getElementById('open-sidebar');
     const closeBtn = document.getElementById('close-sidebar');
     const sidebar = document.getElementById('sidebar');
