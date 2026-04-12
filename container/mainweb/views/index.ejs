@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>KexCloud | Header Only</title>
+  <title>KexCloud | Premium Dark Header</title>
   
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,16 +12,26 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* VARIABLES */
+    /* ✦ PREMIUM COLOR PALETTE: "Midnight Aurora" ✦ */
     :root {
-      --bg-dark: #090014; 
-      --header-bg: rgba(12, 0, 26, 0.85); 
-      --primary-violet: #7F00FF; 
-      --text-light: #EDEDF2;
-      --gradient-1: linear-gradient(135deg, #7F00FF 0%, #B266FF 100%);
+      /* Deep Obsidian - much richer than plain black */
+      --bg-dark: #05050A; 
+      
+      /* Smoked Glass Header */
+      --header-bg: rgba(5, 5, 10, 0.65); 
+      --header-border: rgba(139, 92, 246, 0.15); 
+      
+      /* Core Accent Colors */
+      --accent-violet: #8B5CF6; /* Vibrant Purple */
+      --accent-blue: #3B82F6;   /* Electric Blue */
+      
+      --text-light: #F8FAFC;
+      
+      /* Premium Holographic Text Gradient */
+      --gradient-logo: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
     }
 
-    /* RESET */
+    /* RESET & TYPOGRAPHY */
     * { 
       margin: 0; 
       padding: 0; 
@@ -35,6 +45,7 @@
       line-height: 1.6;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
     /* LAYOUT */
@@ -49,23 +60,22 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      /* Reduced padding from 12px to 8px to keep the header height the same even though the logo is bigger */
-      padding: 8px 0; 
+      padding: 10px 0; /* Perfectly balanced padding */
     }
 
-    /* HEADER */
+    /* ✦ HEADER GLASS ✦ */
     .header {
       width: 100%;
       background: var(--header-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(127, 0, 255, 0.25);
+      backdrop-filter: blur(20px); /* Increased blur for higher-end frosted glass look */
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--header-border);
       position: sticky;
       top: 0;
       z-index: 100;
     }
 
-    /* ULTRA-SOFT AMBIENT GLOW */
+    /* ✦ MULTI-COLOR AURORA GLOW ✦ */
     .header::after {
       content: "";
       position: absolute;
@@ -74,45 +84,52 @@
       transform: translateX(-50%);
       
       width: 100vw; 
-      max-width: 700px; 
-      height: 300px; 
+      max-width: 800px; /* Widened slightly for a softer spread */
+      height: 350px; 
       
+      /* Blends from Violet to Blue to Transparent for a stunning ambient light */
       background: radial-gradient(
         50% 100% at 50% 0%, 
-        rgba(127, 0, 255, 0.45) 0%,   
-        rgba(127, 0, 255, 0.12) 50%,  
-        transparent 100%              
+        rgba(139, 92, 246, 0.22) 0%,   /* Violet Core */
+        rgba(59, 130, 246, 0.08) 45%,  /* Blue Mid-tone */
+        transparent 100%               /* Flawless fade out */
       );
       
       z-index: -1;
       pointer-events: none;
     }
 
-    /* LOGO UPDATES */
+    /* ✦ LOGO STYLING ✦ */
     .header-logo {
       display: flex;
       align-items: center;
       gap: 10px;
-      /* Increased height from 36px to 44px for a bigger logo */
-      height: 44px; 
-      /* Shifts the logo slightly to the left beyond the normal container bounds */
-      margin-left: -12px; 
+      height: 40px; /* Slightly refined height */
+      margin-left: -12px; /* Pulled slightly left as requested */
+      transition: opacity 0.2s ease;
+    }
+    .header-logo:hover {
+      opacity: 0.85; /* Premium hover effect */
     }
     .header-logo img {
       height: 100%;
-      width: 100%;
+      width: auto; /* Ensures image isn't warped */
       object-fit: contain;
+      filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.3)); /* Adds a subtle glow behind image logos */
     }
+    
+    /* Icon Fallback Styling */
     .header-alticon {
-      /* Increased from 1.4rem to 1.7rem */
-      font-size: 1.7rem; 
-      color: var(--primary-violet);
+      font-size: 1.6rem; 
+      color: var(--accent-violet);
+      filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.5)); /* Glowing icon */
     }
+    
+    /* Text Fallback Styling */
     .header-alttext {
-      /* Increased from 1.5rem to 1.8rem */
-      font-size: 1.8rem; 
+      font-size: 1.7rem; 
       font-weight: 800;
-      background: var(--gradient-1);
+      background: var(--gradient-logo);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
@@ -148,7 +165,7 @@
   </header>
 
   <script>
-    /* HEADER */
+    /* HEADER LOGO FALLBACK */
     function fallbackToIconMode() {
       const container = document.getElementById('header-logo-container');
       if (!container) return;
