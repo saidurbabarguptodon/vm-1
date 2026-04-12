@@ -52,7 +52,6 @@ const headerDoc = {
     }
   },
 
-  // Retrieve the document data
   async get() {
     try {
       const docRef = db.collection('web').doc('header');
@@ -71,24 +70,33 @@ const headerDoc = {
 const hamburgerHeaderDoc = {
   async create() {
     try {
-      const docRef = db.collection('web').doc('hamburger/header');
+      const docRef = db
+        .collection('web')
+        .doc('hamburger')
+        .collection('header')
+        .doc('data');
+      
       const doc = await docRef.get();
       if (!doc.exists) {
         await docRef.set({ logourl: "", alticon: "", alttext: "" });
-        console.log(`✅ Hamburger header created at web/hamburger/header`);
+        console.log(`✅ Hamburger header created at web/hamburger/header/data`);
       } else {
         const data = doc.data();
-        console.log(`ℹ️ Hamburger header already exists at web/hamburger/header:`, data);
+        console.log(`ℹ️ Hamburger header already exists at web/hamburger/header/data:`, data);
       }
     } catch (err) {
       console.error("Error in hamburgerHeader.create:", err);
     }
   },
 
-  // Retrieve the document data
   async get() {
     try {
-      const docRef = db.collection('web').doc('hamburger/header');
+      const docRef = db
+        .collection('web')
+        .doc('hamburger')
+        .collection('header')
+        .doc('data');
+      
       const doc = await docRef.get();
       return doc.exists ? doc.data() : { logourl: "", alticon: "", alttext: "" };
     } catch (err) {
