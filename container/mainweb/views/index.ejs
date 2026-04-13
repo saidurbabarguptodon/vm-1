@@ -26,6 +26,9 @@
       
       --gradient-logo: linear-gradient(135deg, #E2E8F0 0%, #94A3B8 100%);
       
+      /* NEW: Gradient matching the purple/blue aurora glow */
+      --gradient-glow: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+      
       --border-light: rgba(255, 255, 255, 0.06);
       --shadow-soft: 0 10px 20px -8px rgba(0, 0, 0, 0.5);
     }
@@ -87,8 +90,8 @@
       
       background: radial-gradient(
         ellipse 80% 100% at 50% 0%,
-        rgba(139, 92, 246, 0.22) 0%,
-        rgba(59, 130, 246, 0.08) 55%,
+        rgba(139, 92, 246, 0.22) 0%, /* #8B5CF6 equivalent */
+        rgba(59, 130, 246, 0.08) 55%, /* #3B82F6 equivalent */
         transparent 100%
       );
       
@@ -112,22 +115,26 @@
       width: auto; 
       object-fit: contain;
     }
+
+    /* ✦ UPDATED: Glow gradient applied to both Alt Icon and Alt Text ✦ */
     .header-alticon, .sidebar-alticon {
       font-size: 1.6rem; 
-      color: var(--accent-light);
+      background: var(--gradient-glow);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      display: inline-block; /* Helps prevent clipping issues on FontAwesome */
     }
     .header-alttext, .sidebar-alttext {
       font-size: 1.7rem; 
       font-weight: 800;
-      background: var(--gradient-logo);
+      background: var(--gradient-glow);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
       letter-spacing: -0.5px;
     }
-    
-    /* Fixed: Removed bottom margin since it's now in the header */
-    .sidebar-logo { height: 32px; }
+    .sidebar-logo { height: 32px; margin-bottom: 16px; }
 
     /* ✦ SLIM HAMBURGER BUTTON — Lighter weight, no glow ✦ */
     .menu-toggle-btn {
@@ -231,7 +238,7 @@
     /* SIDEBAR SECTIONS */
     .sidebar-header {
       display: flex;
-      justify-content: space-between; /* Fixed: Changed from flex-end to space-between to align logo left & button right */
+      justify-content: flex-end; 
       align-items: center;
       padding: 20px 24px;
       border-bottom: 1px solid var(--border-light);
@@ -252,7 +259,6 @@
       align-items: center;
       justify-content: center;
       transition: all 0.15s ease;
-      margin-right: -10px; /* Aligns visually tighter to the edge */
     }
     .sidebar-close-btn i {
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -328,9 +334,15 @@
 
   <!-- SIDEBAR MENU — Solid gray, no side glow -->
   <aside class="sidebar" id="sidebar">
-    
-    <!-- SECTION 1: HEADER (Fixed: Moved Logo into the Header alongside the close button) -->
+    <!-- SECTION 1: HEADER (Close button) -->
     <div class="sidebar-header">
+      <button class="sidebar-close-btn" id="close-sidebar" aria-label="Close Menu">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- SECTION 2: BODY — Contains dynamic sidebar logo from Firestore (web/hamburger) -->
+    <div class="sidebar-body">
       <div class="sidebar-logo" id="sidebar-logo-container">
         <% if (hamburger.logourl && hamburger.logourl !== "") { %>
           <img 
@@ -348,15 +360,7 @@
           <% } %>
         <% } %>
       </div>
-
-      <button class="sidebar-close-btn" id="close-sidebar" aria-label="Close Menu">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <!-- SECTION 2: BODY -->
-    <div class="sidebar-body">
-      <!-- Navigation links can go here -->
+      <!-- Additional navigation links can go here -->
     </div>
 
     <!-- SECTION 3: FOOTER (empty for now) -->
