@@ -25,8 +25,6 @@
       --text-muted: #94A3B8;
       
       --gradient-logo: linear-gradient(135deg, #E2E8F0 0%, #94A3B8 100%);
-      
-      /* NEW: Gradient matching the purple/blue aurora glow */
       --gradient-glow: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
       
       --border-light: rgba(255, 255, 255, 0.06);
@@ -65,7 +63,7 @@
       padding: 10px 0; 
     }
 
-    /* ✦ HEADER — Dark gray glass, no purple on the bar itself ✦ */
+    /* ✦ HEADER ✦ */
     .header {
       width: 100%;
       background: var(--header-bg);
@@ -74,32 +72,29 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      
       border-bottom: 1px solid var(--border-light);
       box-shadow: var(--shadow-soft);
     }
 
-    /* ✦ PURPLE AURORA GLOW — Restored below the header ✦ */
+    /* ✦ PURPLE AURORA GLOW ✦ */
     .header::after {
       content: "";
       position: absolute;
       top: 100%;
       left: 0;
       width: 100%;
-      height: 240px; /* Tall visible glow */
-      
+      height: 240px; 
       background: radial-gradient(
         ellipse 80% 100% at 50% 0%,
-        rgba(139, 92, 246, 0.22) 0%, /* #8B5CF6 equivalent */
-        rgba(59, 130, 246, 0.08) 55%, /* #3B82F6 equivalent */
+        rgba(139, 92, 246, 0.22) 0%, 
+        rgba(59, 130, 246, 0.08) 55%, 
         transparent 100%
       );
-      
       z-index: -1;
       pointer-events: none;
     }
 
-    /* ✦ LOGO STYLING (shared) ✦ */
+    /* ✦ LOGO STYLING ✦ */
     .header-logo, .sidebar-logo {
       display: flex;
       align-items: center;
@@ -108,6 +103,7 @@
       text-decoration: none;
     }
     .header-logo { height: 40px; margin-left: -12px; }
+    .sidebar-logo { height: 32px; }
     .header-logo:hover, .sidebar-logo:hover { opacity: 0.8; }
     
     .header-logo img, .sidebar-logo img {
@@ -116,14 +112,14 @@
       object-fit: contain;
     }
 
-    /* ✦ UPDATED: Glow gradient applied to both Alt Icon and Alt Text ✦ */
+    /* ✦ GLOW GRADIENT FOR ICON & TEXT ✦ */
     .header-alticon, .sidebar-alticon {
       font-size: 1.6rem; 
       background: var(--gradient-glow);
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
-      display: inline-block; /* Helps prevent clipping issues on FontAwesome */
+      display: inline-block; 
     }
     .header-alttext, .sidebar-alttext {
       font-size: 1.7rem; 
@@ -134,9 +130,8 @@
       color: transparent;
       letter-spacing: -0.5px;
     }
-    .sidebar-logo { height: 32px; margin-bottom: 16px; }
 
-    /* ✦ SLIM HAMBURGER BUTTON — Lighter weight, no glow ✦ */
+    /* ✦ MENU TOGGLE BUTTON ✦ */
     .menu-toggle-btn {
       background: transparent;
       border: none;
@@ -152,16 +147,9 @@
       transition: all 0.15s ease;
       margin-right: -4px;
     }
-    .menu-toggle-btn i {
-      transition: transform 0.2s ease;
-    }
-    .menu-toggle-btn:hover {
-      background: rgba(255, 255, 255, 0.06);
-      color: #FFFFFF;
-    }
-    .menu-toggle-btn:active i {
-      transform: scale(0.85);
-    }
+    .menu-toggle-btn i { transition: transform 0.2s ease; }
+    .menu-toggle-btn:hover { background: rgba(255, 255, 255, 0.06); color: #FFFFFF; }
+    .menu-toggle-btn:active i { transform: scale(0.85); }
 
     /* ✦ SIDEBAR OVERLAY ✦ */
     .sidebar-overlay {
@@ -181,71 +169,65 @@
       visibility: visible;
     }
 
-    /* ✦ SIDEBAR — Solid dark gray, NO GLOW or side highlight ✦ */
+    /* ✦ SIDEBAR ✦ */
     .sidebar {
       position: fixed;
       top: 0;
       bottom: 0; 
       left: 0;
-      
       height: 100vh; 
       height: 100dvh; 
-      
       width: 320px;
       max-width: 85vw; 
       background: var(--sidebar-bg);
       z-index: 999;
       display: flex;
       flex-direction: column;
-      
       border-top-right-radius: 24px;
       border-bottom-right-radius: 24px;
       border-right: 1px solid var(--border-light);
-      
-      box-shadow: none;
-      
       transform: translateX(-100%);
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .sidebar.active {
       transform: translateX(0);
-      box-shadow: none;
     }
 
-    /* ✦ SIDEBAR ENTRANCE ANIMATIONS ✦ */
+    /* ✦ SIDEBAR SECTIONS ✦ */
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between; 
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-light);
+      height: 73px; 
+      flex-shrink: 0; 
+    }
+
+    .sidebar-body {
+      flex: 1; 
+      padding: 24px;
+      overflow-y: auto; 
+    }
+
+    .sidebar-footer {
+      padding: 24px;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom)); 
+      border-top: 1px solid var(--border-light);
+      flex-shrink: 0;
+    }
+
+    /* ✦ ANIMATIONS ✦ */
     .sidebar-header, .sidebar-body, .sidebar-footer {
       opacity: 0;
       transform: translateY(15px);
       transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    .sidebar.active .sidebar-header { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
+    .sidebar.active .sidebar-body { opacity: 1; transform: translateY(0); transition-delay: 0.18s; }
+    .sidebar.active .sidebar-footer { opacity: 1; transform: translateY(0); transition-delay: 0.26s; }
     
-    .sidebar.active .sidebar-header {
-      opacity: 1;
-      transform: translateY(0);
-      transition-delay: 0.1s;
-    }
-    .sidebar.active .sidebar-body {
-      opacity: 1;
-      transform: translateY(0);
-      transition-delay: 0.18s;
-    }
-    .sidebar.active .sidebar-footer {
-      opacity: 1;
-      transform: translateY(0);
-      transition-delay: 0.26s;
-    }
-
-    /* SIDEBAR SECTIONS */
-    .sidebar-header {
-      display: flex;
-      justify-content: flex-end; 
-      align-items: center;
-      padding: 20px 24px;
-      border-bottom: 1px solid var(--border-light);
-      height: 73px; 
-    }
-    
-    /* ✦ CLOSE BUTTON — Matching clean style ✦ */
+    /* ✦ CLOSE BUTTON ✦ */
     .sidebar-close-btn {
       background: transparent;
       border: none;
@@ -259,41 +241,15 @@
       align-items: center;
       justify-content: center;
       transition: all 0.15s ease;
+      margin-right: -8px; 
     }
-    .sidebar-close-btn i {
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .sidebar.active .sidebar-close-btn i {
-      transform: rotate(90deg);
-    }
-    .sidebar-close-btn:hover {
-      background: rgba(255, 255, 255, 0.06);
-      color: #FFFFFF;
-    }
-
-    .sidebar-body {
-      flex: 1; 
-      padding: 24px;
-      overflow-y: auto; 
-    }
-
-    .sidebar-footer {
-      padding: 24px;
-      padding-bottom: calc(24px + env(safe-area-inset-bottom)); 
-      border-top: 1px solid var(--border-light);
-    }
+    .sidebar-close-btn i { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    .sidebar.active .sidebar-close-btn i { transform: rotate(90deg); }
+    .sidebar-close-btn:hover { background: rgba(255, 255, 255, 0.06); color: #FFFFFF; }
     
-    body.menu-open {
-      overflow: hidden;
-      touch-action: none; 
-    }
+    body.menu-open { overflow: hidden; touch-action: none; }
 
-    /* Demo content — optional */
-    .demo-content {
-      padding: 60px 0;
-      text-align: center;
-      color: var(--text-muted);
-    }
+    .demo-content { padding: 60px 0; text-align: center; color: var(--text-muted); }
   </style>
 </head>
 <body>
@@ -302,7 +258,7 @@
   <header class="header">
     <div class="container">
       <nav class="navbar">
-        <!-- MAIN LOGO — Dynamic from Firestore (web/header) -->
+        <!-- MAIN LOGO -->
         <a href="/" class="header-logo" id="header-logo-container">
           <% if (header.logourl && header.logourl !== "") { %>
             <img 
@@ -321,7 +277,6 @@
           <% } %>
         </a>
 
-        <!-- SLIM HAMBURGER BUTTON -->
         <button class="menu-toggle-btn" id="open-sidebar" aria-label="Open Menu">
           <i class="fa-solid fa-bars"></i>
         </button>
@@ -332,97 +287,87 @@
   <!-- SIDEBAR OVERLAY -->
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-  <!-- SIDEBAR MENU — Solid gray, no side glow -->
+  <!-- SIDEBAR MENU -->
   <aside class="sidebar" id="sidebar">
-    <!-- SECTION 1: HEADER (Close button) -->
+    
+    <!-- SECTION 1: HEADER -->
     <div class="sidebar-header">
-      <button class="sidebar-close-btn" id="close-sidebar" aria-label="Close Menu">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <!-- SECTION 2: BODY — Contains dynamic sidebar logo from Firestore (web/hamburger) -->
-    <div class="sidebar-body">
-      <div class="sidebar-logo" id="sidebar-logo-container">
-        <% if (hamburger.logourl && hamburger.logourl !== "") { %>
+      <a href="/" class="sidebar-logo" id="sidebar-logo-container">
+        <!-- UPDATED FROM hamburger TO sidebar -->
+        <% if (sidebar.logourl && sidebar.logourl !== "") { %>
           <img 
-            src="<%= hamburger.logourl %>" 
+            src="<%= sidebar.logourl %>" 
             alt="Sidebar Logo" 
             id="sidebar-logo-img"
             onerror="this.onerror=null; fallbackSidebarToIconMode()"
           >
         <% } else { %>
-          <% if (hamburger.alticon && hamburger.alticon !== "") { %>
-            <i class="<%= hamburger.alticon %> sidebar-alticon" id="sidebar-alticon"></i>
+          <% if (sidebar.alticon && sidebar.alticon !== "") { %>
+            <i class="<%= sidebar.alticon %> sidebar-alticon" id="sidebar-alticon"></i>
           <% } %>
-          <% if (hamburger.alttext && hamburger.alttext !== "") { %>
-            <span class="sidebar-alttext" id="sidebar-alttext"><%= hamburger.alttext %></span>
+          <% if (sidebar.alttext && sidebar.alttext !== "") { %>
+            <span class="sidebar-alttext" id="sidebar-alttext"><%= sidebar.alttext %></span>
           <% } %>
         <% } %>
-      </div>
-      <!-- Additional navigation links can go here -->
+      </a>
+
+      <button class="sidebar-close-btn" id="close-sidebar" aria-label="Close Menu">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
 
-    <!-- SECTION 3: FOOTER (empty for now) -->
+    <!-- SECTION 2: BODY -->
+    <div class="sidebar-body">
+      <!-- Navigation links go here -->
+    </div>
+
+    <!-- SECTION 3: FOOTER -->
     <div class="sidebar-footer">
-      <!-- Social icons / buttons can go here -->
+      <!-- Social icons / buttons go here -->
     </div>
   </aside>
 
-  <!-- Optional demo spacer -->
   <div class="container demo-content">
     <p style="opacity:0.5;">— Dark Gray Header + Sidebar with Dynamic Logos —</p>
   </div>
 
   <script>
-    // ===============================
-    // FALLBACK FUNCTIONS FOR LOGO IMAGES
-    // ===============================
-    
-    // Main header fallback (uses server‑side values from EJS)
+    // Main header fallback
     function fallbackHeaderToIconMode() {
       const container = document.getElementById('header-logo-container');
       if (!container) return;
-      
       const alticon = '<%= header.alticon && header.alticon !== "" ? header.alticon : "" %>';
       const alttext = '<%= header.alttext && header.alttext !== "" ? header.alttext : "" %>';
-      
       const iconHtml = alticon !== "" ? `<i class="${alticon} header-alticon"></i>` : "";
       const textHtml = alttext !== "" ? `<span class="header-alttext">${alttext}</span>` : "";
-      
       container.innerHTML = iconHtml + textHtml;
     }
 
-    // Sidebar fallback (uses server‑side values from EJS)
+    // Sidebar fallback (Updated from hamburger to sidebar)
     function fallbackSidebarToIconMode() {
       const container = document.getElementById('sidebar-logo-container');
       if (!container) return;
-      
-      const alticon = '<%= hamburger.alticon && hamburger.alticon !== "" ? hamburger.alticon : "" %>';
-      const alttext = '<%= hamburger.alttext && hamburger.alttext !== "" ? hamburger.alttext : "" %>';
-      
+      const alticon = '<%= sidebar.alticon && sidebar.alticon !== "" ? sidebar.alticon : "" %>';
+      const alttext = '<%= sidebar.alttext && sidebar.alttext !== "" ? sidebar.alttext : "" %>';
       const iconHtml = alticon !== "" ? `<i class="${alticon} sidebar-alticon"></i>` : "";
       const textHtml = alttext !== "" ? `<span class="sidebar-alttext">${alttext}</span>` : "";
-      
       container.innerHTML = iconHtml + textHtml;
     }
 
-    // ===============================
-    // SIDEBAR TOGGLE LOGIC
-    // ===============================
+    // Toggle Logic
     const openBtn = document.getElementById('open-sidebar');
     const closeBtn = document.getElementById('close-sidebar');
-    const sidebar = document.getElementById('sidebar');
+    const sidebarElement = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
 
     function openSidebar() {
-      sidebar.classList.add('active');
+      sidebarElement.classList.add('active');
       overlay.classList.add('active');
       document.body.classList.add('menu-open'); 
     }
 
     function closeSidebar() {
-      sidebar.classList.remove('active');
+      sidebarElement.classList.remove('active');
       overlay.classList.remove('active');
       document.body.classList.remove('menu-open'); 
     }
