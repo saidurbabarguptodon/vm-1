@@ -4,12 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KexCloud | Dynamic Header & Sidebar</title>
+  <meta name="description" content="KexCloud dynamic UI and sidebar integration">
   
+  <!-- ✦ OPTIMIZATION: Preconnect to CDNs for faster asset loading ✦ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- FontAwesome Icon CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
   
   <style>
     /* ✦ DARK GRAY COLOR PALETTE — Clean & Neutral ✦ */
@@ -19,14 +26,12 @@
       --sidebar-bg: #121218;
       
       --accent-gray: #6B7280;
-      --accent-light: #9CA3AF;
-      
       --text-light: #F1F5F9;
       --text-muted: #94A3B8;
       
       /* ✦ THEME: MCServerHost Green (#22C55E) ✦ */
       --single-glow-color: #22C55E; 
-      --single-glow-hover: #16a34a; /* Slightly darker green for hover effects */
+      --single-glow-hover: #16a34a; 
       
       --border-light: rgba(255, 255, 255, 0.06);
       --shadow-soft: 0 10px 20px -8px rgba(0, 0, 0, 0.5);
@@ -56,8 +61,10 @@
       left: 0;
       width: 100%;
       height: 100%;
-      pointer-events: none; /* Ensures you can click through the snow */
-      z-index: 1; /* REDUCED: Now stays behind the header (100) and sidebar */
+      pointer-events: none; 
+      z-index: 1; 
+      /* OPTIMIZATION: Hardware accelerate the canvas */
+      transform: translateZ(0); 
     }
 
     /* LAYOUT */
@@ -88,7 +95,6 @@
       box-shadow: var(--shadow-soft);
     }
 
-    /* ✦ GREEN AURORA GLOW ✦ */
     .header::after {
       content: "";
       position: absolute;
@@ -98,8 +104,8 @@
       height: 240px; 
       background: radial-gradient(
         ellipse 80% 100% at 50% 0%,
-        rgba(34, 197, 94, 0.20) 0%,   /* Bright Lime/Emerald Green */
-        rgba(16, 185, 129, 0.08) 55%, /* Darker Emerald Edge */
+        rgba(34, 197, 94, 0.20) 0%,   
+        rgba(16, 185, 129, 0.08) 55%, 
         transparent 100%
       );
       z-index: -1;
@@ -124,18 +130,17 @@
       object-fit: contain;
     }
 
-    /* ✦ SINGLE GLOW COLOR FOR ICON & TEXT ✦ */
     .header-alticon, .sidebar-alticon {
       font-size: 1.6rem; 
       color: var(--single-glow-color);
-      text-shadow: 0 0 12px rgba(34, 197, 94, 0.45); /* True Green Glow */
+      text-shadow: 0 0 12px rgba(34, 197, 94, 0.45); 
       display: inline-block; 
     }
     .header-alttext, .sidebar-alttext {
       font-size: 1.7rem; 
       font-weight: 800;
       color: var(--single-glow-color);
-      text-shadow: 0 0 12px rgba(34, 197, 94, 0.45); /* True Green Glow */
+      text-shadow: 0 0 12px rgba(34, 197, 94, 0.45); 
       letter-spacing: -0.5px;
     }
 
@@ -152,7 +157,7 @@
       width: 44px; 
       height: 44px; 
       border-radius: 8px;
-      transition: all 0.15s ease;
+      transition: background 0.15s ease, color 0.15s ease;
       margin-right: -8px; 
     }
     .menu-toggle-btn i { transition: transform 0.2s ease; }
@@ -168,9 +173,10 @@
       -webkit-backdrop-filter: blur(5px);
       opacity: 0;
       visibility: hidden;
-      transition: all 0.3s ease;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
       z-index: 998; 
       cursor: pointer; 
+      will-change: opacity; /* OPTIMIZATION */
     }
     .sidebar-overlay.active {
       opacity: 1;
@@ -196,19 +202,19 @@
       border-right: 1px solid var(--border-light);
       transform: translateX(-100%);
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform; /* OPTIMIZATION: Smooth 60fps sliding */
     }
     .sidebar.active {
       transform: translateX(0);
     }
 
-    /* ✦ SIDEBAR SECTIONS ✦ */
     .sidebar-header {
       display: flex;
       justify-content: space-between; 
       align-items: center;
       padding: 0 24px;
       border-bottom: 1px solid var(--border-light);
-      height: 73px; /* Exact height for Header */
+      height: 73px; 
       flex-shrink: 0; 
     }
 
@@ -218,18 +224,13 @@
       overflow-y: auto; 
     }
 
-    /* ✦ RESPONSIVE SIDEBAR FOOTER ✦ */
+    /* ✦ SIDEBAR FOOTER ✦ */
     .sidebar-footer {
       border-top: 1px solid var(--border-light);
       flex-shrink: 0;
-      
-      /* Use min-height so it defaults to 73px but grows if items wrap */
       min-height: calc(73px + env(safe-area-inset-bottom)); 
-      
-      /* Padding applied so if multiple rows exist, they don't hit the border */
       padding: 15px 24px;
       padding-bottom: calc(15px + env(safe-area-inset-bottom));
-      
       display: flex;
       align-items: center;
       justify-content: center;
@@ -239,33 +240,31 @@
     .social-links {
       display: flex;
       gap: 12px; 
-      flex-wrap: wrap; /* Allows wrapping to the next line smoothly */
+      flex-wrap: wrap; 
       justify-content: center;
       align-items: center;
       width: 100%;
     }
 
-    /* Round Green Social Buttons */
     .social-icon {
       display: flex;
       justify-content: center;
       align-items: center;
-      
       width: 42px; 
       height: 42px;
-      
-      background-color: var(--single-glow-color); /* Matches MCServerHost theme */
+      background-color: var(--single-glow-color); 
       color: #ffffff;
-      border-radius: 50%; /* Perfect Circle */
+      border-radius: 50%; 
       text-decoration: none;
       font-size: 19px; 
       transition: background-color 0.3s ease, transform 0.3s ease;
+      will-change: transform, background-color;
     }
 
     .social-icon:hover {
       background-color: var(--single-glow-hover);
       color: #ffffff;
-      transform: translateY(-3px); /* Subtle jump effect */
+      transform: translateY(-3px); 
     }
 
     /* ✦ ANIMATIONS ✦ */
@@ -273,12 +272,12 @@
       opacity: 0;
       transform: translateY(15px);
       transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform, opacity; /* OPTIMIZATION */
     }
     .sidebar.active .sidebar-header { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
     .sidebar.active .sidebar-body { opacity: 1; transform: translateY(0); transition-delay: 0.18s; }
     .sidebar.active .sidebar-footer { opacity: 1; transform: translateY(0); transition-delay: 0.26s; }
     
-    /* ✦ CLOSE BUTTON ✦ */
     .sidebar-close-btn {
       background: transparent;
       border: none;
@@ -291,7 +290,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.15s ease;
+      transition: background 0.15s ease, color 0.15s ease;
       margin-right: -8px; 
     }
     .sidebar-close-btn i { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -306,7 +305,7 @@
 <body>
 
   <!-- NATURAL SNOWFALL CANVAS -->
-  <canvas id="snow-canvas"></canvas>
+  <canvas id="snow-canvas" aria-hidden="true"></canvas>
 
   <!-- HEADER -->
   <header class="header">
@@ -331,7 +330,8 @@
           <% } %>
         </a>
 
-        <button class="menu-toggle-btn" id="open-sidebar" aria-label="Open Menu">
+        <!-- OPTIMIZATION: Added Accessibility attributes -->
+        <button class="menu-toggle-btn" id="open-sidebar" aria-label="Open Menu" aria-expanded="false" aria-controls="sidebar">
           <i class="fa-solid fa-bars"></i>
         </button>
       </nav>
@@ -339,10 +339,11 @@
   </header>
 
   <!-- SIDEBAR OVERLAY -->
-  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
 
   <!-- SIDEBAR MENU -->
-  <aside class="sidebar" id="sidebar">
+  <!-- OPTIMIZATION: Added aria-hidden -->
+  <aside class="sidebar" id="sidebar" aria-hidden="true">
     
     <!-- SECTION 1: HEADER -->
     <div class="sidebar-header">
@@ -376,11 +377,10 @@
 
     <!-- SECTION 3: FOOTER -->
     <div class="sidebar-footer">
-      <!-- Logic to loop through Firestore Social documents -->
       <% if (sidebar.footer && sidebar.footer.length > 0) { %>
         <div class="social-links">
           <% sidebar.footer.forEach(function(social) { %>
-            <a href="<%= social.url %>" target="_blank" class="social-icon">
+            <a href="<%= social.url %>" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Social Link">
               <i class="<%= social.icon %>"></i>
             </a>
           <% }); %>
@@ -397,79 +397,87 @@
 
   <script>
     // ==========================================
-    // ✦ NATURAL SNOWFALL CANVAS EFFECT ✦
+    // ✦ OPTIMIZED SNOWFALL EFFECT ✦
     // ==========================================
     const canvas = document.getElementById('snow-canvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true }); // Optimized context
     
     let width = window.innerWidth;
     let height = window.innerHeight;
     canvas.width = width;
     canvas.height = height;
 
-    // REDUCED INTENSITY: Less flakes, softer effect
-    const maxFlakes = width < 768 ? 25 : 60; // Cut in half from previous
+    const maxFlakes = width < 768 ? 25 : 60; 
     const flakes =[];
 
-    // Create random snowflakes
-    for (let i = 0; i < maxFlakes; i++) {
-      flakes.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        r: Math.random() * 2.0 + 0.5, // Slightly smaller
-        d: Math.random() * 1.0 + 0.3, // Slower fall speed
-        a: Math.random() * Math.PI * 2, // Angle for swaying
-        aStep: Math.random() * 0.015 + 0.005, // Gentler sway speed
-        opacity: Math.random() * 0.4 + 0.1 // Softer opacity (more faded)
-      });
-    }
+    // OPTIMIZATION: Check for "prefers-reduced-motion" to respect user OS accessibility settings
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    function drawSnow() {
-      ctx.clearRect(0, 0, width, height);
+    if (!prefersReducedMotion) {
+      // Create random snowflakes
       for (let i = 0; i < maxFlakes; i++) {
-        let f = flakes[i];
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(255, 255, 255, ${f.opacity})`;
-        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
-        ctx.fill();
+        flakes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          r: Math.random() * 2.0 + 0.5, 
+          d: Math.random() * 1.0 + 0.3, 
+          a: Math.random() * Math.PI * 2, 
+          aStep: Math.random() * 0.015 + 0.005, 
+          opacity: Math.random() * 0.4 + 0.1 
+        });
       }
-      moveSnow();
-      requestAnimationFrame(drawSnow);
-    }
 
-    function moveSnow() {
-      for (let i = 0; i < maxFlakes; i++) {
-        let f = flakes[i];
-        f.y += f.d; // Move down
-        f.a += f.aStep; 
-        f.x += Math.sin(f.a) * 0.5; // Natural horizontal sway
-
-        // If snow falls off screen, reset it to the top
-        if (f.y > height) {
-          f.y = -10;
-          f.x = Math.random() * width;
+      function drawSnow() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#ffffff'; // Set base color once to optimize rendering
+        
+        for (let i = 0; i < maxFlakes; i++) {
+          let f = flakes[i];
+          ctx.globalAlpha = f.opacity; // Use globalAlpha instead of rgba string for better FPS
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
+          ctx.fill();
         }
-        // Wrap around left/right edges
-        if (f.x > width + 10) f.x = -10;
-        if (f.x < -10) f.x = width + 10;
+        moveSnow();
+        requestAnimationFrame(drawSnow);
       }
+
+      function moveSnow() {
+        for (let i = 0; i < maxFlakes; i++) {
+          let f = flakes[i];
+          f.y += f.d; 
+          f.a += f.aStep; 
+          f.x += Math.sin(f.a) * 0.5; 
+
+          if (f.y > height) {
+            f.y = -10;
+            f.x = Math.random() * width;
+          }
+          if (f.x > width + 10) f.x = -10;
+          if (f.x < -10) f.x = width + 10;
+        }
+      }
+
+      drawSnow();
     }
 
-    // Handle Window Resize
+    // OPTIMIZATION: Debounce resize to prevent lag spikes when resizing window
+    let resizeTimer;
     window.addEventListener('resize', () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
-    });
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+      }, 150);
+    }, { passive: true });
 
-    drawSnow();
 
     // ==========================================
     // ✦ HEADER & SIDEBAR LOGIC ✦
     // ==========================================
 
-    // Main header fallback
     function fallbackHeaderToIconMode() {
       const container = document.getElementById('header-logo-container');
       if (!container) return;
@@ -480,7 +488,6 @@
       container.innerHTML = iconHtml + textHtml;
     }
 
-    // Sidebar fallback
     function fallbackSidebarToIconMode() {
       const container = document.getElementById('sidebar-logo-container');
       if (!container) return;
@@ -491,7 +498,7 @@
       container.innerHTML = iconHtml + textHtml;
     }
 
-    // Toggle Logic
+    // Toggle Logic with Accessibility (A11y) Updates
     const openBtn = document.getElementById('open-sidebar');
     const closeBtn = document.getElementById('close-sidebar');
     const sidebarElement = document.getElementById('sidebar');
@@ -501,12 +508,20 @@
       sidebarElement.classList.add('active');
       overlay.classList.add('active');
       document.body.classList.add('menu-open'); 
+      
+      // Update ARIA attributes
+      openBtn.setAttribute('aria-expanded', 'true');
+      sidebarElement.setAttribute('aria-hidden', 'false');
     }
 
     function closeSidebar() {
       sidebarElement.classList.remove('active');
       overlay.classList.remove('active');
       document.body.classList.remove('menu-open'); 
+      
+      // Update ARIA attributes
+      openBtn.setAttribute('aria-expanded', 'false');
+      sidebarElement.setAttribute('aria-hidden', 'true');
     }
 
     openBtn.addEventListener('click', openSidebar);
