@@ -65,38 +65,39 @@ const headerDoc = {
 };
 
 // ===============================
-// 5. HAMBURGER DOCUMENT (web/hamburger) with header map field
+// 5. SIDEBAR DOCUMENT (web/sidebar) with header map field
 // ===============================
-const hamburgerDoc = {
+const sidebarDoc = {
   async create() {
     try {
-      const docRef = db.collection('web').doc('hamburger');
+      const docRef = db.collection('web').doc('sidebar');
       const doc = await docRef.get();
       if (!doc.exists) {
         await docRef.set({
           header: { logourl: "", alticon: "", alttext: "" }
         });
-        console.log(`✅ Hamburger document created at web/hamburger with header map`);
+        console.log(`✅ Sidebar document created at web/sidebar with header map`);
       } else {
         const data = doc.data();
-        console.log(`ℹ️ Hamburger document already exists at web/hamburger:`, data);
+        console.log(`ℹ️ Sidebar document already exists at web/sidebar:`, data);
       }
     } catch (err) {
-      console.error("Error in hamburger.create:", err);
+      console.error("Error in sidebar.create:", err);
     }
   },
 
   async get() {
     try {
-      const docRef = db.collection('web').doc('hamburger');
+      const docRef = db.collection('web').doc('sidebar');
       const doc = await docRef.get();
       if (doc.exists) {
         const data = doc.data();
+        // Return the nested header map so the frontend just gets { logourl, alticon, alttext }
         return data.header || { logourl: "", alticon: "", alttext: "" };
       }
       return { logourl: "", alticon: "", alttext: "" };
     } catch (err) {
-      console.error("Error in hamburger.get:", err);
+      console.error("Error in sidebar.get:", err);
       return { logourl: "", alticon: "", alttext: "" };
     }
   }
@@ -107,7 +108,7 @@ const hamburgerDoc = {
 // ===============================
 async function initializeFirestore() {
   await headerDoc.create();
-  await hamburgerDoc.create();
+  await sidebarDoc.create();
 }
 
 // ===============================
@@ -116,5 +117,5 @@ async function initializeFirestore() {
 module.exports = {
   initializeFirestore,
   getHeader: headerDoc.get,
-  getHamburger: hamburgerDoc.get
+  getSidebar: sidebarDoc.get
 };
