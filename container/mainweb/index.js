@@ -29,7 +29,8 @@ require('dotenv').config();
 // 3. IMPORTS (MUST BE AFTER DOTENV)
 // ===============================
 const express = require('express');
-const { initializeFirestore, getHeader, getHamburger } = require('./firebase');
+// UPDATED: Imported getSidebar instead of getHamburger
+const { initializeFirestore, getHeader, getSidebar } = require('./firebase');
 
 // ===============================
 // 4. INITIALIZE FIRESTORE DOCUMENTS
@@ -51,8 +52,9 @@ app.set('views', path.join(__dirname, 'views'));
 app.get('/', async (req, res) => {
   try {
     const header = await getHeader();
-    const hamburger = await getHamburger();
-    res.render('index', { header, hamburger });
+    // UPDATED: Calling getSidebar() and passing it to the view
+    const sidebar = await getSidebar();
+    res.render('index', { header, sidebar });
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
