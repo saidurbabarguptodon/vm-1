@@ -26,6 +26,7 @@
       
       /* ✦ THEME: MCServerHost Green (#22C55E) ✦ */
       --single-glow-color: #22C55E; 
+      --single-glow-hover: #16a34a; /* Slightly darker green for hover effects */
       
       --border-light: rgba(255, 255, 255, 0.06);
       --shadow-soft: 0 10px 20px -8px rgba(0, 0, 0, 0.5);
@@ -206,11 +207,48 @@
       overflow-y: auto; 
     }
 
+    /* ✦ UPDATED: SIDEBAR FOOTER ✦ */
     .sidebar-footer {
       padding: 24px;
       padding-bottom: calc(24px + env(safe-area-inset-bottom)); 
       border-top: 1px solid var(--border-light);
       flex-shrink: 0;
+      
+      /* Increased height and centered elements */
+      min-height: 110px; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: auto; 
+    }
+
+    .social-links {
+      display: flex;
+      gap: 15px; 
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+
+    /* Round Green Social Buttons */
+    .social-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 45px;
+      height: 45px;
+      background-color: var(--single-glow-color); /* Matches MCServerHost theme */
+      color: #ffffff;
+      border-radius: 50%; /* Perfect Circle */
+      text-decoration: none;
+      font-size: 20px;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .social-icon:hover {
+      background-color: var(--single-glow-hover);
+      color: #ffffff;
+      transform: translateY(-3px); /* Subtle jump effect */
     }
 
     /* ✦ ANIMATIONS ✦ */
@@ -289,19 +327,20 @@
     <!-- SECTION 1: HEADER -->
     <div class="sidebar-header">
       <a href="/" class="sidebar-logo" id="sidebar-logo-container">
-        <% if (sidebar.logourl && sidebar.logourl !== "") { %>
+        <!-- UPDATED: Added 'header' to sidebar.header.logourl to match new firebase structure -->
+        <% if (sidebar.header && sidebar.header.logourl && sidebar.header.logourl !== "") { %>
           <img 
-            src="<%= sidebar.logourl %>" 
+            src="<%= sidebar.header.logourl %>" 
             alt="Sidebar Logo" 
             id="sidebar-logo-img"
             onerror="this.onerror=null; fallbackSidebarToIconMode()"
           >
-        <% } else { %>
-          <% if (sidebar.alticon && sidebar.alticon !== "") { %>
-            <i class="<%= sidebar.alticon %> sidebar-alticon" id="sidebar-alticon"></i>
+        <% } else if (sidebar.header) { %>
+          <% if (sidebar.header.alticon && sidebar.header.alticon !== "") { %>
+            <i class="<%= sidebar.header.alticon %> sidebar-alticon" id="sidebar-alticon"></i>
           <% } %>
-          <% if (sidebar.alttext && sidebar.alttext !== "") { %>
-            <span class="sidebar-alttext" id="sidebar-alttext"><%= sidebar.alttext %></span>
+          <% if (sidebar.header.alttext && sidebar.header.alttext !== "") { %>
+            <span class="sidebar-alttext" id="sidebar-alttext"><%= sidebar.header.alttext %></span>
           <% } %>
         <% } %>
       </a>
@@ -318,7 +357,18 @@
 
     <!-- SECTION 3: FOOTER -->
     <div class="sidebar-footer">
-      <!-- Social icons / buttons go here -->
+      <!-- Logic to loop through Firestore Social documents -->
+      <% if (sidebar.footer && sidebar.footer.length > 0) { %>
+        <div class="social-links">
+          <% sidebar.footer.forEach(function(social) { %>
+            <a href="<%= social.url %>" target="_blank" class="social-icon">
+              <i class="<%= social.icon %>"></i>
+            </a>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <p style="text-align: center; color: var(--text-muted); font-size: 13px; width: 100%; margin: 0;">No socials yet</p>
+      <% } %>
     </div>
   </aside>
 
@@ -338,12 +388,12 @@
       container.innerHTML = iconHtml + textHtml;
     }
 
-    // Sidebar fallback
+    // Sidebar fallback (UPDATED to match sidebar.header)
     function fallbackSidebarToIconMode() {
       const container = document.getElementById('sidebar-logo-container');
       if (!container) return;
-      const alticon = '<%= sidebar.alticon && sidebar.alticon !== "" ? sidebar.alticon : "" %>';
-      const alttext = '<%= sidebar.alttext && sidebar.alttext !== "" ? sidebar.alttext : "" %>';
+      const alticon = '<%= sidebar.header && sidebar.header.alticon !== "" ? sidebar.header.alticon : "" %>';
+      const alttext = '<%= sidebar.header && sidebar.header.alttext !== "" ? sidebar.header.alttext : "" %>';
       const iconHtml = alticon !== "" ? `<i class="${alticon} sidebar-alticon"></i>` : "";
       const textHtml = alttext !== "" ? `<span class="sidebar-alttext">${alttext}</span>` : "";
       container.innerHTML = iconHtml + textHtml;
