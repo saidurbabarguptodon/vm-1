@@ -19,7 +19,6 @@ const {
 // ===============================
 const serviceAccount = {
   projectId: FIREBASE_PROJECT_ID,
-  // Added double backslash (\\n) so .env string newlines are parsed correctly
   privateKey: FIREBASE_PRIVATE_KEY ? FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
   clientEmail: FIREBASE_CLIENT_EMAIL,
 };
@@ -73,19 +72,33 @@ const sidebarDoc = {
       const docRef = db.collection('web').doc('sidebar');
       const doc = await docRef.get();
 
-      // 1. Create the main sidebar header config
+      let isCreated = false;
+
       if (!doc.exists) {
         await docRef.set({
           header: { alticon: "", alttext: "", logourl: "" }
         });
         console.log(`✅ Sidebar document created at web/sidebar`);
-      } else {
-        console.log(`ℹ️ Sidebar document already exists at web/sidebar:`, doc.data());
+        isCreated = true;
       }
 
-      // Note: Auto-creation of the footer subcollection (social-1) was removed here.
-      // The app now expects these documents to be created manually in Firestore at:
-      // web/sidebar/footer/{document-name} with fields { icon, url }
+      if (!isCreated) {
+        const footerRef = docRef.collection('footer');
+        const footerDocs = await footerRef.orderBy(admin.firestore.FieldPath.documentId()).limit(1).get();
+        
+        let footerData = {};
+        if (!footerDocs.empty) {
+          const firstDoc = footerDocs.docs[0];
+          footerData[firstDoc.id] = firstDoc.data();
+        }
+
+        const combinedLogObject = {
+          header: doc.data().header,
+          footer: footerData
+        };
+
+        console.log(`ℹ️ Sidebar document already exists at web/sidebar:`, combinedLogObject);
+      }
 
     } catch (err) {
       console.error("Error in sidebar.create:", err);
@@ -108,13 +121,11 @@ const sidebarDoc = {
 
   async getFooter() {
     try {
-      // Retrieves all social documents from the subcollection.
-      // If none exist manually yet, this safely returns an empty array [].
       const snapshot = await db.collection('web').doc('sidebar').collection('footer').get();
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (err) {
       console.error("Error in sidebar.getFooter:", err);
-      return [];
+      return []; // Return empty array if error
     }
   }
 };
@@ -123,25 +134,23 @@ const sidebarDoc = {
 // 6. WRAPPER FUNCTIONS & EXPORTS
 // ===============================
 
-// This creates the database structures automatically on startup
+// This matches what your index.js calls
 async function initializeFirestore() {
   await headerDoc.create();
   await sidebarDoc.create();
 }
 
-// Packages the header data to be exported to index.js
 async function getHeader() {
   return await headerDoc.get();
 }
 
-// Combines the sidebar header and footer into one object for index.js
 async function getSidebar() {
   const header = await sidebarDoc.getHeader();
   const footer = await sidebarDoc.getFooter();
   return { header, footer }; 
 }
 
-// Export everything so index.js can see them
+// CRITICAL: Exporting the functions so index.js can see them
 module.exports = {
   initializeFirestore,
   getHeader,
