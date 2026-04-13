@@ -195,9 +195,9 @@
       display: flex;
       justify-content: space-between; 
       align-items: center;
-      padding: 20px 24px;
+      padding: 0 24px;
       border-bottom: 1px solid var(--border-light);
-      height: 73px; 
+      height: 73px; /* Exact height for Header */
       flex-shrink: 0; 
     }
 
@@ -207,15 +207,18 @@
       overflow-y: auto; 
     }
 
-    /* ✦ UPDATED: SIDEBAR FOOTER ✦ */
+    /* ✦ UPDATED: RESPONSIVE SIDEBAR FOOTER ✦ */
     .sidebar-footer {
-      padding: 24px;
-      padding-bottom: calc(24px + env(safe-area-inset-bottom)); 
       border-top: 1px solid var(--border-light);
       flex-shrink: 0;
       
-      /* Increased height and centered elements */
-      min-height: 110px; 
+      /* Use min-height so it defaults to 73px but grows if items wrap */
+      min-height: calc(73px + env(safe-area-inset-bottom)); 
+      
+      /* Padding applied so if multiple rows exist, they don't hit the border */
+      padding: 15px 24px;
+      padding-bottom: calc(15px + env(safe-area-inset-bottom));
+      
       display: flex;
       align-items: center;
       justify-content: center;
@@ -224,9 +227,10 @@
 
     .social-links {
       display: flex;
-      gap: 15px; 
-      flex-wrap: wrap;
+      gap: 12px; /* Slightly reduced gap to fit more icons on one row */
+      flex-wrap: wrap; /* Allows wrapping to the next line smoothly */
       justify-content: center;
+      align-items: center;
       width: 100%;
     }
 
@@ -235,13 +239,16 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 45px;
-      height: 45px;
+      
+      /* Updated exact size to 35px */
+      width: 35px; 
+      height: 35px;
+      
       background-color: var(--single-glow-color); /* Matches MCServerHost theme */
       color: #ffffff;
       border-radius: 50%; /* Perfect Circle */
       text-decoration: none;
-      font-size: 20px;
+      font-size: 16px; /* Scaled down slightly to fit smaller button perfectly */
       transition: background-color 0.3s ease, transform 0.3s ease;
     }
 
@@ -327,7 +334,6 @@
     <!-- SECTION 1: HEADER -->
     <div class="sidebar-header">
       <a href="/" class="sidebar-logo" id="sidebar-logo-container">
-        <!-- UPDATED: Added 'header' to sidebar.header.logourl to match new firebase structure -->
         <% if (sidebar.header && sidebar.header.logourl && sidebar.header.logourl !== "") { %>
           <img 
             src="<%= sidebar.header.logourl %>" 
@@ -388,7 +394,7 @@
       container.innerHTML = iconHtml + textHtml;
     }
 
-    // Sidebar fallback (UPDATED to match sidebar.header)
+    // Sidebar fallback
     function fallbackSidebarToIconMode() {
       const container = document.getElementById('sidebar-logo-container');
       if (!container) return;
