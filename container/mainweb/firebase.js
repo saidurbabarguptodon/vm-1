@@ -83,18 +83,10 @@ const sidebarDoc = {
         console.log(`ℹ️ Sidebar document already exists at web/sidebar:`, doc.data());
       }
 
-      // 2. Initialize Footer Subcollection (footer/social-1)
-      const footerRef = db.collection('web').doc('sidebar').collection('footer');
-      const footerDocs = await footerRef.limit(1).get();
-      
-      if (footerDocs.empty) {
-        // UPDATED: Now creates social-1 with { icon, url }
-        await footerRef.doc('social-1').set({
-          icon: "fa-brands fa-twitter", // Example icon
-          url: "https://twitter.com"
-        });
-        console.log(`✅ Sidebar footer subcollection initialized at web/sidebar/footer/social-1`);
-      }
+      // Note: Auto-creation of the footer subcollection (social-1) was removed here.
+      // The app now expects these documents to be created manually in Firestore at:
+      // web/sidebar/footer/{document-name} with fields { icon, url }
+
     } catch (err) {
       console.error("Error in sidebar.create:", err);
     }
@@ -116,7 +108,8 @@ const sidebarDoc = {
 
   async getFooter() {
     try {
-      // Retrieves all social documents (social-1, social-2, etc.)
+      // Retrieves all social documents from the subcollection.
+      // If none exist manually yet, this safely returns an empty array [].
       const snapshot = await db.collection('web').doc('sidebar').collection('footer').get();
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (err) {
