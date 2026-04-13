@@ -125,7 +125,9 @@
       color: transparent;
       letter-spacing: -0.5px;
     }
-    .sidebar-logo { height: 32px; margin-bottom: 16px; }
+    
+    /* Fixed: Removed bottom margin since it's now in the header */
+    .sidebar-logo { height: 32px; }
 
     /* ✦ SLIM HAMBURGER BUTTON — Lighter weight, no glow ✦ */
     .menu-toggle-btn {
@@ -229,7 +231,7 @@
     /* SIDEBAR SECTIONS */
     .sidebar-header {
       display: flex;
-      justify-content: flex-end; 
+      justify-content: space-between; /* Fixed: Changed from flex-end to space-between to align logo left & button right */
       align-items: center;
       padding: 20px 24px;
       border-bottom: 1px solid var(--border-light);
@@ -250,6 +252,7 @@
       align-items: center;
       justify-content: center;
       transition: all 0.15s ease;
+      margin-right: -10px; /* Aligns visually tighter to the edge */
     }
     .sidebar-close-btn i {
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -325,15 +328,9 @@
 
   <!-- SIDEBAR MENU — Solid gray, no side glow -->
   <aside class="sidebar" id="sidebar">
-    <!-- SECTION 1: HEADER (Close button) -->
+    
+    <!-- SECTION 1: HEADER (Fixed: Moved Logo into the Header alongside the close button) -->
     <div class="sidebar-header">
-      <button class="sidebar-close-btn" id="close-sidebar" aria-label="Close Menu">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <!-- SECTION 2: BODY — Contains dynamic sidebar logo from Firestore (web/hamburger) -->
-    <div class="sidebar-body">
       <div class="sidebar-logo" id="sidebar-logo-container">
         <% if (hamburger.logourl && hamburger.logourl !== "") { %>
           <img 
@@ -351,7 +348,15 @@
           <% } %>
         <% } %>
       </div>
-      <!-- Additional navigation links can go here -->
+
+      <button class="sidebar-close-btn" id="close-sidebar" aria-label="Close Menu">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- SECTION 2: BODY -->
+    <div class="sidebar-body">
+      <!-- Navigation links can go here -->
     </div>
 
     <!-- SECTION 3: FOOTER (empty for now) -->
