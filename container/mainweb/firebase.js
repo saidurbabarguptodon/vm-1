@@ -64,7 +64,7 @@ const headerDoc = {
 };
 
 // ===============================
-// 5. SIDEBAR & FOOTER DOCUMENTS (web/sidebar)
+// 5. SIDEBAR DOCUMENTS (web/sidebar)
 // ===============================
 const sidebarDoc = {
   async create() {
@@ -74,6 +74,7 @@ const sidebarDoc = {
 
       let isCreated = false;
 
+      // 1. Check if the main sidebar document exists
       if (!doc.exists) {
         await docRef.set({
           header: { alticon: "", alttext: "", logourl: "" }
@@ -82,18 +83,32 @@ const sidebarDoc = {
         isCreated = true;
       }
 
+      // 2. Build the exact console log for existing documents
       if (!isCreated) {
+        // --- Fetch the BODY subcollection (e.g., nav-1) ---
+        const bodyRef = docRef.collection('body');
+        const bodyDocs = await bodyRef.orderBy(admin.firestore.FieldPath.documentId()).limit(1).get();
+        
+        let bodyData = {};
+        if (!bodyDocs.empty) {
+          const firstBodyDoc = bodyDocs.docs[0];
+          bodyData[firstBodyDoc.id] = firstBodyDoc.data();
+        }
+
+        // --- Fetch the FOOTER subcollection (e.g., social-1) ---
         const footerRef = docRef.collection('footer');
         const footerDocs = await footerRef.orderBy(admin.firestore.FieldPath.documentId()).limit(1).get();
         
         let footerData = {};
         if (!footerDocs.empty) {
-          const firstDoc = footerDocs.docs[0];
-          footerData[firstDoc.id] = firstDoc.data();
+          const firstFooterDoc = footerDocs.docs[0];
+          footerData[firstFooterDoc.id] = firstFooterDoc.data();
         }
 
+        // Combine header, body, and footer into one single object for the log
         const combinedLogObject = {
           header: doc.data().header,
+          body: bodyData,
           footer: footerData
         };
 
@@ -119,9 +134,23 @@ const sidebarDoc = {
     }
   },
 
+  // Fetch all sidebar body documents (nav-1, nav-2, etc.)
+  async getBody() {
+    try {
+      // Order by document ID so nav-1 comes before nav-2 automatically
+      const snapshot = await db.collection('web').doc('sidebar').collection('body').orderBy(admin.firestore.FieldPath.documentId()).get();
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (err) {
+      console.error("Error in sidebar.getBody:", err);
+      return []; // Return empty array if error
+    }
+  },
+
+  // Fetch all sidebar footer documents (social-1, social-2, etc.)
   async getFooter() {
     try {
-      const snapshot = await db.collection('web').doc('sidebar').collection('footer').get();
+      // Order by document ID so social-1 comes before social-2 automatically
+      const snapshot = await db.collection('web').doc('sidebar').collection('footer').orderBy(admin.firestore.FieldPath.documentId()).get();
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (err) {
       console.error("Error in sidebar.getFooter:", err);
@@ -134,23 +163,27 @@ const sidebarDoc = {
 // 6. WRAPPER FUNCTIONS & EXPORTS
 // ===============================
 
-// This matches what your index.js calls
+// This creates the database structures automatically on startup
 async function initializeFirestore() {
   await headerDoc.create();
   await sidebarDoc.create();
 }
 
+// Packages the header data to be exported to index.js
 async function getHeader() {
   return await headerDoc.get();
 }
 
+// Combines the sidebar header, body, and footer into one object for index.js
 async function getSidebar() {
   const header = await sidebarDoc.getHeader();
-  const footer = await sidebarDoc.getFooter();
-  return { header, footer }; 
+  const body = await sidebarDoc.getBody();     // Fetches nav links
+  const footer = await sidebarDoc.getFooter(); // Fetches social links
+  
+  return { header, body, footer }; 
 }
 
-// CRITICAL: Exporting the functions so index.js can see them
+// Export everything so index.js can see them
 module.exports = {
   initializeFirestore,
   getHeader,
