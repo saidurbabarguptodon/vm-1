@@ -19,6 +19,7 @@ const {
 // ===============================
 const serviceAccount = {
   projectId: FIREBASE_PROJECT_ID,
+  // FIX: Added double backslash (\\n) so .env string newlines are parsed correctly
   privateKey: FIREBASE_PRIVATE_KEY ? FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
   clientEmail: FIREBASE_CLIENT_EMAIL,
 };
@@ -41,7 +42,6 @@ const headerDoc = {
       const docRef = db.collection('web').doc('header');
       const doc = await docRef.get();
       if (!doc.exists) {
-        // Formatted exactly in the order requested
         await docRef.set({ alticon: "", alttext: "", logourl: "" });
         console.log(`✅ Header document created at web/header`);
       } else {
@@ -72,7 +72,7 @@ const sidebarDoc = {
     try {
       const docRef = db.collection('web').doc('sidebar');
       const doc = await docRef.get();
-      
+
       // 1. Create the main sidebar header config
       if (!doc.exists) {
         await docRef.set({
@@ -94,7 +94,6 @@ const sidebarDoc = {
         });
         console.log(`✅ Sidebar footer subcollection initialized at web/sidebar/footer`);
       }
-
     } catch (err) {
       console.error("Error in sidebar.create:", err);
     }
@@ -104,8 +103,8 @@ const sidebarDoc = {
     try {
       const docRef = db.collection('web').doc('sidebar');
       const doc = await docRef.get();
-      if (doc.exists) {
-        return doc.data().header || { alticon: "", alttext: "", logourl: "" };
+      if (doc.exists && doc.data().header) {
+        return doc.data().header;
       }
       return { alticon: "", alttext: "", logourl: "" };
     } catch (err) {
@@ -114,11 +113,43 @@ const sidebarDoc = {
     }
   },
 
-  // 3. Retrieve all mapped documents inside the footer subcollection
+  // FIX: Completed the missing code for getFooter
   async getFooter() {
     try {
       const snapshot = await db.collection('web').doc('sidebar').collection('footer').get();
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (err) {
       console.error("Error in sidebar.getFooter:", err);
-      return
+      return [];
+    }
+  }
+};
+
+// ===============================
+// 6. WRAPPER FUNCTIONS & EXPORTS
+// ===============================
+
+// This creates the database structures automatically on startup
+async function initializeFirestore() {
+  await headerDoc.create();
+  await sidebarDoc.create();
+}
+
+// Packages the header data to be exported to index.js
+async function getHeader() {
+  return await headerDoc.get();
+}
+
+// Combines the sidebar header and footer into one object for index.js
+async function getSidebar() {
+  const header = await sidebarDoc.getHeader();
+  const footer = await sidebarDoc.getFooter();
+  return { header, footer }; // Will be available in EJS as sidebar.header and sidebar.footer
+}
+
+// FIX: Export everything so index.js can see them
+module.exports = {
+  initializeFirestore,
+  getHeader,
+  getSidebar
+};
