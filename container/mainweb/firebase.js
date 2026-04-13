@@ -19,7 +19,7 @@ const {
 // ===============================
 const serviceAccount = {
   projectId: FIREBASE_PROJECT_ID,
-  // FIX: Added double backslash (\\n) so .env string newlines are parsed correctly
+  // Added double backslash (\\n) so .env string newlines are parsed correctly
   privateKey: FIREBASE_PRIVATE_KEY ? FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
   clientEmail: FIREBASE_CLIENT_EMAIL,
 };
@@ -83,16 +83,17 @@ const sidebarDoc = {
         console.log(`ℹ️ Sidebar document already exists at web/sidebar:`, doc.data());
       }
 
-      // 2. Initialize Footer Subcollection (for infinite documents)
+      // 2. Initialize Footer Subcollection (footer/social-1)
       const footerRef = db.collection('web').doc('sidebar').collection('footer');
       const footerDocs = await footerRef.limit(1).get();
+      
       if (footerDocs.empty) {
-        await footerRef.doc('example_link').set({
-          alticon: "fa-solid fa-shield-halved",
-          alttext: "Privacy Policy",
-          url: "#"
+        // UPDATED: Now creates social-1 with { icon, url }
+        await footerRef.doc('social-1').set({
+          icon: "fa-brands fa-twitter", // Example icon
+          url: "https://twitter.com"
         });
-        console.log(`✅ Sidebar footer subcollection initialized at web/sidebar/footer`);
+        console.log(`✅ Sidebar footer subcollection initialized at web/sidebar/footer/social-1`);
       }
     } catch (err) {
       console.error("Error in sidebar.create:", err);
@@ -113,9 +114,9 @@ const sidebarDoc = {
     }
   },
 
-  // FIX: Completed the missing code for getFooter
   async getFooter() {
     try {
+      // Retrieves all social documents (social-1, social-2, etc.)
       const snapshot = await db.collection('web').doc('sidebar').collection('footer').get();
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (err) {
@@ -144,10 +145,10 @@ async function getHeader() {
 async function getSidebar() {
   const header = await sidebarDoc.getHeader();
   const footer = await sidebarDoc.getFooter();
-  return { header, footer }; // Will be available in EJS as sidebar.header and sidebar.footer
+  return { header, footer }; 
 }
 
-// FIX: Export everything so index.js can see them
+// Export everything so index.js can see them
 module.exports = {
   initializeFirestore,
   getHeader,
