@@ -1,30 +1,52 @@
 // ===============================
-// 1. IMPORTS
+// 1. EXTRACT .ENV FROM ZIP
+// ===============================
+const fs = require('fs');
+const path = require('path');
+const AdmZip = require('adm-zip');
+
+const zipPath = path.join(__dirname, '.env.zip');
+
+try {
+  if (fs.existsSync(zipPath)) {
+    const zip = new AdmZip(zipPath);
+    zip.extractAllTo(__dirname, true);
+    console.log('Success');
+  } else {
+    console.log('Not found, Skipping');
+  }
+} catch (err) {
+  console.error('Error extracting zip:', err);
+  process.exit(1); 
+}
+
+// ===============================
+// 2. LOAD ENVIRONMENT VARIABLES
 // ===============================
 require('dotenv').config();
+
+// ===============================
+// 3. IMPORTS (MUST BE AFTER DOTENV)
+// ===============================
 const express = require('express');
-const path = require('path');
 const { initializeFirestore, getHeader, getHamburger } = require('./firebase');
 
 // ===============================
-// 2. INITIALIZE FIRESTORE DOCUMENTS
+// 4. INITIALIZE FIRESTORE DOCUMENTS
 // ===============================
 initializeFirestore().catch(console.error);
 
 // ===============================
-// 3. EXPRESS SETUP
+// 5. EXPRESS SETUP
 // ===============================
 const app = express();
-const PORT = process.env.PORT || 7595;
+const PORT = process.env.PORT || 9000;
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Static files (optional)
-app.use(express.static('public'));
-
 // ===============================
-// 4. ROUTE: HOME PAGE
+// 6. ROUTE: HOME PAGE
 // ===============================
 app.get('/', async (req, res) => {
   try {
@@ -38,7 +60,7 @@ app.get('/', async (req, res) => {
 });
 
 // ===============================
-// 5. START SERVER
+// 7. START SERVER
 // ===============================
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
