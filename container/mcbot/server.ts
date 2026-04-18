@@ -6,6 +6,9 @@ import os from "os";
 import fs from "fs";
 import http from "http";
 import { Server as SocketIOServer } from "socket.io";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
 
 const app = express();
 const PORT = 3000;
