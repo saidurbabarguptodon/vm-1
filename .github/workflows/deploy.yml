@@ -23,7 +23,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup (Sync + App + Cloudflare + Cleanup)
+      - name: Setup (Sync + Apps + Cloudflare + Cleanup)
         run: |
           set -e
 
@@ -52,7 +52,6 @@ jobs:
                 npm install -g pm2 --silent 2>/dev/null
                 pm2 delete mainweb 2>/dev/null || true
                 pm2 start index.js --name mainweb --silent
-                pm2 save --silent
               " >/dev/null 2>&1
               sudo pm2 list
             else
@@ -66,7 +65,31 @@ jobs:
             echo "ℹ /root/container/mainweb/ does not exist – skipping app setup"
           fi
 
-          # 3. Cloudflare Tunnel setup (silent install, only final check)
+          # 3. Handle mcbot application
+          MCBOT_DIR="/root/container/mcbot"
+          echo "=== Checking mcbot app ==="
+          if sudo test -d "$MCBOT_DIR"; then
+            sudo ls -la "$MCBOT_DIR"
+            if sudo test -f "$MCBOT_DIR/package.json"; then
+              echo "Setting up mcbot..."
+              sudo bash -c "
+                cd $MCBOT_DIR
+                npm install --silent 2>/dev/null
+                if grep -q '\"build\"' package.json; then
+                  npm run build --silent 2>/dev/null
+                fi
+                pm2 delete mcbot 2>/dev/null || true
+                pm2 start 'npm run dev' --name mcbot --silent
+              " >/dev/null 2>&1
+              echo "✓ mcbot started with PM2"
+            else
+              echo "ℹ No package.json found in mcbot – skipping"
+            fi
+          else
+            echo "ℹ /root/container/mcbot/ does not exist – skipping"
+          fi
+
+          # 4. Cloudflare Tunnel setup (silent install, only final check)
           echo "=== Setting up Cloudflare Tunnel ==="
           [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ] && { echo "✗ CLOUDFLARE_TOKEN missing"; exit 1; }
           sudo mkdir -p /usr/share/keyrings
@@ -83,7 +106,7 @@ jobs:
             exit 1
           fi
 
-          # 4. Cleanup old workflow runs
+          # 5. Cleanup old workflow runs
           echo "=== Cleaning old workflow runs ==="
           export GH_TOKEN="${{ github.token }}"
           sudo apt-get install -y -qq jq >/dev/null 2>&1
