@@ -82,7 +82,6 @@ const sidebarDoc = {
         });
 
         // ✦ SEED DEFAULT NAV BUTTON (navbutton-1) ✦
-        // This exactly matches your structure: sidebar/body/navbutton-1
         await docRef.collection('body').doc('navbutton-1').set({
           icon: "fa-solid fa-house",
           url: "/",
@@ -151,7 +150,6 @@ const sidebarDoc = {
   },
 
   // ✦ FETCH ALL SIDEBAR BODY DOCUMENTS ✦
-  // Fetches navbutton-1, navbutton-2, etc.
   async getBody() {
     try {
       // Order by document ID so navbutton-1 comes before navbutton-2 automatically
@@ -166,7 +164,7 @@ const sidebarDoc = {
       }));
     } catch (err) {
       console.error("Error in sidebar.getBody:", err);
-      return[]; // Return empty array if error occurs
+      return []; // Return empty array if error occurs
     }
   },
 
@@ -178,4 +176,38 @@ const sidebarDoc = {
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (err) {
       console.error("Error in sidebar.getFooter:", err);
-      return
+      return []; // Return empty array if error
+    }
+  }
+};
+
+// ===============================
+// 6. WRAPPER FUNCTIONS & EXPORTS
+// ===============================
+
+// This creates the database structures automatically on startup
+async function initializeFirestore() {
+  await headerDoc.create();
+  await sidebarDoc.create();
+}
+
+// Packages the header data to be exported to index.js
+async function getHeader() {
+  return await headerDoc.get();
+}
+
+// Combines the sidebar header, body, and footer into one object for index.js
+async function getSidebar() {
+  const header = await sidebarDoc.getHeader();
+  const body = await sidebarDoc.getBody();     // Fetches nav links
+  const footer = await sidebarDoc.getFooter(); // Fetches social links
+  
+  return { header, body, footer }; 
+}
+
+// Export everything so index.js can see them
+module.exports = {
+  initializeFirestore,
+  getHeader,
+  getSidebar
+};
