@@ -1,0 +1,6 @@
+{
+  "name": "Minecraft Bot Joiner",
+  "description": "A web interface to spawn and manage Minecraft bots that join a specified server.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
