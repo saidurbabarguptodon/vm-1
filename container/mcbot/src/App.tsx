@@ -34,6 +34,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [systemStats, setSystemStats] = useState({ memory: 0, uptime: 0, cpu: 0, totalMem: 0, freeMem: 0 });
   const [webPing, setWebPing] = useState(0);
+  const [show3DView, setShow3DView] = useState(false);
   
   const [activeTab, setActiveTab] = useState<'overview' | 'manager'>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -346,71 +347,104 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* World View Radar */}
+                {/* World View / Radar */}
                 <div className="lg:col-span-1 bg-[#161b22] border border-[#30363d] rounded-xl p-6 flex flex-col min-h-[400px]">
-                  <h2 className="text-lg font-semibold text-white flex items-center gap-2 mb-4">
-                    <Globe className="w-5 h-5 text-[#1abc9c]" />
-                    World View (Radar)
-                  </h2>
-                  <div className="flex-1 bg-[#0b0e14] border border-[#30363d] rounded-lg relative overflow-hidden flex items-center justify-center">
-                    {/* Radar Grid */}
-                    <div className="absolute inset-0 opacity-20" style={{
-                      backgroundImage: 'linear-gradient(#30363d 1px, transparent 1px), linear-gradient(90deg, #30363d 1px, transparent 1px)',
-                      backgroundSize: '20px 20px',
-                      backgroundPosition: 'center center'
-                    }}></div>
-                    
-                    {/* Center Crosshair */}
-                    <div className="absolute top-1/2 left-0 right-0 h-px bg-[#1abc9c]/30"></div>
-                    <div className="absolute left-1/2 top-0 bottom-0 w-px bg-[#1abc9c]/30"></div>
-                    
-                    {/* Radar Circle */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full border border-[#1abc9c]/20"></div>
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[40%] rounded-full border border-[#1abc9c]/10"></div>
-
-                    {/* Entities */}
-                    {selectedBot.status === 'online' ? (
-                      <>
-                        {/* The Bot */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-[#3498db] rounded-full shadow-[0_0_10px_#3498db] z-10"></div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                      <Globe className="w-5 h-5 text-[#1abc9c]" />
+                      World View {show3DView ? "(3D)" : "(Radar)"}
+                    </h2>
+                    <div className="flex items-center gap-2">
+                       <span className="text-[12px] text-[#8b949e]">3D View</span>
+                       <div className="relative inline-block w-8 align-middle select-none transition duration-200 ease-in">
+                          <input 
+                            type="checkbox" 
+                            checked={show3DView}
+                            onChange={(e) => setShow3DView(e.target.checked)}
+                            className="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 border-[#30363d] appearance-none cursor-pointer transition-transform duration-200 ease-in-out checked:translate-x-4 checked:border-[#1abc9c]"
+                          />
+                          <label onClick={() => setShow3DView(!show3DView)} className={`toggle-label block overflow-hidden h-4 rounded-full cursor-pointer transition-colors duration-200 ease-in-out ${show3DView ? 'bg-[#1abc9c]' : 'bg-[#30363d]'}`}></label>
+                        </div>
+                    </div>
+                  </div>
+                  
+                  {show3DView ? (
+                    <div className="flex-1 bg-[#0b0e14] border border-[#30363d] rounded-lg relative overflow-hidden flex flex-col">
+                      {selectedBot.status === 'online' ? (
+                        <iframe 
+                          src={`/viewer/?bot=${selectedBotUsername}`}
+                          className="w-full h-full min-h-[320px] bg-black border-none flex-1"
+                          title="Prismarine Viewer"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-[#8b949e]">
+                           <span className="z-10">Bot offline</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex-1 bg-[#0b0e14] border border-[#30363d] rounded-lg relative overflow-hidden flex items-center justify-center min-h-[320px]">
+                        {/* Radar Grid */}
+                        <div className="absolute inset-0 opacity-20" style={{
+                          backgroundImage: 'linear-gradient(#30363d 1px, transparent 1px), linear-gradient(90deg, #30363d 1px, transparent 1px)',
+                          backgroundSize: '20px 20px',
+                          backgroundPosition: 'center center'
+                        }}></div>
                         
-                        {/* Nearby Entities */}
-                        {(selectedBot as any).nearbyEntities?.map((entity: any) => {
-                          // Map -32..32 to 0..100%
-                          const left = 50 + (entity.x / 32) * 50;
-                          const top = 50 + (entity.z / 32) * 50;
-                          
-                          // Clamp to visible area
-                          if (left < 0 || left > 100 || top < 0 || top > 100) return null;
-                          
-                          let color = '#8b949e'; // Default gray
-                          if (entity.type === 'player') color = '#e74c3c'; // Red for players
-                          else if (entity.type === 'mob') color = '#f39c12'; // Orange for mobs
-                          else if (entity.type === 'object') color = '#2ecc71'; // Green for items/objects
-                          
-                          return (
-                            <div 
-                              key={entity.id}
-                              className="absolute w-2 h-2 rounded-full -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
-                              style={{ left: `${left}%`, top: `${top}%`, backgroundColor: color, boxShadow: `0 0 5px ${color}` }}
-                            >
-                              <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-[#010409] border border-[#30363d] rounded text-[10px] text-white whitespace-nowrap z-20">
-                                {entity.name} ({entity.type})
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </>
-                    ) : (
-                      <span className="text-[#8b949e] z-10">Bot offline</span>
-                    )}
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-3 text-[11px] text-[#8b949e] justify-center">
-                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#3498db]"></div> You</div>
-                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#e74c3c]"></div> Players</div>
-                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#f39c12]"></div> Mobs</div>
-                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#2ecc71]"></div> Objects</div>
-                  </div>
+                        {/* Center Crosshair */}
+                        <div className="absolute top-1/2 left-0 right-0 h-px bg-[#1abc9c]/30"></div>
+                        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-[#1abc9c]/30"></div>
+                        
+                        {/* Radar Circle */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full border border-[#1abc9c]/20"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[40%] rounded-full border border-[#1abc9c]/10"></div>
+    
+                        {/* Entities */}
+                        {selectedBot.status === 'online' ? (
+                          <>
+                            {/* The Bot */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-[#3498db] rounded-full shadow-[0_0_10px_#3498db] z-10"></div>
+                            
+                            {/* Nearby Entities */}
+                            {(selectedBot as any).nearbyEntities?.map((entity: any) => {
+                              // Map -32..32 to 0..100%
+                              const left = 50 + (entity.x / 32) * 50;
+                              const top = 50 + (entity.z / 32) * 50;
+                              
+                              // Clamp to visible area
+                              if (left < 0 || left > 100 || top < 0 || top > 100) return null;
+                              
+                              let color = '#8b949e'; // Default gray
+                              if (entity.type === 'player') color = '#e74c3c'; // Red for players
+                              else if (entity.type === 'mob') color = '#f39c12'; // Orange for mobs
+                              else if (entity.type === 'object') color = '#2ecc71'; // Green for items/objects
+                              
+                              return (
+                                <div 
+                                  key={entity.id}
+                                  className="absolute w-2 h-2 rounded-full -translate-x-1/2 -translate-y-1/2 group cursor-pointer"
+                                  style={{ left: `${left}%`, top: `${top}%`, backgroundColor: color, boxShadow: `0 0 5px ${color}` }}
+                                >
+                                  <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-[#010409] border border-[#30363d] rounded text-[10px] text-white whitespace-nowrap z-20">
+                                    {entity.name} ({entity.type})
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </>
+                        ) : (
+                          <span className="text-[#8b949e] z-10">Bot offline</span>
+                        )}
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-3 text-[11px] text-[#8b949e] justify-center">
+                        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#3498db]"></div> You</div>
+                        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#e74c3c]"></div> Players</div>
+                        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#f39c12]"></div> Mobs</div>
+                        <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#2ecc71]"></div> Objects</div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Terminal */}
