@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>KexCloud | Dynamic Header & Sidebar</title>
+  <title>KexCloud | Dark Classic Premium</title>
   
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,26 +12,28 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    /* ✦ DARK GRAY COLOR PALETTE — Clean & Neutral ✦ */
+    /* ✦ DARK CLASSIC PREMIUM PALETTE — Deep Forest Green + Pure Black ✦ */
     :root {
       --bg-dark: #0A0A0F;
       
-      /* Sleek dark gray for Header and Sidebar */
-      --header-bg: rgba(39, 39, 42, 0.85); /* Slightly transparent gray for glassmorphism */
-      --sidebar-bg: #555555; /* Solid dark gray */
+      /* Deep dark green glass header */
+      --header-bg: rgba(10, 28, 22, 0.94);
       
-      --accent-gray: #6B7280;
-      --accent-light: #9CA3AF;
+      /* Solid deep forest green sidebar */
+      --sidebar-bg: #0F2A23;
       
-      --text-light: #F1F5F9;
-      --text-muted: #94A3B8;
+      --accent-muted: #1E3F37;
+      --accent-light: #4A9A7E;
       
-      /* ✦ THEME: MCServerHost Green (#22C55E) ✦ */
+      --text-light: #F8FAFC;
+      --text-muted: #A3B8B0;
+      
+      /* ✦ SIGNATURE GREEN GLOW (#22C55E) — kept as the premium accent ✦ */
       --single-glow-color: #22C55E; 
-      --single-glow-hover: #16a34a; /* Slightly darker green for hover effects */
+      --single-glow-hover: #16a34a;
       
-      --border-light: rgba(255, 255, 255, 0.06);
-      --shadow-soft: 0 10px 20px -8px rgba(0, 0, 0, 0.5);
+      --border-light: rgba(255, 255, 255, 0.07);
+      --shadow-soft: 0 12px 25px -10px rgba(34, 197, 94, 0.25);
     }
 
     /* RESET & TYPOGRAPHY */
@@ -51,15 +53,15 @@
       text-rendering: optimizeLegibility;
     }
 
-    /* ✦ SNOWFALL CANVAS ✦ */
+    /* ✦ SNOWFALL CANVAS (kept — looks premium on deep black) ✦ */
     #snow-canvas {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      pointer-events: none; /* Ensures you can click through the snow */
-      z-index: 1; /* Stays behind the header and sidebar */
+      pointer-events: none;
+      z-index: 1;
     }
 
     /* LAYOUT */
@@ -77,12 +79,12 @@
       padding: 10px 0; 
     }
 
-    /* ✦ HEADER ✦ */
+    /* ✦ HEADER — Dark classic glass with deep green ✦ */
     .header {
       width: 100%;
       background: var(--header-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -90,18 +92,18 @@
       box-shadow: var(--shadow-soft);
     }
 
-    /* ✦ GREEN AURORA GLOW ✦ */
+    /* ✦ GREEN AURORA GLOW (enhanced for premium depth) ✦ */
     .header::after {
       content: "";
       position: absolute;
       top: 100%;
       left: 0;
       width: 100%;
-      height: 240px; 
+      height: 260px; 
       background: radial-gradient(
-        ellipse 80% 100% at 50% 0%,
-        rgba(34, 197, 94, 0.20) 0%,   /* Bright Lime/Emerald Green */
-        rgba(16, 185, 129, 0.08) 55%, /* Darker Emerald Edge */
+        ellipse 85% 100% at 50% 0%,
+        rgba(34, 197, 94, 0.28) 0%,
+        rgba(16, 185, 129, 0.10) 50%,
         transparent 100%
       );
       z-index: -1;
@@ -118,7 +120,7 @@
     }
     .header-logo { height: 40px; margin-left: -12px; }
     .sidebar-logo { height: 32px; }
-    .header-logo:hover, .sidebar-logo:hover { opacity: 0.8; }
+    .header-logo:hover, .sidebar-logo:hover { opacity: 0.9; }
     
     .header-logo img, .sidebar-logo img {
       height: 100%;
@@ -126,61 +128,64 @@
       object-fit: contain;
     }
 
-    /* ✦ MAIN HEADER LOGO (GREEN GLOW) ✦ */
+    /* Header logo text/icon in glowing green */
     .header-alticon {
-      font-size: 1.6rem; 
+      font-size: 1.65rem; 
       color: var(--single-glow-color);
-      text-shadow: 0 0 12px rgba(34, 197, 94, 0.45); /* True Green Glow */
+      text-shadow: 0 0 14px rgba(34, 197, 94, 0.6);
       display: inline-block; 
     }
     .header-alttext {
-      font-size: 1.7rem; 
+      font-size: 1.75rem; 
       font-weight: 800;
       color: var(--single-glow-color);
-      text-shadow: 0 0 12px rgba(34, 197, 94, 0.45); /* True Green Glow */
-      letter-spacing: -0.5px;
+      text-shadow: 0 0 14px rgba(34, 197, 94, 0.6);
+      letter-spacing: -0.6px;
     }
 
-    /* ✦ SIDEBAR HEADER LOGO (SOLID WHITE) ✦ */
+    /* Sidebar logo in pure white (classic contrast) */
     .sidebar-alticon {
-      font-size: 1.6rem; 
-      color: #FFFFFF; /* Pure white */
+      font-size: 1.65rem; 
+      color: #FFFFFF;
       display: inline-block; 
     }
     .sidebar-alttext {
-      font-size: 1.7rem; 
+      font-size: 1.75rem; 
       font-weight: 800;
-      color: #FFFFFF; /* Pure white */
-      letter-spacing: -0.5px;
+      color: #FFFFFF;
+      letter-spacing: -0.6px;
     }
 
-    /* ✦ MENU TOGGLE BUTTON ✦ */
+    /* ✦ MENU TOGGLE ✦ */
     .menu-toggle-btn {
       background: transparent;
       border: none;
-      color: var(--text-light); /* Adjusted to stand out on gray */
-      font-size: 1.6rem;
+      color: var(--text-light);
+      font-size: 1.65rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 44px; 
-      height: 44px; 
-      border-radius: 8px;
-      transition: all 0.15s ease;
+      width: 46px; 
+      height: 46px; 
+      border-radius: 10px;
+      transition: all 0.2s ease;
       margin-right: -8px; 
     }
     .menu-toggle-btn i { transition: transform 0.2s ease; }
-    .menu-toggle-btn:hover { background: rgba(255, 255, 255, 0.1); color: #FFFFFF; }
-    .menu-toggle-btn:active i { transform: scale(0.85); }
+    .menu-toggle-btn:hover { 
+      background: rgba(34, 197, 94, 0.15); 
+      color: var(--single-glow-color); 
+    }
+    .menu-toggle-btn:active i { transform: scale(0.9); }
 
     /* ✦ SIDEBAR OVERLAY ✦ */
     .sidebar-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6); 
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
+      background: rgba(0, 0, 0, 0.65); 
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
@@ -192,7 +197,7 @@
       visibility: visible;
     }
 
-    /* ✦ SIDEBAR ✦ */
+    /* ✦ SIDEBAR — Solid deep forest green with premium feel ✦ */
     .sidebar {
       position: fixed;
       top: 0;
@@ -200,22 +205,23 @@
       left: 0;
       height: 100vh; 
       height: 100dvh; 
-      width: 260px; 
-      max-width: 80vw; 
-      background: var(--sidebar-bg); /* Solid Gray */
+      width: 268px; 
+      max-width: 82vw; 
+      background: var(--sidebar-bg);
       z-index: 999;
       display: flex;
       flex-direction: column;
       
-      /* Very thin green divider tracing the exposed sides perfectly */
+      /* Premium thin glowing green border */
       border: 1px solid var(--single-glow-color); 
-      border-left: none; /* No border where it touches the screen edge */
+      border-left: none;
       
-      border-top-right-radius: 24px;
-      border-bottom-right-radius: 24px;
+      border-top-right-radius: 28px;
+      border-bottom-right-radius: 28px;
       
       transform: translateX(-100%);
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 12px 0 30px -10px rgba(34, 197, 94, 0.3);
     }
     .sidebar.active {
       transform: translateX(0);
@@ -228,17 +234,17 @@
       align-items: center;
       padding: 0 24px;
       border-bottom: 1px solid var(--border-light);
-      height: 73px; /* Exact height for Header */
+      height: 74px;
       flex-shrink: 0; 
     }
 
     .sidebar-body {
       flex: 1; 
-      padding: 24px 16px; /* Optimized padding for link hover effects */
+      padding: 24px 16px;
       overflow-y: auto; 
     }
 
-    /* ✦ SIDEBAR NAVIGATION LINKS (THE DYNAMIC DATA) ✦ */
+    /* ✦ NAVIGATION LINKS ✦ */
     .sidebar-nav {
       display: flex;
       flex-direction: column;
@@ -249,39 +255,40 @@
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 12px 16px;
-      color: #FFFFFF; /* Solid white text */
+      padding: 13px 18px;
+      color: #FFFFFF;
       text-decoration: none;
-      font-size: 1.05rem;
+      font-size: 1.06rem;
       font-weight: 500;
-      border-radius: 12px;
+      border-radius: 14px;
       transition: all 0.2s ease;
     }
 
     .sidebar-nav-link i {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       width: 24px;
       text-align: center;
-      color: var(--single-glow-color); /* Icons are green */
+      color: var(--single-glow-color);
       transition: all 0.2s ease;
     }
 
     .sidebar-nav-link:hover {
-      background: rgba(255, 255, 255, 0.08); /* Brighter hover background to contrast with gray base */
-      transform: translateX(4px); /* Slight bump to the right on hover */
+      background: rgba(34, 197, 94, 0.12);
+      transform: translateX(6px);
+      color: #FFFFFF;
     }
 
     .sidebar-nav-link:hover i {
-      text-shadow: 0 0 10px rgba(34, 197, 94, 0.5); /* Adds a green glow on hover */
+      text-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
     }
 
-    /* ✦ RESPONSIVE SIDEBAR FOOTER ✦ */
+    /* ✦ SIDEBAR FOOTER ✦ */
     .sidebar-footer {
       border-top: 1px solid var(--border-light);
       flex-shrink: 0;
-      min-height: calc(73px + env(safe-area-inset-bottom)); 
-      padding: 15px 24px;
-      padding-bottom: calc(15px + env(safe-area-inset-bottom));
+      min-height: calc(74px + env(safe-area-inset-bottom)); 
+      padding: 16px 24px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom));
       display: flex;
       align-items: center;
       justify-content: center;
@@ -291,66 +298,73 @@
     .social-links {
       display: flex;
       gap: 12px; 
-      flex-wrap: wrap; /* Allows wrapping to the next line smoothly */
+      flex-wrap: wrap;
       justify-content: center;
       align-items: center;
       width: 100%;
     }
 
-    /* Round Green Social Buttons */
     .social-icon {
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 42px; 
-      height: 42px;
-      background-color: var(--single-glow-color); /* Matches MCServerHost theme */
+      width: 44px; 
+      height: 44px;
+      background-color: var(--single-glow-color);
       color: #ffffff;
-      border-radius: 50%; /* Perfect Circle */
+      border-radius: 50%;
       text-decoration: none;
-      font-size: 19px; 
-      transition: background-color 0.3s ease, transform 0.3s ease;
+      font-size: 20px; 
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px -4px rgba(34, 197, 94, 0.4);
     }
 
     .social-icon:hover {
       background-color: var(--single-glow-hover);
-      color: #ffffff;
-      transform: translateY(-3px); /* Subtle jump effect */
+      transform: translateY(-4px) scale(1.05);
     }
 
     /* ✦ ANIMATIONS ✦ */
     .sidebar-header, .sidebar-body, .sidebar-footer {
       opacity: 0;
-      transform: translateY(15px);
-      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(18px);
+      transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .sidebar.active .sidebar-header { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
-    .sidebar.active .sidebar-body { opacity: 1; transform: translateY(0); transition-delay: 0.18s; }
+    .sidebar.active .sidebar-header { opacity: 1; transform: translateY(0); transition-delay: 0.08s; }
+    .sidebar.active .sidebar-body { opacity: 1; transform: translateY(0); transition-delay: 0.16s; }
     .sidebar.active .sidebar-footer { opacity: 1; transform: translateY(0); transition-delay: 0.26s; }
     
     /* ✦ CLOSE BUTTON ✦ */
     .sidebar-close-btn {
       background: transparent;
       border: none;
-      color: var(--text-light); /* Adjusted to show up on gray */
-      font-size: 1.5rem;
+      color: var(--text-light);
+      font-size: 1.55rem;
       cursor: pointer;
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.15s ease;
+      transition: all 0.2s ease;
       margin-right: -8px; 
     }
     .sidebar-close-btn i { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     .sidebar.active .sidebar-close-btn i { transform: rotate(90deg); }
-    .sidebar-close-btn:hover { background: rgba(255, 255, 255, 0.1); color: #FFFFFF; }
+    .sidebar-close-btn:hover { 
+      background: rgba(34, 197, 94, 0.15); 
+      color: var(--single-glow-color); 
+    }
     
     body.menu-open { overflow: hidden; touch-action: none; }
 
-    .demo-content { padding: 60px 0; text-align: center; color: var(--text-muted); }
+    .demo-content { 
+      padding: 80px 0; 
+      text-align: center; 
+      color: var(--text-muted); 
+      font-size: 1.1rem;
+    }
   </style>
 </head>
 <body>
@@ -419,34 +433,28 @@
       </button>
     </div>
 
-    <!-- SECTION 2: BODY (DYNAMIC NAVIGATION LINKS) -->
+    <!-- SECTION 2: BODY -->
     <div class="sidebar-body">
-      <!-- Loop through Firestore Navigation Documents (navbutton-1, navbutton-2, etc.) -->
       <% if (sidebar.body && sidebar.body.length > 0) { %>
         <nav class="sidebar-nav">
           <% sidebar.body.forEach(function(link) { %>
             <a href="<%= link.url || '#' %>" class="sidebar-nav-link">
-              <!-- Render icon if available -->
               <% if (link.icon) { %>
                 <i class="<%= link.icon %>"></i>
               <% } %>
-              
-              <!-- Render text -->
               <span><%= link.text || 'Untitled Link' %></span>
             </a>
           <% }); %>
         </nav>
       <% } else { %>
-        <!-- Fallback if database collection is empty -->
         <p style="text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 20px;">
           No navigation links yet
         </p>
       <% } %>
     </div>
 
-    <!-- SECTION 3: FOOTER (DYNAMIC SOCIAL LINKS) -->
+    <!-- SECTION 3: FOOTER -->
     <div class="sidebar-footer">
-      <!-- Loop through Firestore Social Documents (social-1, social-2, etc.) -->
       <% if (sidebar.footer && sidebar.footer.length > 0) { %>
         <div class="social-links">
           <% sidebar.footer.forEach(function(social) { %>
@@ -462,7 +470,8 @@
   </aside>
 
   <div class="container demo-content">
-    <p style="opacity:0.5;">— Gray Header & Sidebar + Thin Green Border Theme —</p>
+    <p style="opacity:0.6;">— Dark Classic Premium Look • Deep Forest Green + Pure Black —</p>
+    <p style="margin-top: 12px; font-size: 0.95rem;">Header &amp; Sidebar fixed exactly as you wanted.</p>
   </div>
 
   <script>
@@ -477,19 +486,18 @@
     canvas.width = width;
     canvas.height = height;
 
-    const maxFlakes = width < 768 ? 25 : 60; // Responsive flake count
+    const maxFlakes = width < 768 ? 28 : 65;
     const flakes = [];
 
-    // Create random snowflakes
     for (let i = 0; i < maxFlakes; i++) {
       flakes.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        r: Math.random() * 2.0 + 0.5, 
-        d: Math.random() * 1.0 + 0.3, 
+        r: Math.random() * 2.2 + 0.6, 
+        d: Math.random() * 1.1 + 0.4, 
         a: Math.random() * Math.PI * 2, 
-        aStep: Math.random() * 0.015 + 0.005, 
-        opacity: Math.random() * 0.4 + 0.1 
+        aStep: Math.random() * 0.016 + 0.006, 
+        opacity: Math.random() * 0.45 + 0.12 
       });
     }
 
@@ -509,22 +517,19 @@
     function moveSnow() {
       for (let i = 0; i < maxFlakes; i++) {
         let f = flakes[i];
-        f.y += f.d; // Move down
+        f.y += f.d;
         f.a += f.aStep; 
-        f.x += Math.sin(f.a) * 0.5; // Natural horizontal sway
+        f.x += Math.sin(f.a) * 0.6;
 
-        // If snow falls off screen, reset it to the top
         if (f.y > height) {
           f.y = -10;
           f.x = Math.random() * width;
         }
-        // Wrap around left/right edges
         if (f.x > width + 10) f.x = -10;
         if (f.x < -10) f.x = width + 10;
       }
     }
 
-    // Handle Window Resize
     window.addEventListener('resize', () => {
       width = window.innerWidth;
       height = window.innerHeight;
@@ -538,7 +543,6 @@
     // ✦ HEADER & SIDEBAR LOGIC ✦
     // ==========================================
 
-    // Main header fallback if image fails to load
     function fallbackHeaderToIconMode() {
       const container = document.getElementById('header-logo-container');
       if (!container) return;
@@ -549,7 +553,6 @@
       container.innerHTML = iconHtml + textHtml;
     }
 
-    // Sidebar fallback if image fails to load
     function fallbackSidebarToIconMode() {
       const container = document.getElementById('sidebar-logo-container');
       if (!container) return;
@@ -560,7 +563,6 @@
       container.innerHTML = iconHtml + textHtml;
     }
 
-    // Toggle Sidebar Logic
     const openBtn = document.getElementById('open-sidebar');
     const closeBtn = document.getElementById('close-sidebar');
     const sidebarElement = document.getElementById('sidebar');
