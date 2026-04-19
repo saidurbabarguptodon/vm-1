@@ -4,23 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KexCloud | Dynamic Header & Sidebar</title>
-  
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
   <style>
     :root {
-      --bg-dark: #0A0A0F;
-      --header-bg: rgba(15, 15, 20, 0.75);
-      --sidebar-bg: #121218;
-      --accent-gray: #6B7280;
-      --accent-light: #9CA3AF;
-      --text-light: #F1F5F9;
-      --text-muted: #94A3B8;
-      --single-glow-color: #22C55E;
-      --single-glow-hover: #16a34a;
-      --border-light: rgba(255, 255, 255, 0.06);
-      --shadow-soft: 0 10px 20px -8px rgba(0, 0, 0, 0.5);
+      --bg-deep: #0A0A0F;
+      --header-glass: rgba(15, 15, 20, 0.75);
+      --sidebar-surface: #121218;
+      --accent-muted: #6B7280;
+      --accent-soft: #9CA3AF;
+      --text-primary: #F1F5F9;
+      --text-secondary: #94A3B8;
+      --glow-primary: #22C55E;
+      --glow-deep: #16a34a;
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --shadow-elevated: 0 10px 20px -8px rgba(0, 0, 0, 0.5);
     }
 
     * {
@@ -32,8 +30,8 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-light);
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
       line-height: 1.6;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
@@ -50,7 +48,7 @@
       z-index: 1;
     }
 
-    .container {
+    .content-wrapper {
       position: relative;
       z-index: 2;
       max-width: 1280px;
@@ -58,26 +56,19 @@
       padding: 0 24px;
     }
 
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-    }
-
-    .header {
+    .app-header {
       width: 100%;
-      background: var(--header-bg);
+      background: var(--header-glass);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       position: sticky;
       top: 0;
       z-index: 100;
-      border-bottom: 1px solid var(--border-light);
-      box-shadow: var(--shadow-soft);
+      border-bottom: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-elevated);
     }
 
-    .header::after {
+    .app-header::after {
       content: "";
       position: absolute;
       top: 100%;
@@ -94,7 +85,14 @@
       pointer-events: none;
     }
 
-    .header-logo, .sidebar-logo {
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    .brand {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -102,36 +100,44 @@
       text-decoration: none;
     }
 
-    .header-logo { height: 40px; margin-left: -12px; }
-    .sidebar-logo { height: 32px; }
+    .brand--header {
+      height: 40px;
+      margin-left: -12px;
+    }
 
-    .header-logo:hover, .sidebar-logo:hover { opacity: 0.8; }
+    .brand--sidebar {
+      height: 32px;
+    }
 
-    .header-logo img, .sidebar-logo img {
+    .brand:hover {
+      opacity: 0.8;
+    }
+
+    .brand__image {
       height: 100%;
       width: auto;
       object-fit: contain;
     }
 
-    .header-alticon, .sidebar-alticon {
+    .brand__icon {
       font-size: 1.6rem;
-      color: var(--single-glow-color);
+      color: var(--glow-primary);
       text-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
       display: inline-block;
     }
 
-    .header-alttext, .sidebar-alttext {
+    .brand__text {
       font-size: 1.7rem;
       font-weight: 800;
-      color: var(--single-glow-color);
+      color: var(--glow-primary);
       text-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
       letter-spacing: -0.5px;
     }
 
-    .menu-toggle-btn {
+    .menu-toggle {
       background: transparent;
       border: none;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       font-size: 1.6rem;
       cursor: pointer;
       display: flex;
@@ -144,9 +150,18 @@
       margin-right: -8px;
     }
 
-    .menu-toggle-btn i { transition: transform 0.2s ease; }
-    .menu-toggle-btn:hover { background: rgba(255, 255, 255, 0.06); color: #FFFFFF; }
-    .menu-toggle-btn:active i { transform: scale(0.85); }
+    .menu-toggle i {
+      transition: transform 0.2s ease;
+    }
+
+    .menu-toggle:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #FFFFFF;
+    }
+
+    .menu-toggle:active i {
+      transform: scale(0.85);
+    }
 
     .sidebar-overlay {
       position: fixed;
@@ -161,12 +176,12 @@
       cursor: pointer;
     }
 
-    .sidebar-overlay.active {
+    .sidebar-overlay.is-visible {
       opacity: 1;
       visibility: visible;
     }
 
-    .sidebar {
+    .app-sidebar {
       position: fixed;
       top: 0;
       bottom: 0;
@@ -175,102 +190,104 @@
       height: 100dvh;
       width: 280px;
       max-width: 80vw;
-      background: var(--sidebar-bg);
+      background: var(--sidebar-surface);
       z-index: 999;
       display: flex;
       flex-direction: column;
       border-top-right-radius: 24px;
       border-bottom-right-radius: 24px;
-      border-right: 1px solid var(--border-light);
+      border-right: 1px solid var(--border-subtle);
       box-shadow: 4px 0 12px rgba(0, 0, 0, 0.4);
       transform: translateX(-100%);
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .sidebar.active {
+    .app-sidebar.is-expanded {
       transform: translateX(0);
     }
 
-    .sidebar-header {
+    .sidebar__header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 0 24px;
-      border-bottom: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-subtle);
       height: 73px;
       flex-shrink: 0;
     }
 
-    .sidebar-body {
+    .sidebar__body {
       flex: 1;
-      padding: 12px 8px 20px 8px;   /* Moved up (less top padding), left/right 8px gap */
+      padding: 12px 8px 20px 8px;
       overflow-y: auto;
     }
 
-    .sidebar-nav {
+    .nav-menu {
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
 
-    .sidebar-nav-link {
+    .nav-link {
       display: flex;
       align-items: center;
       gap: 16px;
-      padding: 14px 15px;           /* Exactly 15px left/right internal gap */
-      min-height: 64px;             /* Taller overall height */
-      color: var(--text-muted);
+      padding: 14px 15px;
+      min-height: 64px;
+      color: var(--text-secondary);
       text-decoration: none;
       border-radius: 12px;
-      transition: all 0.2s ease;
+      transition: all 0.25s ease;
+      border-left: 3px solid transparent;
     }
 
-    .sidebar-nav-link i {
-      font-size: 1.65rem;           /* Slightly bigger icon */
+    .nav-link i {
+      font-size: 1.65rem;
       width: 30px;
       text-align: center;
       flex-shrink: 0;
-      transition: color 0.2s ease;
+      transition: color 0.2s ease, text-shadow 0.2s ease;
     }
 
-    .nav-content {
+    .nav-link__content {
       display: flex;
       flex-direction: column;
       justify-content: center;
       line-height: 1.3;
     }
 
-    .nav-title {
+    .nav-link__title {
       font-size: 1.1rem;
       font-weight: 600;
-      color: var(--text-light);
+      color: var(--text-primary);
       margin-bottom: 2px;
     }
 
-    .nav-desc {
+    .nav-link__desc {
       font-size: 0.75rem;
       font-weight: 400;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       opacity: 0.8;
       margin-top: 2px;
     }
 
-    .sidebar-nav-link:hover {
+    .nav-link:hover {
       background: rgba(255, 255, 255, 0.04);
       transform: translateX(4px);
+      border-left-color: var(--glow-primary);
     }
 
-    .sidebar-nav-link:hover i {
-      color: var(--single-glow-color);
-      text-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+    .nav-link:hover i {
+      color: var(--glow-primary);
+      text-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
     }
 
-    .sidebar-nav-link:hover .nav-title {
+    .nav-link:hover .nav-link__title {
       color: #ffffff;
     }
 
-    .sidebar-footer {
-      border-top: 1px solid var(--border-light);
+    .sidebar__footer {
+      border-top: 1px solid var(--border-subtle);
       flex-shrink: 0;
       min-height: calc(73px + env(safe-area-inset-bottom));
       padding: 15px 24px;
@@ -281,7 +298,7 @@
       margin-top: auto;
     }
 
-    .social-links {
+    .social-list {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -290,40 +307,31 @@
       width: 100%;
     }
 
-    .social-icon {
+    .social-link {
       display: flex;
       justify-content: center;
       align-items: center;
       width: 42px;
       height: 42px;
-      background-color: var(--single-glow-color);
+      background-color: var(--glow-primary);
       color: #ffffff;
       border-radius: 50%;
       text-decoration: none;
       font-size: 19px;
-      transition: background-color 0.3s ease, transform 0.3s ease;
+      transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .social-icon:hover {
-      background-color: var(--single-glow-hover);
+    .social-link:hover {
+      background-color: var(--glow-deep);
       color: #ffffff;
       transform: translateY(-3px);
+      box-shadow: 0 8px 16px -4px rgba(34, 197, 94, 0.4);
     }
 
-    .sidebar-header, .sidebar-body, .sidebar-footer {
-      opacity: 0;
-      transform: translateY(15px);
-      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .sidebar.active .sidebar-header { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
-    .sidebar.active .sidebar-body { opacity: 1; transform: translateY(0); transition-delay: 0.18s; }
-    .sidebar.active .sidebar-footer { opacity: 1; transform: translateY(0); transition-delay: 0.26s; }
-
-    .sidebar-close-btn {
+    .sidebar__close {
       background: transparent;
       border: none;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       font-size: 1.5rem;
       cursor: pointer;
       width: 36px;
@@ -336,146 +344,191 @@
       margin-right: -8px;
     }
 
-    .sidebar-close-btn i { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-    .sidebar.active .sidebar-close-btn i { transform: rotate(90deg); }
-    .sidebar-close-btn:hover { background: rgba(255, 255, 255, 0.06); color: #FFFFFF; }
+    .sidebar__close i {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-    body.menu-open { overflow: hidden; touch-action: none; }
-    .demo-content { padding: 60px 0; text-align: center; color: var(--text-muted); }
+    .app-sidebar.is-expanded .sidebar__close i {
+      transform: rotate(90deg);
+    }
+
+    .sidebar__close:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #FFFFFF;
+    }
+
+    .sidebar__header,
+    .sidebar__body,
+    .sidebar__footer {
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .app-sidebar.is-expanded .sidebar__header {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.1s;
+    }
+
+    .app-sidebar.is-expanded .sidebar__body {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.18s;
+    }
+
+    .app-sidebar.is-expanded .sidebar__footer {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.26s;
+    }
+
+    body.has-menu-open {
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .demo-placeholder {
+      padding: 60px 0;
+      text-align: center;
+      color: var(--text-secondary);
+    }
   </style>
 </head>
 <body>
 
-  <canvas id="snow-canvas"></canvas>
+<canvas id="snow-canvas"></canvas>
 
-  <header class="header">
-    <div class="container">
-      <nav class="navbar">
-        <a href="/" class="header-logo" id="header-logo-container"></a>
-        <button class="menu-toggle-btn" id="open-sidebar" aria-label="Open Menu">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-      </nav>
-    </div>
-  </header>
-
-  <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <a href="/" class="sidebar-logo" id="sidebar-logo-container"></a>
-      <button class="sidebar-close-btn" id="close-sidebar" aria-label="Close Menu">
-        <i class="fa-solid fa-xmark"></i>
+<header class="app-header">
+  <div class="content-wrapper">
+    <nav class="navbar">
+      <a href="/" class="brand brand--header" id="header-brand"></a>
+      <button class="menu-toggle" id="open-sidebar" aria-label="Open Menu">
+        <i class="fa-solid fa-bars"></i>
       </button>
-    </div>
+    </nav>
+  </div>
+</header>
 
-    <div class="sidebar-body">
-      <nav class="sidebar-nav" id="sidebar-nav-links"></nav>
-    </div>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-    <div class="sidebar-footer">
-      <div class="social-links" id="social-links-container"></div>
-    </div>
-  </aside>
-
-  <div class="container demo-content">
-    <p style="opacity:0.5;">— Dark Gray Header + Green Gaming Theme —</p>
+<aside class="app-sidebar" id="app-sidebar">
+  <div class="sidebar__header">
+    <a href="/" class="brand brand--sidebar" id="sidebar-brand"></a>
+    <button class="sidebar__close" id="close-sidebar" aria-label="Close Menu">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
   </div>
 
-  <script>
-    window.__FALLBACK_DATA = {
-      header: {
-        alticon: <%- JSON.stringify(header.alticon || "") %>,
-        alttext: <%- JSON.stringify(header.alttext || "") %>
-      },
-      sidebar: {
-        alticon: <%- JSON.stringify(sidebar.header?.alticon || "") %>,
-        alttext: <%- JSON.stringify(sidebar.header?.alttext || "") %>
-      }
-    };
-  </script>
+  <div class="sidebar__body">
+    <nav class="nav-menu" id="sidebar-navigation"></nav>
+  </div>
 
-  <script>
-    (function() {
-      const headerLogoContainer = document.getElementById('header-logo-container');
-      const sidebarLogoContainer = document.getElementById('sidebar-logo-container');
+  <div class="sidebar__footer">
+    <div class="social-list" id="social-links"></div>
+  </div>
+</aside>
 
-      function renderLogo(container, logourl, alticon, alttext, prefix) {
-        if (logourl && logourl.trim() !== '') {
-          const img = document.createElement('img');
-          img.src = logourl;
-          img.alt = alttext || 'Logo';
-          img.dataset.fallback = prefix;
-          img.onerror = function() {
-            this.onerror = null;
-            const parent = this.parentNode;
-            if (!parent) return;
-            const fallback = window.__FALLBACK_DATA?.[prefix] || { alticon: '', alttext: '' };
-            let html = '';
-            if (fallback.alticon) html += `<i class="${fallback.alticon} ${prefix}-alticon"></i>`;
-            if (fallback.alttext) html += `<span class="${prefix}-alttext">${fallback.alttext}</span>`;
-            parent.innerHTML = html || '';
-          };
-          container.innerHTML = '';
-          container.appendChild(img);
-        } else {
+<div class="content-wrapper demo-placeholder">
+  <p style="opacity:0.5;">— Dark Gray Header + Green Gaming Theme —</p>
+</div>
+
+<script>
+  window.__FALLBACK_DATA = {
+    header: {
+      alticon: <%- JSON.stringify(header.alticon || "") %>,
+      alttext: <%- JSON.stringify(header.alttext || "") %>
+    },
+    sidebar: {
+      alticon: <%- JSON.stringify(sidebar.header?.alticon || "") %>,
+      alttext: <%- JSON.stringify(sidebar.header?.alttext || "") %>
+    }
+  };
+</script>
+
+<script>
+  (function() {
+    const headerBrand = document.getElementById('header-brand');
+    const sidebarBrand = document.getElementById('sidebar-brand');
+
+    function renderBrand(container, logourl, alticon, alttext, context) {
+      if (logourl && logourl.trim() !== '') {
+        const img = document.createElement('img');
+        img.src = logourl;
+        img.alt = alttext || 'Logo';
+        img.className = 'brand__image';
+        img.dataset.fallback = context;
+        img.onerror = function() {
+          this.onerror = null;
+          const parent = this.parentNode;
+          if (!parent) return;
+          const fallback = window.__FALLBACK_DATA?.[context] || { alticon: '', alttext: '' };
           let html = '';
-          if (alticon) html += `<i class="${alticon} ${prefix}-alticon"></i>`;
-          if (alttext) html += `<span class="${prefix}-alttext">${alttext}</span>`;
-          container.innerHTML = html;
-        }
-      }
-
-      renderLogo(
-        headerLogoContainer,
-        <%- JSON.stringify(header.logourl || "") %>,
-        <%- JSON.stringify(header.alticon || "") %>,
-        <%- JSON.stringify(header.alttext || "") %>,
-        'header'
-      );
-
-      renderLogo(
-        sidebarLogoContainer,
-        <%- JSON.stringify(sidebar.header?.logourl || "") %>,
-        <%- JSON.stringify(sidebar.header?.alticon || "") %>,
-        <%- JSON.stringify(sidebar.header?.alttext || "") %>,
-        'sidebar'
-      );
-
-      const navContainer = document.getElementById('sidebar-nav-links');
-      const bodyLinks = <%- JSON.stringify(sidebar.body || []) %>;
-      if (bodyLinks.length > 0) {
-        navContainer.innerHTML = bodyLinks.map(link => `
-          <a href="${link.url || '#'}" class="sidebar-nav-link">
-            ${link.icon ? `<i class="${link.icon}"></i>` : ''}
-            <div class="nav-content">
-              <span class="nav-title">${link.text || 'Untitled Link'}</span>
-              ${link.description ? `<span class="nav-desc">${link.description}</span>` : ''}
-            </div>
-          </a>
-        `).join('');
+          if (fallback.alticon) html += `<i class="${fallback.alticon} brand__icon"></i>`;
+          if (fallback.alttext) html += `<span class="brand__text">${fallback.alttext}</span>`;
+          parent.innerHTML = html || '';
+        };
+        container.innerHTML = '';
+        container.appendChild(img);
       } else {
-        navContainer.innerHTML = '<p style="text-align:center;color:var(--text-muted);font-size:13px;margin-top:20px;">No navigation links yet</p>';
+        let html = '';
+        if (alticon) html += `<i class="${alticon} brand__icon"></i>`;
+        if (alttext) html += `<span class="brand__text">${alttext}</span>`;
+        container.innerHTML = html;
       }
+    }
 
-      const socialContainer = document.getElementById('social-links-container');
-      const socialLinks = <%- JSON.stringify(sidebar.footer || []) %>;
-      if (socialLinks.length > 0) {
-        socialContainer.innerHTML = socialLinks.map(social => `
-          <a href="${social.url}" target="_blank" class="social-icon">
-            <i class="${social.icon}"></i>
-          </a>
-        `).join('');
-      } else {
-        socialContainer.innerHTML = '<p style="text-align:center;color:var(--text-muted);font-size:13px;width:100%;margin:0;">No socials yet</p>';
-      }
-    })();
-  </script>
+    renderBrand(
+      headerBrand,
+      <%- JSON.stringify(header.logourl || "") %>,
+      <%- JSON.stringify(header.alticon || "") %>,
+      <%- JSON.stringify(header.alttext || "") %>,
+      'header'
+    );
 
-  <script>
+    renderBrand(
+      sidebarBrand,
+      <%- JSON.stringify(sidebar.header?.logourl || "") %>,
+      <%- JSON.stringify(sidebar.header?.alticon || "") %>,
+      <%- JSON.stringify(sidebar.header?.alttext || "") %>,
+      'sidebar'
+    );
+
+    const navContainer = document.getElementById('sidebar-navigation');
+    const bodyLinks = <%- JSON.stringify(sidebar.body || []) %>;
+    if (bodyLinks.length > 0) {
+      navContainer.innerHTML = bodyLinks.map(link => `
+        <a href="${link.url || '#'}" class="nav-link">
+          ${link.icon ? `<i class="${link.icon}"></i>` : ''}
+          <div class="nav-link__content">
+            <span class="nav-link__title">${link.text || 'Untitled Link'}</span>
+            ${link.description ? `<span class="nav-link__desc">${link.description}</span>` : ''}
+          </div>
+        </a>
+      `).join('');
+    } else {
+      navContainer.innerHTML = '<p style="text-align:center;color:var(--text-secondary);font-size:13px;margin-top:20px;">No navigation links yet</p>';
+    }
+
+    const socialContainer = document.getElementById('social-links');
+    const socialLinks = <%- JSON.stringify(sidebar.footer || []) %>;
+    if (socialLinks.length > 0) {
+      socialContainer.innerHTML = socialLinks.map(social => `
+        <a href="${social.url}" target="_blank" class="social-link" rel="noopener">
+          <i class="${social.icon}"></i>
+        </a>
+      `).join('');
+    } else {
+      socialContainer.innerHTML = '<p style="text-align:center;color:var(--text-secondary);font-size:13px;width:100%;margin:0;">No socials yet</p>';
+    }
+  })();
+</script>
+
+<script>
+  (function() {
     const canvas = document.getElementById('snow-canvas');
     const ctx = canvas.getContext('2d');
-    
+
     let width = window.innerWidth;
     let height = window.innerHeight;
     canvas.width = width;
@@ -535,24 +588,25 @@
 
     const openBtn = document.getElementById('open-sidebar');
     const closeBtn = document.getElementById('close-sidebar');
-    const sidebarElement = document.getElementById('sidebar');
+    const sidebarEl = document.getElementById('app-sidebar');
     const overlay = document.getElementById('sidebar-overlay');
 
     function openSidebar() {
-      sidebarElement.classList.add('active');
-      overlay.classList.add('active');
-      document.body.classList.add('menu-open');
+      sidebarEl.classList.add('is-expanded');
+      overlay.classList.add('is-visible');
+      document.body.classList.add('has-menu-open');
     }
 
     function closeSidebar() {
-      sidebarElement.classList.remove('active');
-      overlay.classList.remove('active');
-      document.body.classList.remove('menu-open');
+      sidebarEl.classList.remove('is-expanded');
+      overlay.classList.remove('is-visible');
+      document.body.classList.remove('has-menu-open');
     }
 
     openBtn.addEventListener('click', openSidebar);
     closeBtn.addEventListener('click', closeSidebar);
     overlay.addEventListener('click', closeSidebar);
-  </script>
+  })();
+</script>
 </body>
 </html>
