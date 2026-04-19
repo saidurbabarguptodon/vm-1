@@ -67,28 +67,23 @@ const headerDoc = {
 // 5. HERO DOCUMENT (web/body/hero)
 // ===============================
 const heroDoc = {
+  _defaultFields: {
+    primarytext: "",
+    secondarytext: "",
+    footertext: "",
+    buttonenabled: false,
+    buttontext: "",
+    buttonicon: "",
+    buttonurl: ""
+  },
+
   async create() {
     try {
-      const bodyDocRef = db.collection('web').doc('body');
-      const bodyDoc = await bodyDocRef.get();
-      if (!bodyDoc.exists) {
-        await bodyDocRef.set({});
-      }
-
       const docRef = db.collection('web').doc('body').collection('hero').doc('content');
       const doc = await docRef.get();
       
       if (!doc.exists) {
-        const fields = {
-          primarytext: "",
-          secondarytext: "",
-          footertext: "",
-          buttonenabled: false,
-          buttontext: "",
-          buttonicon: "",
-          buttonurl: ""
-        };
-        await docRef.set(fields);
+        await docRef.set(this._defaultFields);
         console.log(`✅ Hero document created at web/body/hero/content with lowercase fields`);
       } else {
         console.log(`ℹ️ Hero document already exists at web/body/hero/content:`, doc.data());
@@ -102,31 +97,10 @@ const heroDoc = {
     try {
       const docRef = db.collection('web').doc('body').collection('hero').doc('content');
       const doc = await docRef.get();
-      
-      if (doc.exists) {
-        return doc.data();
-      } else {
-        return {
-          primarytext: "",
-          secondarytext: "",
-          footertext: "",
-          buttonenabled: false,
-          buttontext: "",
-          buttonicon: "",
-          buttonurl: ""
-        };
-      }
+      return doc.exists ? doc.data() : this._defaultFields;
     } catch (err) {
       console.error("Error in hero.get:", err);
-      return {
-        primarytext: "",
-        secondarytext: "",
-        footertext: "",
-        buttonenabled: false,
-        buttontext: "",
-        buttonicon: "",
-        buttonurl: ""
-      };
+      return this._defaultFields;
     }
   }
 };
