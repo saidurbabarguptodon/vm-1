@@ -69,6 +69,12 @@ const headerDoc = {
 const heroDoc = {
   async create() {
     try {
+      const bodyDocRef = db.collection('web').doc('body');
+      const bodyDoc = await bodyDocRef.get();
+      if (!bodyDoc.exists) {
+        await bodyDocRef.set({ _created: admin.firestore.FieldValue.serverTimestamp() });
+      }
+
       const docRef = db.collection('web').doc('body').collection('hero').doc('content');
       const doc = await docRef.get();
       
@@ -122,17 +128,6 @@ const heroDoc = {
         buttonUrl: ""
       };
     }
-  },
-
-  async update(updates) {
-    try {
-      const docRef = db.collection('web').doc('body').collection('hero').doc('content');
-      await docRef.update(updates);
-      console.log(`✅ Hero document updated with:`, updates);
-    } catch (err) {
-      console.error("Error in hero.update:", err);
-      throw err;
-    }
   }
 };
 
@@ -145,30 +140,12 @@ const sidebarDoc = {
       const docRef = db.collection('web').doc('sidebar');
       const doc = await docRef.get();
 
-      let isCreated = false;
-
       if (!doc.exists) {
         await docRef.set({
           header: { alticon: "", alttext: "", logourl: "" }
         });
-
-        await docRef.collection('body').doc('navbutton-1').set({
-          icon: "fa-solid fa-house",
-          url: "/",
-          text: "Home",
-          description: "Your dashboard overview"
-        });
-
-        await docRef.collection('footer').doc('social-1').set({
-          icon: "fa-brands fa-discord",
-          url: "https://discord.com"
-        });
-
-        console.log(`✅ Sidebar document and subcollections created at web/sidebar`);
-        isCreated = true;
-      }
-
-      if (!isCreated) {
+        console.log(`✅ Sidebar document created at web/sidebar (empty body and footer subcollections)`);
+      } else {
         const bodyRef = docRef.collection('body');
         const bodyDocs = await bodyRef.orderBy(admin.firestore.FieldPath.documentId()).limit(1).get();
         
@@ -261,10 +238,6 @@ async function getHero() {
   return await heroDoc.get();
 }
 
-async function updateHero(updates) {
-  return await heroDoc.update(updates);
-}
-
 async function getSidebar() {
   const header = await sidebarDoc.getHeader();
   const body = await sidebarDoc.getBody();
@@ -277,6 +250,5 @@ module.exports = {
   initializeFirestore,
   getHeader,
   getHero,
-  updateHero,
   getSidebar
 };
