@@ -85,7 +85,8 @@ const sidebarDoc = {
         await docRef.collection('body').doc('navbutton-1').set({
           icon: "fa-solid fa-house",
           url: "/",
-          text: "Home"
+          text: "Home",
+          description: "Your dashboard overview"  // Added description field
         });
 
         // ✦ SEED DEFAULT SOCIAL BUTTON (social-1) ✦
@@ -149,34 +150,34 @@ const sidebarDoc = {
     }
   },
 
-  // ✦ FETCH ALL SIDEBAR BODY DOCUMENTS ✦
+  // ✦ FETCH ALL SIDEBAR BODY DOCUMENTS (UPDATED WITH DESCRIPTION) ✦
   async getBody() {
     try {
       // Order by document ID so navbutton-1 comes before navbutton-2 automatically
       const snapshot = await db.collection('web').doc('sidebar').collection('body').orderBy(admin.firestore.FieldPath.documentId()).get();
       
-      // Explicitly map icon, url, and text based on your required structure
+      // Include description field (default empty string)
       return snapshot.docs.map(doc => ({ 
         id: doc.id, 
         icon: doc.data().icon || "",
         url: doc.data().url || "#",
-        text: doc.data().text || "Untitled"
+        text: doc.data().text || "Untitled",
+        description: doc.data().description || ""   // New field
       }));
     } catch (err) {
       console.error("Error in sidebar.getBody:", err);
-      return []; // Return empty array if error occurs
+      return [];
     }
   },
 
   // Fetch all sidebar footer documents (social-1, social-2, etc.)
   async getFooter() {
     try {
-      // Order by document ID so social-1 comes before social-2 automatically
       const snapshot = await db.collection('web').doc('sidebar').collection('footer').orderBy(admin.firestore.FieldPath.documentId()).get();
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (err) {
       console.error("Error in sidebar.getFooter:", err);
-      return []; // Return empty array if error
+      return [];
     }
   }
 };
@@ -199,7 +200,7 @@ async function getHeader() {
 // Combines the sidebar header, body, and footer into one object for index.js
 async function getSidebar() {
   const header = await sidebarDoc.getHeader();
-  const body = await sidebarDoc.getBody();     // Fetches nav links
+  const body = await sidebarDoc.getBody();     // Fetches nav links with descriptions
   const footer = await sidebarDoc.getFooter(); // Fetches social links
   
   return { header, body, footer }; 
