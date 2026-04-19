@@ -64,7 +64,80 @@ const headerDoc = {
 };
 
 // ===============================
-// 5. SIDEBAR DOCUMENTS (web/sidebar)
+// 5. HERO DOCUMENT (web/body/hero)
+// ===============================
+const heroDoc = {
+  async create() {
+    try {
+      const docRef = db.collection('web').doc('body').collection('hero').doc('content');
+      const doc = await docRef.get();
+      
+      if (!doc.exists) {
+        const emptyHero = {
+          primaryText: "",
+          secondaryText: "",
+          footerText: "",
+          buttonEnabled: false,
+          buttonText: "",
+          buttonIcon: "",
+          buttonUrl: ""
+        };
+        await docRef.set(emptyHero);
+        console.log(`✅ Hero document created at web/body/hero/content (empty structure)`);
+      } else {
+        console.log(`ℹ️ Hero document already exists at web/body/hero/content:`, doc.data());
+      }
+    } catch (err) {
+      console.error("Error in hero.create:", err);
+    }
+  },
+
+  async get() {
+    try {
+      const docRef = db.collection('web').doc('body').collection('hero').doc('content');
+      const doc = await docRef.get();
+      
+      if (doc.exists) {
+        return doc.data();
+      } else {
+        return {
+          primaryText: "",
+          secondaryText: "",
+          footerText: "",
+          buttonEnabled: false,
+          buttonText: "",
+          buttonIcon: "",
+          buttonUrl: ""
+        };
+      }
+    } catch (err) {
+      console.error("Error in hero.get:", err);
+      return {
+        primaryText: "",
+        secondaryText: "",
+        footerText: "",
+        buttonEnabled: false,
+        buttonText: "",
+        buttonIcon: "",
+        buttonUrl: ""
+      };
+    }
+  },
+
+  async update(updates) {
+    try {
+      const docRef = db.collection('web').doc('body').collection('hero').doc('content');
+      await docRef.update(updates);
+      console.log(`✅ Hero document updated with:`, updates);
+    } catch (err) {
+      console.error("Error in hero.update:", err);
+      throw err;
+    }
+  }
+};
+
+// ===============================
+// 6. SIDEBAR DOCUMENTS (web/sidebar)
 // ===============================
 const sidebarDoc = {
   async create() {
@@ -74,22 +147,18 @@ const sidebarDoc = {
 
       let isCreated = false;
 
-      // 1. Check if the main sidebar document exists
       if (!doc.exists) {
-        // Create Sidebar Header Parent
         await docRef.set({
           header: { alticon: "", alttext: "", logourl: "" }
         });
 
-        // ✦ SEED DEFAULT NAV BUTTON (navbutton-1) ✦
         await docRef.collection('body').doc('navbutton-1').set({
           icon: "fa-solid fa-house",
           url: "/",
           text: "Home",
-          description: "Your dashboard overview"  // Added description field
+          description: "Your dashboard overview"
         });
 
-        // ✦ SEED DEFAULT SOCIAL BUTTON (social-1) ✦
         await docRef.collection('footer').doc('social-1').set({
           icon: "fa-brands fa-discord",
           url: "https://discord.com"
@@ -99,9 +168,7 @@ const sidebarDoc = {
         isCreated = true;
       }
 
-      // 2. Build the exact console log for existing documents
       if (!isCreated) {
-        // --- Fetch the BODY subcollection (e.g., navbutton-1) ---
         const bodyRef = docRef.collection('body');
         const bodyDocs = await bodyRef.orderBy(admin.firestore.FieldPath.documentId()).limit(1).get();
         
@@ -111,7 +178,6 @@ const sidebarDoc = {
           bodyData[firstBodyDoc.id] = firstBodyDoc.data();
         }
 
-        // --- Fetch the FOOTER subcollection (e.g., social-1) ---
         const footerRef = docRef.collection('footer');
         const footerDocs = await footerRef.orderBy(admin.firestore.FieldPath.documentId()).limit(1).get();
         
@@ -121,7 +187,6 @@ const sidebarDoc = {
           footerData[firstFooterDoc.id] = firstFooterDoc.data();
         }
 
-        // Combine header, body, and footer into one single object for the log
         const combinedLogObject = {
           header: doc.data().header,
           body: bodyData,
@@ -150,19 +215,16 @@ const sidebarDoc = {
     }
   },
 
-  // ✦ FETCH ALL SIDEBAR BODY DOCUMENTS (UPDATED WITH DESCRIPTION) ✦
   async getBody() {
     try {
-      // Order by document ID so navbutton-1 comes before navbutton-2 automatically
       const snapshot = await db.collection('web').doc('sidebar').collection('body').orderBy(admin.firestore.FieldPath.documentId()).get();
       
-      // Include description field (default empty string)
       return snapshot.docs.map(doc => ({ 
         id: doc.id, 
         icon: doc.data().icon || "",
         url: doc.data().url || "#",
         text: doc.data().text || "Untitled",
-        description: doc.data().description || ""   // New field
+        description: doc.data().description || ""
       }));
     } catch (err) {
       console.error("Error in sidebar.getBody:", err);
@@ -170,7 +232,6 @@ const sidebarDoc = {
     }
   },
 
-  // Fetch all sidebar footer documents (social-1, social-2, etc.)
   async getFooter() {
     try {
       const snapshot = await db.collection('web').doc('sidebar').collection('footer').orderBy(admin.firestore.FieldPath.documentId()).get();
@@ -183,32 +244,39 @@ const sidebarDoc = {
 };
 
 // ===============================
-// 6. WRAPPER FUNCTIONS & EXPORTS
+// 7. WRAPPER FUNCTIONS & EXPORTS
 // ===============================
 
-// This creates the database structures automatically on startup
 async function initializeFirestore() {
   await headerDoc.create();
+  await heroDoc.create();
   await sidebarDoc.create();
 }
 
-// Packages the header data to be exported to index.js
 async function getHeader() {
   return await headerDoc.get();
 }
 
-// Combines the sidebar header, body, and footer into one object for index.js
+async function getHero() {
+  return await heroDoc.get();
+}
+
+async function updateHero(updates) {
+  return await heroDoc.update(updates);
+}
+
 async function getSidebar() {
   const header = await sidebarDoc.getHeader();
-  const body = await sidebarDoc.getBody();     // Fetches nav links with descriptions
-  const footer = await sidebarDoc.getFooter(); // Fetches social links
+  const body = await sidebarDoc.getBody();
+  const footer = await sidebarDoc.getFooter();
   
   return { header, body, footer }; 
 }
 
-// Export everything so index.js can see them
 module.exports = {
   initializeFirestore,
   getHeader,
+  getHero,
+  updateHero,
   getSidebar
 };
