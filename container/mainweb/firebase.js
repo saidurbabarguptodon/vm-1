@@ -44,7 +44,7 @@ const headerDoc = {
         await docRef.set({ alticon: "", alttext: "", logourl: "" });
         console.log(`✅ Header document created at web/header`);
       } else {
-        console.log(`ℹ️ Header document already exists at web/header:`, doc.data());
+        console.log(`ℹ️ Header document already exists at web/header:\n${JSON.stringify(doc.data(), null, 2)}`);
       }
     } catch (err) {
       console.error("Error in header.create:", err);
@@ -86,7 +86,7 @@ const heroDoc = {
         await docRef.set(this._defaultFields);
         console.log(`✅ Hero document created at web/body/hero/content with lowercase fields`);
       } else {
-        console.log(`ℹ️ Hero document already exists at web/body/hero/content:`, doc.data());
+        console.log(`ℹ️ Hero document already exists at web/body/hero/content:\n${JSON.stringify(doc.data(), null, 2)}`);
       }
     } catch (err) {
       console.error("Error in hero.create:", err);
@@ -144,7 +144,7 @@ const sidebarDoc = {
           footer: footerData
         };
 
-        console.log(`ℹ️ Sidebar document already exists at web/sidebar:`, combinedLogObject);
+        console.log(`ℹ️ Sidebar document already exists at web/sidebar:\n${JSON.stringify(combinedLogObject, null, 2)}`);
       }
 
     } catch (err) {
