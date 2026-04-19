@@ -120,23 +120,17 @@ const sidebarDoc = {
         });
         console.log(`✅ Sidebar document created at web/sidebar (empty body and footer subcollections)`);
       } else {
-        const bodyRef = docRef.collection('body');
-        const bodyDocs = await bodyRef.orderBy(admin.firestore.FieldPath.documentId()).limit(1).get();
-        
+        const bodySnapshot = await docRef.collection('body').orderBy(admin.firestore.FieldPath.documentId()).get();
         let bodyData = {};
-        if (!bodyDocs.empty) {
-          const firstBodyDoc = bodyDocs.docs[0];
-          bodyData[firstBodyDoc.id] = firstBodyDoc.data();
-        }
+        bodySnapshot.docs.forEach(doc => {
+          bodyData[doc.id] = doc.data();
+        });
 
-        const footerRef = docRef.collection('footer');
-        const footerDocs = await footerRef.orderBy(admin.firestore.FieldPath.documentId()).limit(1).get();
-        
+        const footerSnapshot = await docRef.collection('footer').orderBy(admin.firestore.FieldPath.documentId()).get();
         let footerData = {};
-        if (!footerDocs.empty) {
-          const firstFooterDoc = footerDocs.docs[0];
-          footerData[firstFooterDoc.id] = firstFooterDoc.data();
-        }
+        footerSnapshot.docs.forEach(doc => {
+          footerData[doc.id] = doc.data();
+        });
 
         const combinedLogObject = {
           header: doc.data().header,
@@ -169,7 +163,6 @@ const sidebarDoc = {
   async getBody() {
     try {
       const snapshot = await db.collection('web').doc('sidebar').collection('body').orderBy(admin.firestore.FieldPath.documentId()).get();
-      
       return snapshot.docs.map(doc => ({ 
         id: doc.id, 
         icon: doc.data().icon || "",
