@@ -231,7 +231,7 @@
     .nav-link {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 10px;
       padding: 14px 15px;
       min-height: 64px;
       color: var(--text-secondary);
@@ -241,8 +241,8 @@
     }
 
     .nav-link i {
-      font-size: 1.4rem;
-      width: 30px;
+      font-size: 1.2rem;
+      width: 28px;
       text-align: center;
       flex-shrink: 0;
       color: var(--glow-primary);
@@ -502,11 +502,16 @@
         
         const navLinks = navContainer.querySelectorAll('.nav-link');
         
-        // Toggle active on link click
         navLinks.forEach(link => {
           link.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation(); // Prevent document click from immediately deactivating
+            // Allow default anchor behavior for hash links (scroll)
+            // but still manage active state without preventing navigation
+            const href = this.getAttribute('href');
+            const isHashLink = href && href.startsWith('#');
+            
+            if (!isHashLink) {
+              e.preventDefault();
+            }
             
             if (this.classList.contains('is-active')) {
               this.classList.remove('is-active');
@@ -517,9 +522,7 @@
           });
         });
         
-        // Global click to deactivate when clicking outside any nav-link
         document.addEventListener('click', function(e) {
-          // If the click is not on a nav-link or inside one, remove active from all
           if (!e.target.closest('.nav-link')) {
             navLinks.forEach(link => link.classList.remove('is-active'));
           }
