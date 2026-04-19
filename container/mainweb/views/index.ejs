@@ -380,10 +380,69 @@
       touch-action: none;
     }
 
-    .demo-placeholder {
-      padding: 60px 0;
+    /* ---------- HERO SECTION ---------- */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
+      padding: 80px 24px 60px;
+      position: relative;
+    }
+
+    .hero__primary {
+      font-size: clamp(2.8rem, 8vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      text-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
+      margin-bottom: 20px;
+    }
+
+    .hero__secondary {
+      font-size: clamp(1.1rem, 4vw, 1.4rem);
+      font-weight: 400;
       color: var(--text-secondary);
+      max-width: 600px;
+      margin-bottom: 32px;
+    }
+
+    .hero__cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background-color: var(--glow-primary);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 14px 32px;
+      border-radius: 60px;
+      text-decoration: none;
+      transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 8px 20px -6px rgba(34, 197, 94, 0.5);
+      margin-bottom: 40px;
+    }
+
+    .hero__cta i {
+      font-size: 1.1rem;
+    }
+
+    .hero__cta:hover {
+      background-color: var(--glow-deep);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -8px rgba(34, 197, 94, 0.6);
+    }
+
+    .hero__footer {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      opacity: 0.8;
+    }
+
+    /* Fallback for missing text-muted variable */
+    :root {
+      --text-muted: #94A3B8;
     }
   </style>
 </head>
@@ -421,9 +480,18 @@
   </div>
 </aside>
 
-<div class="content-wrapper demo-placeholder">
-  <p style="opacity:0.5;">— Dark Gray Header + Green Gaming Theme —</p>
-</div>
+<!-- HERO SECTION -->
+<section class="hero">
+  <div class="content-wrapper" style="padding: 0;">
+    <h1 class="hero__primary" id="hero-primary">Welcome to KexCloud</h1>
+    <p class="hero__secondary" id="hero-secondary">The future of cloud gaming is here.</p>
+    <a href="#" class="hero__cta" id="hero-cta" style="display: none;">
+      <i class="fa-solid fa-arrow-right"></i>
+      <span id="hero-cta-text">Get Started</span>
+    </a>
+    <div class="hero__footer" id="hero-footer"></div>
+  </div>
+</section>
 
 <script>
   window.__FALLBACK_DATA = {
@@ -434,12 +502,14 @@
     sidebar: {
       alticon: <%- JSON.stringify(sidebar.header?.alticon || "") %>,
       alttext: <%- JSON.stringify(sidebar.header?.alttext || "") %>
-    }
+    },
+    hero: <%- JSON.stringify(hero || {}) %>
   };
 </script>
 
 <script>
   (function() {
+    // ---------- HEADER & SIDEBAR BRAND ----------
     const headerBrand = document.getElementById('header-brand');
     const sidebarBrand = document.getElementById('sidebar-brand');
 
@@ -486,6 +556,7 @@
       'sidebar'
     );
 
+    // ---------- SIDEBAR NAVIGATION ----------
     const navContainer = document.getElementById('sidebar-navigation');
     const bodyLinks = <%- JSON.stringify(sidebar.body || []) %>;
     
@@ -504,8 +575,6 @@
         
         navLinks.forEach(link => {
           link.addEventListener('click', function(e) {
-            // Allow default anchor behavior for hash links (scroll)
-            // but still manage active state without preventing navigation
             const href = this.getAttribute('href');
             const isHashLink = href && href.startsWith('#');
             
@@ -535,6 +604,7 @@
     
     renderNavLinks();
 
+    // ---------- SIDEBAR SOCIAL LINKS ----------
     const socialContainer = document.getElementById('social-links');
     const socialLinks = <%- JSON.stringify(sidebar.footer || []) %>;
     if (socialLinks.length > 0) {
@@ -545,6 +615,42 @@
       `).join('');
     } else {
       socialContainer.innerHTML = '<p style="text-align:center;color:var(--text-secondary);font-size:13px;width:100%;margin:0;">No socials yet</p>';
+    }
+
+    // ---------- HERO SECTION (Firebase data) ----------
+    const heroData = window.__FALLBACK_DATA.hero || {};
+    
+    // Update primary text
+    document.getElementById('hero-primary').textContent = heroData.primarytext || 'Welcome to KexCloud';
+    
+    // Update secondary text
+    document.getElementById('hero-secondary').textContent = heroData.secondarytext || 'The future of cloud gaming is here.';
+    
+    // Update footer text
+    const footerEl = document.getElementById('hero-footer');
+    if (heroData.footertext) {
+      footerEl.textContent = heroData.footertext;
+    } else {
+      footerEl.style.display = 'none';
+    }
+    
+    // Update CTA button
+    const ctaBtn = document.getElementById('hero-cta');
+    const ctaText = document.getElementById('hero-cta-text');
+    const buttonEnabled = heroData.buttonenabled === true || heroData.buttonenabled === 'true';
+    
+    if (buttonEnabled) {
+      ctaBtn.style.display = 'inline-flex';
+      ctaBtn.href = heroData.buttonurl || '#';
+      ctaText.textContent = heroData.buttontext || 'Get Started';
+      
+      // Update icon if provided
+      const iconElement = ctaBtn.querySelector('i');
+      if (heroData.buttonicon) {
+        iconElement.className = heroData.buttonicon;
+      }
+    } else {
+      ctaBtn.style.display = 'none';
     }
   })();
 </script>
