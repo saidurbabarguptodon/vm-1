@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KexCloud | Dynamic Header & Sidebar</title>
+  
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
     :root {
       --bg-dark: #0A0A0F;
@@ -325,14 +327,14 @@
     <div class="container">
       <nav class="navbar">
         <a href="/" class="header-logo" id="header-logo-container">
-          <% if (header.logourl && header.logourl !== "") { %>
-            <img src="<%= header.logourl %>" alt="Logo" id="header-logo-img" onerror="this.onerror=null; fallbackHeaderToIconMode()">
+          <% if (header.logourl && header.logourl.trim() !== "") { %>
+            <img src="<%= header.logourl %>" alt="Logo" id="header-logo-img">
           <% } else { %>
-            <% if (header.alticon && header.alticon !== "") { %>
-              <i class="<%= header.alticon %> header-alticon" id="header-alticon"></i>
+            <% if (header.alticon && header.alticon.trim() !== "") { %>
+              <i class="<%= header.alticon %> header-alticon"></i>
             <% } %>
-            <% if (header.alttext && header.alttext !== "") { %>
-              <span class="header-alttext" id="header-alttext"><%= header.alttext %></span>
+            <% if (header.alttext && header.alttext.trim() !== "") { %>
+              <span class="header-alttext"><%= header.alttext %></span>
             <% } %>
           <% } %>
         </a>
@@ -349,14 +351,14 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <a href="/" class="sidebar-logo" id="sidebar-logo-container">
-        <% if (sidebar.header && sidebar.header.logourl && sidebar.header.logourl !== "") { %>
-          <img src="<%= sidebar.header.logourl %>" alt="Sidebar Logo" id="sidebar-logo-img" onerror="this.onerror=null; fallbackSidebarToIconMode()">
-        <% } else if (sidebar.header) { %>
-          <% if (sidebar.header.alticon && sidebar.header.alticon !== "") { %>
-            <i class="<%= sidebar.header.alticon %> sidebar-alticon" id="sidebar-alticon"></i>
+        <% if (sidebar.header && sidebar.header.logourl && sidebar.header.logourl.trim() !== "") { %>
+          <img src="<%= sidebar.header.logourl %>" alt="Sidebar Logo" id="sidebar-logo-img">
+        <% } else { %>
+          <% if (sidebar.header && sidebar.header.alticon && sidebar.header.alticon.trim() !== "") { %>
+            <i class="<%= sidebar.header.alticon %> sidebar-alticon"></i>
           <% } %>
-          <% if (sidebar.header.alttext && sidebar.header.alttext !== "") { %>
-            <span class="sidebar-alttext" id="sidebar-alttext"><%= sidebar.header.alttext %></span>
+          <% if (sidebar.header && sidebar.header.alttext && sidebar.header.alttext.trim() !== "") { %>
+            <span class="sidebar-alttext"><%= sidebar.header.alttext %></span>
           <% } %>
         <% } %>
       </a>
@@ -463,26 +465,6 @@
 
     drawSnow();
 
-    function fallbackHeaderToIconMode() {
-      const container = document.getElementById('header-logo-container');
-      if (!container) return;
-      const alticon = '<%= header.alticon && header.alticon !== "" ? header.alticon : "" %>';
-      const alttext = '<%= header.alttext && header.alttext !== "" ? header.alttext : "" %>';
-      const iconHtml = alticon !== "" ? `<i class="${alticon} header-alticon"></i>` : "";
-      const textHtml = alttext !== "" ? `<span class="header-alttext">${alttext}</span>` : "";
-      container.innerHTML = iconHtml + textHtml;
-    }
-
-    function fallbackSidebarToIconMode() {
-      const container = document.getElementById('sidebar-logo-container');
-      if (!container) return;
-      const alticon = '<%= sidebar.header && sidebar.header.alticon !== "" ? sidebar.header.alticon : "" %>';
-      const alttext = '<%= sidebar.header && sidebar.header.alttext !== "" ? sidebar.header.alttext : "" %>';
-      const iconHtml = alticon !== "" ? `<i class="${alticon} sidebar-alticon"></i>` : "";
-      const textHtml = alttext !== "" ? `<span class="sidebar-alttext">${alttext}</span>` : "";
-      container.innerHTML = iconHtml + textHtml;
-    }
-
     const openBtn = document.getElementById('open-sidebar');
     const closeBtn = document.getElementById('close-sidebar');
     const sidebarElement = document.getElementById('sidebar');
@@ -504,6 +486,5 @@
     closeBtn.addEventListener('click', closeSidebar);
     overlay.addEventListener('click', closeSidebar);
   </script>
-
 </body>
 </html>
