@@ -245,7 +245,8 @@
       width: 30px;
       text-align: center;
       flex-shrink: 0;
-      transition: color 0.2s ease, text-shadow 0.2s ease;
+      color: var(--glow-primary);
+      transition: color 0.2s ease;
     }
 
     .nav-link__content {
@@ -265,12 +266,15 @@
       background: rgba(255, 255, 255, 0.04);
     }
 
-    .nav-link:hover i {
-      color: var(--glow-primary);
-      text-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+    .nav-link.is-active {
+      background: var(--glow-primary);
     }
 
-    .nav-link:hover .nav-link__title {
+    .nav-link.is-active i {
+      color: #ffffff;
+    }
+
+    .nav-link.is-active .nav-link__title {
       color: #ffffff;
     }
 
@@ -484,18 +488,36 @@
 
     const navContainer = document.getElementById('sidebar-navigation');
     const bodyLinks = <%- JSON.stringify(sidebar.body || []) %>;
-    if (bodyLinks.length > 0) {
-      navContainer.innerHTML = bodyLinks.map(link => `
-        <a href="${link.url || '#'}" class="nav-link">
-          ${link.icon ? `<i class="${link.icon}"></i>` : ''}
-          <div class="nav-link__content">
-            <span class="nav-link__title">${link.text || 'Untitled Link'}</span>
-          </div>
-        </a>
-      `).join('');
-    } else {
-      navContainer.innerHTML = '<p style="text-align:center;color:var(--text-secondary);font-size:13px;margin-top:20px;">No navigation links yet</p>';
+    
+    function renderNavLinks() {
+      if (bodyLinks.length > 0) {
+        navContainer.innerHTML = bodyLinks.map(link => `
+          <a href="${link.url || '#'}" class="nav-link">
+            ${link.icon ? `<i class="${link.icon}"></i>` : ''}
+            <div class="nav-link__content">
+              <span class="nav-link__title">${link.text || 'Untitled Link'}</span>
+            </div>
+          </a>
+        `).join('');
+        
+        const navLinks = navContainer.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            navLinks.forEach(l => l.classList.remove('is-active'));
+            this.classList.add('is-active');
+          });
+        });
+        
+        if (navLinks.length > 0) {
+          navLinks[0].classList.add('is-active');
+        }
+      } else {
+        navContainer.innerHTML = '<p style="text-align:center;color:var(--text-secondary);font-size:13px;margin-top:20px;">No navigation links yet</p>';
+      }
     }
+    
+    renderNavLinks();
 
     const socialContainer = document.getElementById('social-links');
     const socialLinks = <%- JSON.stringify(sidebar.footer || []) %>;
