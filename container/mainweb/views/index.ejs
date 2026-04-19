@@ -203,21 +203,22 @@
 
     .sidebar-body {
       flex: 1;
-      padding: 20px 12px;  /* Reduced top/left padding to move items up/left */
+      padding: 12px 8px 20px 8px;   /* Moved up (less top padding), left/right 8px gap */
       overflow-y: auto;
     }
 
     .sidebar-nav {
       display: flex;
       flex-direction: column;
-      gap: 4px;  /* Tighter gap between links */
+      gap: 4px;
     }
 
     .sidebar-nav-link {
       display: flex;
-      align-items: flex-start;  /* Align to top for multi-line */
-      gap: 14px;
-      padding: 10px 14px;       /* Slightly reduced padding */
+      align-items: center;
+      gap: 16px;
+      padding: 14px 15px;           /* Exactly 15px left/right internal gap */
+      min-height: 64px;             /* Taller overall height */
       color: var(--text-muted);
       text-decoration: none;
       border-radius: 12px;
@@ -225,33 +226,33 @@
     }
 
     .sidebar-nav-link i {
-      font-size: 1.5rem;
-      width: 28px;
+      font-size: 1.65rem;           /* Slightly bigger icon */
+      width: 30px;
       text-align: center;
-      margin-top: 2px;  /* Fine-tune vertical alignment */
+      flex-shrink: 0;
       transition: color 0.2s ease;
     }
 
-    /* Content wrapper for text and description */
     .nav-content {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      justify-content: center;
+      line-height: 1.3;
     }
 
     .nav-title {
-      font-size: 1.1rem;       /* Slightly smaller than before */
+      font-size: 1.1rem;
       font-weight: 600;
-      line-height: 1.3;
       color: var(--text-light);
+      margin-bottom: 2px;
     }
 
     .nav-desc {
       font-size: 0.75rem;
       font-weight: 400;
-      line-height: 1.3;
       color: var(--text-muted);
       opacity: 0.8;
+      margin-top: 2px;
     }
 
     .sidebar-nav-link:hover {
