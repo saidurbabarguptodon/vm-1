@@ -237,12 +237,11 @@
       color: var(--text-secondary);
       text-decoration: none;
       border-radius: 12px;
-      transition: all 0.25s ease;
-      border-left: 3px solid transparent;
+      transition: background 0.2s ease, color 0.2s ease;
     }
 
     .nav-link i {
-      font-size: 1.65rem;
+      font-size: 1.4rem;
       width: 30px;
       text-align: center;
       flex-shrink: 0;
@@ -260,21 +259,10 @@
       font-size: 1.1rem;
       font-weight: 600;
       color: var(--text-primary);
-      margin-bottom: 2px;
-    }
-
-    .nav-link__desc {
-      font-size: 0.75rem;
-      font-weight: 400;
-      color: var(--text-secondary);
-      opacity: 0.8;
-      margin-top: 2px;
     }
 
     .nav-link:hover {
       background: rgba(255, 255, 255, 0.04);
-      transform: translateX(4px);
-      border-left-color: var(--glow-primary);
     }
 
     .nav-link:hover i {
@@ -502,7 +490,6 @@
           ${link.icon ? `<i class="${link.icon}"></i>` : ''}
           <div class="nav-link__content">
             <span class="nav-link__title">${link.text || 'Untitled Link'}</span>
-            ${link.description ? `<span class="nav-link__desc">${link.description}</span>` : ''}
           </div>
         </a>
       `).join('');
