@@ -326,19 +326,7 @@
   <header class="header">
     <div class="container">
       <nav class="navbar">
-        <a href="/" class="header-logo" id="header-logo-container">
-          <% if (header.logourl && header.logourl.trim() !== "") { %>
-            <img src="<%= header.logourl %>" alt="Logo" id="header-logo-img">
-          <% } else { %>
-            <% if (header.alticon && header.alticon.trim() !== "") { %>
-              <i class="<%= header.alticon %> header-alticon"></i>
-            <% } %>
-            <% if (header.alttext && header.alttext.trim() !== "") { %>
-              <span class="header-alttext"><%= header.alttext %></span>
-            <% } %>
-          <% } %>
-        </a>
-
+        <a href="/" class="header-logo" id="header-logo-container"></a>
         <button class="menu-toggle-btn" id="open-sidebar" aria-label="Open Menu">
           <i class="fa-solid fa-bars"></i>
         </button>
@@ -350,59 +338,111 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <a href="/" class="sidebar-logo" id="sidebar-logo-container">
-        <% if (sidebar.header && sidebar.header.logourl && sidebar.header.logourl.trim() !== "") { %>
-          <img src="<%= sidebar.header.logourl %>" alt="Sidebar Logo" id="sidebar-logo-img">
-        <% } else { %>
-          <% if (sidebar.header && sidebar.header.alticon && sidebar.header.alticon.trim() !== "") { %>
-            <i class="<%= sidebar.header.alticon %> sidebar-alticon"></i>
-          <% } %>
-          <% if (sidebar.header && sidebar.header.alttext && sidebar.header.alttext.trim() !== "") { %>
-            <span class="sidebar-alttext"><%= sidebar.header.alttext %></span>
-          <% } %>
-        <% } %>
-      </a>
-
+      <a href="/" class="sidebar-logo" id="sidebar-logo-container"></a>
       <button class="sidebar-close-btn" id="close-sidebar" aria-label="Close Menu">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
 
     <div class="sidebar-body">
-      <% if (sidebar.body && sidebar.body.length > 0) { %>
-        <nav class="sidebar-nav">
-          <% sidebar.body.forEach(function(link) { %>
-            <a href="<%= link.url || '#' %>" class="sidebar-nav-link">
-              <% if (link.icon) { %>
-                <i class="<%= link.icon %>"></i>
-              <% } %>
-              <span><%= link.text || 'Untitled Link' %></span>
-            </a>
-          <% }); %>
-        </nav>
-      <% } else { %>
-        <p style="text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 20px;">No navigation links yet</p>
-      <% } %>
+      <nav class="sidebar-nav" id="sidebar-nav-links"></nav>
     </div>
 
     <div class="sidebar-footer">
-      <% if (sidebar.footer && sidebar.footer.length > 0) { %>
-        <div class="social-links">
-          <% sidebar.footer.forEach(function(social) { %>
-            <a href="<%= social.url %>" target="_blank" class="social-icon">
-              <i class="<%= social.icon %>"></i>
-            </a>
-          <% }); %>
-        </div>
-      <% } else { %>
-        <p style="text-align: center; color: var(--text-muted); font-size: 13px; width: 100%; margin: 0;">No socials yet</p>
-      <% } %>
+      <div class="social-links" id="social-links-container"></div>
     </div>
   </aside>
 
   <div class="container demo-content">
     <p style="opacity:0.5;">— Dark Gray Header + Green Gaming Theme —</p>
   </div>
+
+  <script>
+    window.__FALLBACK_DATA = {
+      header: {
+        alticon: <%- JSON.stringify(header.alticon || "") %>,
+        alttext: <%- JSON.stringify(header.alttext || "") %>
+      },
+      sidebar: {
+        alticon: <%- JSON.stringify(sidebar.header?.alticon || "") %>,
+        alttext: <%- JSON.stringify(sidebar.header?.alttext || "") %>
+      }
+    };
+  </script>
+
+  <script>
+    (function() {
+      const headerLogoContainer = document.getElementById('header-logo-container');
+      const sidebarLogoContainer = document.getElementById('sidebar-logo-container');
+
+      function renderLogo(container, logourl, alticon, alttext, prefix) {
+        if (logourl && logourl.trim() !== '') {
+          const img = document.createElement('img');
+          img.src = logourl;
+          img.alt = alttext || 'Logo';
+          img.dataset.fallback = prefix;
+          img.onerror = function() {
+            this.onerror = null;
+            const parent = this.parentNode;
+            if (!parent) return;
+            const fallback = window.__FALLBACK_DATA?.[prefix] || { alticon: '', alttext: '' };
+            let html = '';
+            if (fallback.alticon) html += `<i class="${fallback.alticon} ${prefix}-alticon"></i>`;
+            if (fallback.alttext) html += `<span class="${prefix}-alttext">${fallback.alttext}</span>`;
+            parent.innerHTML = html || '';
+          };
+          container.innerHTML = '';
+          container.appendChild(img);
+        } else {
+          let html = '';
+          if (alticon) html += `<i class="${alticon} ${prefix}-alticon"></i>`;
+          if (alttext) html += `<span class="${prefix}-alttext">${alttext}</span>`;
+          container.innerHTML = html;
+        }
+      }
+
+      renderLogo(
+        headerLogoContainer,
+        <%- JSON.stringify(header.logourl || "") %>,
+        <%- JSON.stringify(header.alticon || "") %>,
+        <%- JSON.stringify(header.alttext || "") %>,
+        'header'
+      );
+
+      renderLogo(
+        sidebarLogoContainer,
+        <%- JSON.stringify(sidebar.header?.logourl || "") %>,
+        <%- JSON.stringify(sidebar.header?.alticon || "") %>,
+        <%- JSON.stringify(sidebar.header?.alttext || "") %>,
+        'sidebar'
+      );
+
+      const navContainer = document.getElementById('sidebar-nav-links');
+      const bodyLinks = <%- JSON.stringify(sidebar.body || []) %>;
+      if (bodyLinks.length > 0) {
+        navContainer.innerHTML = bodyLinks.map(link => `
+          <a href="${link.url || '#'}" class="sidebar-nav-link">
+            ${link.icon ? `<i class="${link.icon}"></i>` : ''}
+            <span>${link.text || 'Untitled Link'}</span>
+          </a>
+        `).join('');
+      } else {
+        navContainer.innerHTML = '<p style="text-align:center;color:var(--text-muted);font-size:13px;margin-top:20px;">No navigation links yet</p>';
+      }
+
+      const socialContainer = document.getElementById('social-links-container');
+      const socialLinks = <%- JSON.stringify(sidebar.footer || []) %>;
+      if (socialLinks.length > 0) {
+        socialContainer.innerHTML = socialLinks.map(social => `
+          <a href="${social.url}" target="_blank" class="social-icon">
+            <i class="${social.icon}"></i>
+          </a>
+        `).join('');
+      } else {
+        socialContainer.innerHTML = '<p style="text-align:center;color:var(--text-muted);font-size:13px;width:100%;margin:0;">No socials yet</p>';
+      }
+    })();
+  </script>
 
   <script>
     const canvas = document.getElementById('snow-canvas');
