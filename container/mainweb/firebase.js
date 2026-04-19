@@ -72,24 +72,24 @@ const heroDoc = {
       const bodyDocRef = db.collection('web').doc('body');
       const bodyDoc = await bodyDocRef.get();
       if (!bodyDoc.exists) {
-        await bodyDocRef.set({ _created: admin.firestore.FieldValue.serverTimestamp() });
+        await bodyDocRef.set({});
       }
 
       const docRef = db.collection('web').doc('body').collection('hero').doc('content');
       const doc = await docRef.get();
       
       if (!doc.exists) {
-        const emptyHero = {
-          primaryText: "",
-          secondaryText: "",
-          footerText: "",
-          buttonEnabled: false,
-          buttonText: "",
-          buttonIcon: "",
-          buttonUrl: ""
+        const fields = {
+          primarytext: "",
+          secondarytext: "",
+          footertext: "",
+          buttonenabled: false,
+          buttontext: "",
+          buttonicon: "",
+          buttonurl: ""
         };
-        await docRef.set(emptyHero);
-        console.log(`✅ Hero document created at web/body/hero/content (empty structure)`);
+        await docRef.set(fields);
+        console.log(`✅ Hero document created at web/body/hero/content with lowercase fields`);
       } else {
         console.log(`ℹ️ Hero document already exists at web/body/hero/content:`, doc.data());
       }
@@ -107,25 +107,25 @@ const heroDoc = {
         return doc.data();
       } else {
         return {
-          primaryText: "",
-          secondaryText: "",
-          footerText: "",
-          buttonEnabled: false,
-          buttonText: "",
-          buttonIcon: "",
-          buttonUrl: ""
+          primarytext: "",
+          secondarytext: "",
+          footertext: "",
+          buttonenabled: false,
+          buttontext: "",
+          buttonicon: "",
+          buttonurl: ""
         };
       }
     } catch (err) {
       console.error("Error in hero.get:", err);
       return {
-        primaryText: "",
-        secondaryText: "",
-        footerText: "",
-        buttonEnabled: false,
-        buttonText: "",
-        buttonIcon: "",
-        buttonUrl: ""
+        primarytext: "",
+        secondarytext: "",
+        footertext: "",
+        buttonenabled: false,
+        buttontext: "",
+        buttonicon: "",
+        buttonurl: ""
       };
     }
   }
