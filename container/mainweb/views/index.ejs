@@ -501,17 +501,20 @@
         `).join('');
         
         const navLinks = navContainer.querySelectorAll('.nav-link');
+        
+        function setActiveLink(clickedLink) {
+          navLinks.forEach(link => link.classList.remove('is-active'));
+          clickedLink.classList.add('is-active');
+        }
+        
         navLinks.forEach(link => {
           link.addEventListener('click', function(e) {
             e.preventDefault();
-            navLinks.forEach(l => l.classList.remove('is-active'));
-            this.classList.add('is-active');
+            setActiveLink(this);
           });
         });
         
-        if (navLinks.length > 0) {
-          navLinks[0].classList.add('is-active');
-        }
+        // No default active state – user must click to activate
       } else {
         navContainer.innerHTML = '<p style="text-align:center;color:var(--text-secondary);font-size:13px;margin-top:20px;">No navigation links yet</p>';
       }
