@@ -502,21 +502,29 @@
         
         const navLinks = navContainer.querySelectorAll('.nav-link');
         
+        // Toggle active on link click
         navLinks.forEach(link => {
           link.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation(); // Prevent document click from immediately deactivating
             
-            // Toggle: if clicked link is already active, remove active and stop
             if (this.classList.contains('is-active')) {
               this.classList.remove('is-active');
-              return;
+            } else {
+              navLinks.forEach(l => l.classList.remove('is-active'));
+              this.classList.add('is-active');
             }
-            
-            // Otherwise, remove active from all and set on clicked
-            navLinks.forEach(l => l.classList.remove('is-active'));
-            this.classList.add('is-active');
           });
         });
+        
+        // Global click to deactivate when clicking outside any nav-link
+        document.addEventListener('click', function(e) {
+          // If the click is not on a nav-link or inside one, remove active from all
+          if (!e.target.closest('.nav-link')) {
+            navLinks.forEach(link => link.classList.remove('is-active'));
+          }
+        });
+        
       } else {
         navContainer.innerHTML = '<p style="text-align:center;color:var(--text-secondary);font-size:13px;margin-top:20px;">No navigation links yet</p>';
       }
