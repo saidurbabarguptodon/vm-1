@@ -372,12 +372,12 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      padding: 40px 24px 60px; /* Reduced top padding to move entire cluster up */
+      padding: 40px 24px 60px;
       position: relative;
     }
 
     .hero__primary {
-      font-size: clamp(2.4rem, 6vw, 3.5rem); /* Reduced primary text size */
+      font-size: clamp(1.8rem, 5vw, 2.8rem); /* Made primary text size much smaller */
       font-weight: 800;
       line-height: 1.2;
       letter-spacing: -0.02em;
@@ -399,12 +399,18 @@
       margin-bottom: 32px;
     }
 
-    .hero b, .hero strong { font-weight: 900; color: #ffffff; }
+    /* Set text colors to inherit so custom <color> wrappers pass down to bold text */
+    .hero b, .hero strong { font-weight: 900; color: inherit; }
+    
     .hero u {
       text-decoration: underline;
       text-decoration-color: var(--glow-primary);
       text-decoration-thickness: 0.1em;
       text-underline-offset: 6px;
+    }
+    
+    .hero i, .hero em {
+      font-style: italic;
     }
 
     .hero__cta {
@@ -643,23 +649,30 @@
       socialContainer.innerHTML = '';
     }
 
-    // ---------- HERO SECTION ----------
+    // ---------- HERO SECTION TEXT FORMATTING ----------
     const heroData = window.__FALLBACK_DATA.hero || {};
     
     function formatHeroText(text) {
       if (!text) return '';
       
+      // Auto-detect hex prefix at the very beginning of the string (e.g., "#FF0000Text")
       const prefixRegex = /^#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(.*)$/is;
       const match = text.match(prefixRegex);
-      
       if (match) {
         text = `<span style="color: #${match[1]};">${match[2]}</span>`;
       }
       
-      return text
+      // Legacy formatting
+      text = text
         .replace(/\[color=(#[0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: $1;">$2</span>')
         .replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
         .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
+        
+      // NEW: Support for <color:"{hex/rgb}">data</color> 
+      // It handles format <color:"#ff0000">text</color> or <color:"rgb(255,0,0)">text</color>
+      text = text.replace(/<color:"([^"]+)">([\s\S]*?)<\/color>/gi, '<span style="color: $1;">$2</span>');
+      
+      return text;
     }
     
     document.getElementById('hero-primary').innerHTML = formatHeroText(heroData.primarytext || '');
