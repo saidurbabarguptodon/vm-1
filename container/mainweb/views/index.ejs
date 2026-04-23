@@ -10,7 +10,7 @@
     :root {
       --bg-deep: #0A0A0F;
       --header-glass: rgba(15, 15, 20, 0.75);
-      --sidebar-glass: rgba(15, 15, 20, 0.85); /* Enhanced glassmorphism */
+      --sidebar-glass: rgba(15, 15, 20, 0.85);
       --accent-muted: #6B7280;
       --accent-soft: #9CA3AF;
       --text-primary: #F1F5F9;
@@ -175,7 +175,7 @@
       height: 100dvh;
       width: 280px;
       max-width: 80vw;
-      background: var(--sidebar-glass); /* Refined glass look */
+      background: var(--sidebar-glass);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       z-index: 999;
@@ -211,7 +211,6 @@
       scrollbar-color: rgba(255,255,255,0.15) transparent;
     }
     
-    /* Custom Scrollbar for Sidebar */
     .sidebar__body::-webkit-scrollbar { width: 5px; }
     .sidebar__body::-webkit-scrollbar-track { background: transparent; }
     .sidebar__body::-webkit-scrollbar-thumb {
@@ -235,7 +234,7 @@
       color: var(--text-secondary);
       text-decoration: none;
       border-radius: 12px;
-      border-left: 4px solid transparent; /* Added left accent border setup */
+      border-left: 4px solid transparent;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
@@ -264,15 +263,12 @@
       transition: color 0.2s ease;
     }
 
-    /* Refined Hover & Active States */
     .nav-link:hover {
       background: rgba(255, 255, 255, 0.04);
       transform: translateX(4px);
       color: var(--text-primary);
     }
-    .nav-link:hover i {
-      color: var(--text-primary);
-    }
+    .nav-link:hover i { color: var(--text-primary); }
 
     .nav-link.is-active {
       background: linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, transparent 100%);
@@ -300,7 +296,7 @@
       align-items: center;
       justify-content: center;
       margin-top: auto;
-      background: rgba(0, 0, 0, 0.15); /* Slight darkening for footer area */
+      background: rgba(0, 0, 0, 0.15);
     }
 
     .social-list {
@@ -351,31 +347,19 @@
       margin-right: -8px;
     }
 
-    .sidebar__close i {
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
+    .sidebar__close i { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     .app-sidebar.is-expanded .sidebar__close i { transform: rotate(90deg); }
     .sidebar__close:hover { background: rgba(255, 255, 255, 0.06); color: #FFFFFF; }
 
-    /* Sequential Reveal Animations for Sidebar Elements */
-    .sidebar__header,
-    .sidebar__body,
-    .sidebar__footer {
+    .sidebar__header, .sidebar__body, .sidebar__footer {
       opacity: 0;
       transform: translateY(15px);
       transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .app-sidebar.is-expanded .sidebar__header {
-      opacity: 1; transform: translateY(0); transition-delay: 0.1s;
-    }
-    .app-sidebar.is-expanded .sidebar__body {
-      opacity: 1; transform: translateY(0); transition-delay: 0.18s;
-    }
-    .app-sidebar.is-expanded .sidebar__footer {
-      opacity: 1; transform: translateY(0); transition-delay: 0.26s;
-    }
+    .app-sidebar.is-expanded .sidebar__header { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
+    .app-sidebar.is-expanded .sidebar__body { opacity: 1; transform: translateY(0); transition-delay: 0.18s; }
+    .app-sidebar.is-expanded .sidebar__footer { opacity: 1; transform: translateY(0); transition-delay: 0.26s; }
 
     body.has-menu-open {
       overflow: hidden;
@@ -401,6 +385,12 @@
       text-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
       margin-bottom: 20px;
     }
+    
+    /* Ensure elements collapse if totally empty */
+    .hero__primary:empty, .hero__secondary:empty {
+      margin-bottom: 0;
+      display: none;
+    }
 
     .hero__secondary {
       font-size: clamp(1.1rem, 4vw, 1.4rem);
@@ -410,12 +400,7 @@
       margin-bottom: 32px;
     }
 
-    /* Hero Formatting Support (Bold, Underline, etc.) */
-    .hero b, .hero strong {
-      font-weight: 900;
-      color: #ffffff;
-    }
-    
+    .hero b, .hero strong { font-weight: 900; color: #ffffff; }
     .hero u {
       text-decoration: underline;
       text-decoration-color: var(--glow-primary);
@@ -440,7 +425,6 @@
     }
 
     .hero__cta i { font-size: 1.1rem; }
-    
     .hero__cta:hover {
       background-color: var(--glow-deep);
       transform: translateY(-2px);
@@ -488,16 +472,16 @@
   </div>
 </aside>
 
-<!-- HERO SECTION -->
+<!-- HERO SECTION (Empty Initial State) -->
 <section class="hero">
   <div class="content-wrapper" style="padding: 0;">
-    <h1 class="hero__primary" id="hero-primary">Welcome to KexCloud</h1>
-    <p class="hero__secondary" id="hero-secondary">The future of cloud gaming is here.</p>
+    <h1 class="hero__primary" id="hero-primary"></h1>
+    <p class="hero__secondary" id="hero-secondary"></p>
     <a href="#" class="hero__cta" id="hero-cta" style="display: none;">
-      <i class="fa-solid fa-arrow-right"></i>
-      <span id="hero-cta-text">Get Started</span>
+      <i style="display: none;"></i>
+      <span id="hero-cta-text"></span>
     </a>
-    <div class="hero__footer" id="hero-footer"></div>
+    <div class="hero__footer" id="hero-footer" style="display: none;"></div>
   </div>
 </section>
 
@@ -525,7 +509,7 @@
       if (logourl && logourl.trim() !== '') {
         const img = document.createElement('img');
         img.src = logourl;
-        img.alt = alttext || 'Logo';
+        img.alt = alttext || '';
         img.className = 'brand__image';
         img.dataset.fallback = context;
         img.onerror = function() {
@@ -569,12 +553,12 @@
     const bodyLinks = <%- JSON.stringify(sidebar.body ||[]) %>;
     
     function renderNavLinks() {
-      if (bodyLinks.length > 0) {
+      if (bodyLinks && bodyLinks.length > 0) {
         navContainer.innerHTML = bodyLinks.map(link => `
           <a href="${link.url || '#'}" class="nav-link">
             ${link.icon ? `<i class="${link.icon}"></i>` : ''}
             <div class="nav-link__content">
-              <span class="nav-link__title">${link.text || 'Untitled Link'}</span>
+              <span class="nav-link__title">${link.text || ''}</span>
             </div>
           </a>
         `).join('');
@@ -585,10 +569,7 @@
           link.addEventListener('click', function(e) {
             const href = this.getAttribute('href');
             const isHashLink = href && href.startsWith('#');
-            
-            if (!isHashLink) {
-              e.preventDefault();
-            }
+            if (!isHashLink) e.preventDefault();
             
             if (this.classList.contains('is-active')) {
               this.classList.remove('is-active');
@@ -599,23 +580,14 @@
           });
         });
         
-        // Auto-detect active link based on current path (optional enhancement)
         const currentPath = window.location.pathname;
         navLinks.forEach(link => {
            if (link.getAttribute('href') === currentPath && currentPath !== '/') {
                link.classList.add('is-active');
            }
         });
-
-        document.addEventListener('click', function(e) {
-          if (!e.target.closest('.nav-link')) {
-            // Uncomment if you want clicks outside to clear active states:
-            // navLinks.forEach(link => link.classList.remove('is-active'));
-          }
-        });
-        
       } else {
-        navContainer.innerHTML = '<p style="text-align:center;color:var(--text-secondary);font-size:13px;margin-top:20px;">No navigation links yet</p>';
+        navContainer.innerHTML = '';
       }
     }
     
@@ -624,20 +596,20 @@
     // ---------- SIDEBAR SOCIAL LINKS ----------
     const socialContainer = document.getElementById('social-links');
     const socialLinks = <%- JSON.stringify(sidebar.footer ||[]) %>;
-    if (socialLinks.length > 0) {
+    
+    if (socialLinks && socialLinks.length > 0) {
       socialContainer.innerHTML = socialLinks.map(social => `
-        <a href="${social.url}" target="_blank" class="social-link" rel="noopener">
-          <i class="${social.icon}"></i>
+        <a href="${social.url || '#'}" target="_blank" class="social-link" rel="noopener">
+          ${social.icon ? `<i class="${social.icon}"></i>` : ''}
         </a>
       `).join('');
     } else {
-      socialContainer.innerHTML = '<p style="text-align:center;color:var(--text-secondary);font-size:13px;width:100%;margin:0;">No socials yet</p>';
+      socialContainer.innerHTML = '';
     }
 
-    // ---------- HERO SECTION (Formatted Data) ----------
+    // ---------- HERO SECTION ----------
     const heroData = window.__FALLBACK_DATA.hero || {};
     
-    // Formatting helper function (supports native HTML + custom [color=#HEX]text[/color], [b]text[/b], [u]text[/u])
     function formatHeroText(text) {
       if (!text) return '';
       return text
@@ -646,13 +618,9 @@
         .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
     }
     
-    // Update primary text using innerHTML to enable tag support
-    document.getElementById('hero-primary').innerHTML = formatHeroText(heroData.primarytext || 'Welcome to KexCloud');
+    document.getElementById('hero-primary').innerHTML = formatHeroText(heroData.primarytext || '');
+    document.getElementById('hero-secondary').innerHTML = formatHeroText(heroData.secondarytext || '');
     
-    // Update secondary text using innerHTML
-    document.getElementById('hero-secondary').innerHTML = formatHeroText(heroData.secondarytext || 'The future of cloud gaming is here.');
-    
-    // Update footer text using innerHTML
     const footerEl = document.getElementById('hero-footer');
     if (heroData.footertext) {
       footerEl.innerHTML = formatHeroText(heroData.footertext);
@@ -661,7 +629,6 @@
       footerEl.style.display = 'none';
     }
     
-    // Update CTA button
     const ctaBtn = document.getElementById('hero-cta');
     const ctaText = document.getElementById('hero-cta-text');
     const buttonEnabled = heroData.buttonenabled === true || heroData.buttonenabled === 'true';
@@ -669,12 +636,15 @@
     if (buttonEnabled) {
       ctaBtn.style.display = 'inline-flex';
       ctaBtn.href = heroData.buttonurl || '#';
-      ctaText.textContent = heroData.buttontext || 'Get Started';
+      ctaText.textContent = heroData.buttontext || '';
       
-      // Update icon if provided
       const iconElement = ctaBtn.querySelector('i');
       if (heroData.buttonicon) {
         iconElement.className = heroData.buttonicon;
+        iconElement.style.display = 'inline-block';
+      } else {
+        iconElement.className = '';
+        iconElement.style.display = 'none';
       }
     } else {
       ctaBtn.style.display = 'none';
