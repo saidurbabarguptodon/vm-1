@@ -37,6 +37,7 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
+      scroll-behavior: smooth; /* Native fallback for smooth scrolling */
     }
 
     #snow-canvas {
@@ -225,16 +226,16 @@
       gap: 6px;
     }
 
+    /* NAV LINK (Default / Disabled State) */
     .nav-link {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 14px 15px 14px 11px;
+      padding: 14px 15px;
       min-height: 56px;
-      color: var(--text-secondary);
+      color: var(--glow-primary); /* Default text is Green */
       text-decoration: none;
       border-radius: 12px;
-      border-left: 4px solid transparent;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
@@ -245,7 +246,7 @@
       width: 28px;
       text-align: center;
       flex-shrink: 0;
-      color: var(--text-secondary);
+      color: var(--glow-primary); /* Default icon is Green */
       transition: color 0.2s ease;
     }
 
@@ -264,26 +265,29 @@
     }
 
     .nav-link:hover {
-      background: rgba(255, 255, 255, 0.04);
+      background: rgba(34, 197, 94, 0.1); /* Subtle green hover */
       transform: translateX(4px);
-      color: var(--text-primary);
+      color: var(--glow-deep);
     }
-    .nav-link:hover i { color: var(--text-primary); }
+    
+    .nav-link:hover i { 
+      color: var(--glow-deep); 
+    }
 
+    /* NAV LINK (Active State) */
     .nav-link.is-active {
-      background: linear-gradient(90deg, rgba(34, 197, 94, 0.12) 0%, transparent 100%);
-      border-left-color: var(--glow-primary);
-      color: var(--text-primary);
+      background: var(--glow-primary); /* Background is solid Green */
+      color: var(--bg-deep); /* Text is Dark */
     }
 
     .nav-link.is-active i {
-      color: var(--glow-primary);
-      text-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+      color: var(--bg-deep); /* Icon is Dark */
+      text-shadow: none;
     }
 
     .nav-link.is-active .nav-link__title {
-      font-weight: 600;
-      color: #ffffff;
+      font-weight: 700;
+      color: var(--bg-deep); /* Text is Dark */
     }
 
     .sidebar__footer {
@@ -386,7 +390,6 @@
       margin-bottom: 20px;
     }
     
-    /* Ensure elements collapse if totally empty */
     .hero__primary:empty, .hero__secondary:empty {
       margin-bottom: 0;
       display: none;
@@ -472,8 +475,8 @@
   </div>
 </aside>
 
-<!-- HERO SECTION (Empty Initial State) -->
-<section class="hero">
+<!-- HERO SECTION (Added id="home") -->
+<section class="hero" id="home">
   <div class="content-wrapper" style="padding: 0;">
     <h1 class="hero__primary" id="hero-primary"></h1>
     <p class="hero__secondary" id="hero-secondary"></p>
@@ -548,7 +551,7 @@
       'sidebar'
     );
 
-    // ---------- SIDEBAR NAVIGATION ----------
+    // ---------- SIDEBAR NAVIGATION (Scroll & Click State Engine) ----------
     const navContainer = document.getElementById('sidebar-navigation');
     const bodyLinks = <%- JSON.stringify(sidebar.body ||[]) %>;
     
@@ -563,31 +566,81 @@
           </a>
         `).join('');
         
-        const navLinks = navContainer.querySelectorAll('.nav-link');
-        
-        navLinks.forEach(link => {
-          link.addEventListener('click', function(e) {
-            const href = this.getAttribute('href');
-            const isHashLink = href && href.startsWith('#');
-            if (!isHashLink) e.preventDefault();
-            
-            if (this.classList.contains('is-active')) {
-              this.classList.remove('is-active');
-            } else {
-              navLinks.forEach(l => l.classList.remove('is-active'));
-              this.classList.add('is-active');
-            }
-          });
-        });
-        
-        const currentPath = window.location.pathname;
-        navLinks.forEach(link => {
-           if (link.getAttribute('href') === currentPath && currentPath !== '/') {
-               link.classList.add('is-active');
-           }
-        });
+        setupNavInteractions();
       } else {
         navContainer.innerHTML = '';
+      }
+    }
+
+    function setupNavInteractions() {
+      const navLinks = document.querySelectorAll('.nav-link');
+      const hashLinks = Array.from(navLinks).map(l => l.getAttribute('href')).filter(h => h && h.startsWith('#'));
+      
+      // Update Active State Helper
+      function updateActiveState(currentHash) {
+        navLinks.forEach(link => {
+          if (link.getAttribute('href') === currentHash) {
+            link.classList.add('is-active');
+          } else {
+            link.classList.remove('is-active');
+          }
+        });
+      }
+
+      // Handle Smooth Click Scrolling
+      navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          const href = this.getAttribute('href');
+          
+          if (href && href.startsWith('#')) {
+            e.preventDefault();
+            const targetElement = document.querySelector(href);
+            
+            if (targetElement) {
+              // Smooth scroll to the section
+              targetElement.scrollIntoView({ behavior: 'smooth' });
+              
+              // Update URL & Active Classes immediately
+              history.pushState(null, null, href);
+              updateActiveState(href);
+              
+              // Close Sidebar (triggers custom event for Script 3)
+              window.dispatchEvent(new Event('close-sidebar'));
+            }
+          }
+        });
+      });
+
+      // Handle Scroll Spy (Updating states on manual scroll)
+      const sections = document.querySelectorAll('section[id], div[id]');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            const hash = `#${id}`;
+            
+            // If the section scrolled into view is a menu item, set it to active
+            if (hashLinks.includes(hash)) {
+              history.replaceState(null, null, hash); // Update URL silently
+              updateActiveState(hash);
+            }
+          }
+        });
+      }, {
+        rootMargin: '-20% 0px -60% 0px' // Adjusts detection zone to center-top of viewport
+      });
+
+      sections.forEach(sec => {
+        if(hashLinks.includes(`#${sec.id}`)) {
+          observer.observe(sec);
+        }
+      });
+
+      // Handle Initial Page Load State (If no hash in URL -> Default/Disabled state)
+      if (!window.location.hash) {
+        navLinks.forEach(link => link.classList.remove('is-active'));
+      } else {
+        updateActiveState(window.location.hash);
       }
     }
     
@@ -736,6 +789,9 @@
     openBtn.addEventListener('click', openSidebar);
     closeBtn.addEventListener('click', closeSidebar);
     overlay.addEventListener('click', closeSidebar);
+    
+    // Listen for custom event triggered from navigation links logic
+    window.addEventListener('close-sidebar', closeSidebar);
   })();
 </script>
 </body>
