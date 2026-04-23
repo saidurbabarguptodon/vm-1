@@ -372,12 +372,12 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      padding: 80px 24px 60px;
+      padding: 40px 24px 60px; /* Reduced top padding to move entire cluster up */
       position: relative;
     }
 
     .hero__primary {
-      font-size: clamp(2.8rem, 8vw, 4.5rem);
+      font-size: clamp(2.4rem, 6vw, 3.5rem); /* Reduced primary text size */
       font-weight: 800;
       line-height: 1.2;
       letter-spacing: -0.02em;
@@ -410,12 +410,12 @@
     .hero__cta {
       display: inline-flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       background-color: var(--glow-primary);
       color: #ffffff;
       font-weight: 600;
       font-size: 1.1rem;
-      padding: 14px 32px;
+      padding: 14px 24px;
       border-radius: 60px;
       text-decoration: none;
       transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
@@ -423,7 +423,8 @@
       margin-bottom: 40px;
     }
 
-    .hero__cta i { font-size: 1.1rem; }
+    .hero__cta i { font-size: 1.3rem; }
+    
     .hero__cta:hover {
       background-color: var(--glow-deep);
       transform: translateY(-2px);
@@ -648,17 +649,13 @@
     function formatHeroText(text) {
       if (!text) return '';
       
-      // NEW: Automatically apply color if text starts with a hex code (e.g., "#207309Test")
-      // It matches # followed by 3, 4, 6, or 8 valid hex characters at the very start of the text.
       const prefixRegex = /^#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(.*)$/is;
       const match = text.match(prefixRegex);
       
       if (match) {
-        // match[1] is the hex code (e.g., 207309), match[2] is the rest of the text
         text = `<span style="color: #${match[1]};">${match[2]}</span>`;
       }
       
-      // Fallback: Also process any existing internal [color], [b], or [u] tags
       return text
         .replace(/\[color=(#[0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: $1;">$2</span>')
         .replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
