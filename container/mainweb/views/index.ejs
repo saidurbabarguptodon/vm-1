@@ -37,7 +37,7 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
-      scroll-behavior: smooth; /* Native fallback for smooth scrolling */
+      scroll-behavior: smooth;
     }
 
     #snow-canvas {
@@ -226,14 +226,13 @@
       gap: 6px;
     }
 
-    /* NAV LINK (Default / Disabled State) */
     .nav-link {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 14px 15px;
       min-height: 56px;
-      color: var(--glow-primary); /* Default text is Green */
+      color: var(--glow-primary);
       text-decoration: none;
       border-radius: 12px;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -246,7 +245,7 @@
       width: 28px;
       text-align: center;
       flex-shrink: 0;
-      color: var(--glow-primary); /* Default icon is Green */
+      color: var(--glow-primary);
       transition: color 0.2s ease;
     }
 
@@ -265,29 +264,26 @@
     }
 
     .nav-link:hover {
-      background: rgba(34, 197, 94, 0.1); /* Subtle green hover */
+      background: rgba(34, 197, 94, 0.1);
       transform: translateX(4px);
       color: var(--glow-deep);
     }
     
-    .nav-link:hover i { 
-      color: var(--glow-deep); 
-    }
+    .nav-link:hover i { color: var(--glow-deep); }
 
-    /* NAV LINK (Active State) */
     .nav-link.is-active {
-      background: var(--glow-primary); /* Background is solid Green */
-      color: var(--bg-deep); /* Text is Dark */
+      background: var(--glow-primary);
+      color: var(--bg-deep);
     }
 
     .nav-link.is-active i {
-      color: var(--bg-deep); /* Icon is Dark */
+      color: var(--bg-deep);
       text-shadow: none;
     }
 
     .nav-link.is-active .nav-link__title {
       font-weight: 700;
-      color: var(--bg-deep); /* Text is Dark */
+      color: var(--bg-deep);
     }
 
     .sidebar__footer {
@@ -475,7 +471,6 @@
   </div>
 </aside>
 
-<!-- HERO SECTION (Added id="home") -->
 <section class="hero" id="home">
   <div class="content-wrapper" style="padding: 0;">
     <h1 class="hero__primary" id="hero-primary"></h1>
@@ -551,7 +546,7 @@
       'sidebar'
     );
 
-    // ---------- SIDEBAR NAVIGATION (Scroll & Click State Engine) ----------
+    // ---------- SIDEBAR NAVIGATION ----------
     const navContainer = document.getElementById('sidebar-navigation');
     const bodyLinks = <%- JSON.stringify(sidebar.body ||[]) %>;
     
@@ -576,7 +571,6 @@
       const navLinks = document.querySelectorAll('.nav-link');
       const hashLinks = Array.from(navLinks).map(l => l.getAttribute('href')).filter(h => h && h.startsWith('#'));
       
-      // Update Active State Helper
       function updateActiveState(currentHash) {
         navLinks.forEach(link => {
           if (link.getAttribute('href') === currentHash) {
@@ -587,47 +581,36 @@
         });
       }
 
-      // Handle Smooth Click Scrolling
       navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
           const href = this.getAttribute('href');
-          
           if (href && href.startsWith('#')) {
             e.preventDefault();
             const targetElement = document.querySelector(href);
-            
             if (targetElement) {
-              // Smooth scroll to the section
               targetElement.scrollIntoView({ behavior: 'smooth' });
-              
-              // Update URL & Active Classes immediately
               history.pushState(null, null, href);
               updateActiveState(href);
-              
-              // Close Sidebar (triggers custom event for Script 3)
               window.dispatchEvent(new Event('close-sidebar'));
             }
           }
         });
       });
 
-      // Handle Scroll Spy (Updating states on manual scroll)
       const sections = document.querySelectorAll('section[id], div[id]');
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             const id = entry.target.id;
             const hash = `#${id}`;
-            
-            // If the section scrolled into view is a menu item, set it to active
             if (hashLinks.includes(hash)) {
-              history.replaceState(null, null, hash); // Update URL silently
+              history.replaceState(null, null, hash);
               updateActiveState(hash);
             }
           }
         });
       }, {
-        rootMargin: '-20% 0px -60% 0px' // Adjusts detection zone to center-top of viewport
+        rootMargin: '-20% 0px -60% 0px'
       });
 
       sections.forEach(sec => {
@@ -636,7 +619,6 @@
         }
       });
 
-      // Handle Initial Page Load State (If no hash in URL -> Default/Disabled state)
       if (!window.location.hash) {
         navLinks.forEach(link => link.classList.remove('is-active'));
       } else {
@@ -665,6 +647,18 @@
     
     function formatHeroText(text) {
       if (!text) return '';
+      
+      // NEW: Automatically apply color if text starts with a hex code (e.g., "#207309Test")
+      // It matches # followed by 3, 4, 6, or 8 valid hex characters at the very start of the text.
+      const prefixRegex = /^#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(.*)$/is;
+      const match = text.match(prefixRegex);
+      
+      if (match) {
+        // match[1] is the hex code (e.g., 207309), match[2] is the rest of the text
+        text = `<span style="color: #${match[1]};">${match[2]}</span>`;
+      }
+      
+      // Fallback: Also process any existing internal [color], [b], or [u] tags
       return text
         .replace(/\[color=(#[0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: $1;">$2</span>')
         .replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
@@ -790,7 +784,6 @@
     closeBtn.addEventListener('click', closeSidebar);
     overlay.addEventListener('click', closeSidebar);
     
-    // Listen for custom event triggered from navigation links logic
     window.addEventListener('close-sidebar', closeSidebar);
   })();
 </script>
