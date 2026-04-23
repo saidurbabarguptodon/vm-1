@@ -377,7 +377,7 @@
     }
 
     .hero__primary {
-      font-size: clamp(1.8rem, 5vw, 2.8rem); /* Made primary text size much smaller */
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
       font-weight: 800;
       line-height: 1.2;
       letter-spacing: -0.02em;
@@ -399,7 +399,7 @@
       margin-bottom: 32px;
     }
 
-    /* Set text colors to inherit so custom <color> wrappers pass down to bold text */
+    /* Text formatting inherit rules */
     .hero b, .hero strong { font-weight: 900; color: inherit; }
     
     .hero u {
@@ -409,7 +409,8 @@
       text-underline-offset: 6px;
     }
     
-    .hero i, .hero em {
+    /* Safely make <i> and <em> tags italic WITHOUT affecting FontAwesome icons */
+    .hero i:not([class*="fa-"]), .hero em {
       font-style: italic;
     }
 
@@ -417,7 +418,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background-color: var(--glow-primary);
+      background-color: #50C878; /* Applied exact hex */
       color: #ffffff;
       font-weight: 600;
       font-size: 1.1rem;
@@ -425,16 +426,20 @@
       border-radius: 60px;
       text-decoration: none;
       transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 8px 20px -6px rgba(34, 197, 94, 0.5);
+      box-shadow: 0 8px 20px -6px rgba(80, 200, 120, 0.5); /* Shadow matched to #50C878 */
       margin-bottom: 40px;
     }
 
-    .hero__cta i { font-size: 1.3rem; }
+    /* Hard reset to guarantee FontAwesome icons inside buttons NEVER turn italic */
+    .hero__cta i { 
+      font-size: 1.3rem; 
+      font-style: normal !important; 
+    }
     
     .hero__cta:hover {
-      background-color: var(--glow-deep);
+      background-color: #42b565; /* Slightly darker shade of #50C878 for hover */
       transform: translateY(-2px);
-      box-shadow: 0 12px 24px -8px rgba(34, 197, 94, 0.6);
+      box-shadow: 0 12px 24px -8px rgba(80, 200, 120, 0.6);
     }
 
     .hero__footer {
@@ -655,23 +660,25 @@
     function formatHeroText(text) {
       if (!text) return '';
       
-      // Auto-detect hex prefix at the very beginning of the string (e.g., "#FF0000Text")
+      // Auto-detect hex prefix at the very beginning of the string
       const prefixRegex = /^#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(.*)$/is;
       const match = text.match(prefixRegex);
       if (match) {
         text = `<span style="color: #${match[1]};">${match[2]}</span>`;
       }
       
-      // Legacy formatting
       text = text
+        // Legacy formats
         .replace(/\[color=(#[0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: $1;">$2</span>')
         .replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
-        .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
+        .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
+        .replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>')
+        // New <color:"HEX/RGB">text</color> syntax support
+        .replace(/<color:"([^"]+)">([\s\S]*?)<\/color>/gi, '<span style="color: $1;">$2</span>')
+        // Line break support (safely replace \n and [br] with <br>)
+        .replace(/\[br\]/gi, '<br>')
+        .replace(/\n/g, '<br>');
         
-      // NEW: Support for <color:"{hex/rgb}">data</color> 
-      // It handles format <color:"#ff0000">text</color> or <color:"rgb(255,0,0)">text</color>
-      text = text.replace(/<color:"([^"]+)">([\s\S]*?)<\/color>/gi, '<span style="color: $1;">$2</span>');
-      
       return text;
     }
     
