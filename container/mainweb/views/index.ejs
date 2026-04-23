@@ -384,6 +384,9 @@
       color: var(--text-primary);
       text-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
       margin-bottom: 20px;
+      /* Ensures text can stretch edge to edge */
+      width: 100%;
+      max-width: 100%;
     }
     
     .hero__primary:empty, .hero__secondary:empty {
@@ -395,7 +398,9 @@
       font-size: clamp(1.1rem, 4vw, 1.4rem);
       font-weight: 400;
       color: var(--text-secondary);
-      max-width: 600px;
+      /* Removed the max-width: 600px; so it takes full screen width naturally */
+      width: 100%;
+      max-width: 100%;
       margin-bottom: 32px;
     }
 
@@ -446,6 +451,8 @@
       font-size: 0.95rem;
       color: var(--text-muted);
       opacity: 0.8;
+      width: 100%;
+      max-width: 100%;
     }
   </style>
 </head>
@@ -484,7 +491,7 @@
 </aside>
 
 <section class="hero" id="home">
-  <div class="content-wrapper" style="padding: 0;">
+  <div class="content-wrapper" style="padding: 0; width: 100%; max-width: 100%;">
     <h1 class="hero__primary" id="hero-primary"></h1>
     <p class="hero__secondary" id="hero-secondary"></p>
     <a href="#" class="hero__cta" id="hero-cta" style="display: none;">
