@@ -29,12 +29,17 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    /* Added html overflow-x reset to strictly prevent mobile layout breaking */
+    html, body {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
       background-color: var(--bg-deep);
       color: var(--text-primary);
       line-height: 1.6;
-      overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
       scroll-behavior: smooth;
@@ -384,9 +389,12 @@
       color: var(--text-primary);
       text-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
       margin-bottom: 20px;
-      /* Ensures text can stretch edge to edge */
       width: 100%;
       max-width: 100%;
+      /* Forces unbroken text (like Aaaaaa...) to wrap and not break layout */
+      overflow-wrap: break-word; 
+      word-break: break-word;
+      hyphens: auto;
     }
     
     .hero__primary:empty, .hero__secondary:empty {
@@ -398,10 +406,13 @@
       font-size: clamp(1.1rem, 4vw, 1.4rem);
       font-weight: 400;
       color: var(--text-secondary);
-      /* Removed the max-width: 600px; so it takes full screen width naturally */
       width: 100%;
       max-width: 100%;
       margin-bottom: 32px;
+      /* Forces unbroken text (like Aaaaaa...) to wrap and not break layout */
+      overflow-wrap: break-word; 
+      word-break: break-word;
+      hyphens: auto;
     }
 
     /* Text formatting inherit rules */
@@ -423,7 +434,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background-color: #50C878; /* Applied exact hex */
+      background-color: #50C878; 
       color: #ffffff;
       font-weight: 600;
       font-size: 1.1rem;
@@ -431,7 +442,7 @@
       border-radius: 60px;
       text-decoration: none;
       transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 8px 20px -6px rgba(80, 200, 120, 0.5); /* Shadow matched to #50C878 */
+      box-shadow: 0 8px 20px -6px rgba(80, 200, 120, 0.5); 
       margin-bottom: 40px;
     }
 
@@ -442,7 +453,7 @@
     }
     
     .hero__cta:hover {
-      background-color: #42b565; /* Slightly darker shade of #50C878 for hover */
+      background-color: #42b565; 
       transform: translateY(-2px);
       box-shadow: 0 12px 24px -8px rgba(80, 200, 120, 0.6);
     }
@@ -453,6 +464,9 @@
       opacity: 0.8;
       width: 100%;
       max-width: 100%;
+      /* Protects the footer text from overflowing too */
+      overflow-wrap: break-word; 
+      word-break: break-word;
     }
   </style>
 </head>
