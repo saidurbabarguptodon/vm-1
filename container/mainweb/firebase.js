@@ -39,7 +39,7 @@ const serverCache = {
   header: { alticon: "", alttext: "", logourl: "" },
   hero: {
     primarytext: "", secondarytext: "", footertext: "",
-    buttonenabled: false, buttontext: "", buttonicon: "", buttonurl: ""
+    buttonenabled: false, buttontext: "", buttonicon: "", buttonurl: "", hashpath: ""
   },
   sidebar: {
     header: { alticon: "", alttext: "", logourl: "" },
@@ -51,54 +51,63 @@ const serverCache = {
 const getCacheSize = (obj) => `${Buffer.byteLength(JSON.stringify(obj), 'utf8')} bytes`;
 
 // ===============================
-// 5. DOCUMENT CREATORS
+// 5. HEADER MANAGER
 // ===============================
-const headerDoc = {
+const headerManager = {
   async create() {
     try {
       const docRef = db.collection('web').doc('header');
       const doc = await docRef.get();
       if (!doc.exists) {
         await docRef.set({ alticon: "", alttext: "", logourl: "" });
-        console.log(`✅ Header document created at web/header`);
+        console.log(`✅ Header document created successfully at web/header`);
       } else {
-        console.log(`ℹ️ Header document already exists at web/header:\n${JSON.stringify(doc.data(), null, 2)}`);
+        console.log(`✅ Success! Header document already exists at web/header. Data:\n${JSON.stringify(doc.data(), null, 2)}`);
       }
     } catch (err) {
-      console.error("Error in header.create:", err);
+      console.error("Error in headerManager.create:", err);
     }
   }
 };
 
-const heroDoc = {
-  _defaultFields: {
+// ===============================
+// 6. BODY HERO MANAGER
+// ===============================
+const bodyHeroManager = {
+  _defaultHeroMap: {
     primarytext: "",
     secondarytext: "",
     footertext: "",
     buttonenabled: false,
     buttontext: "",
     buttonicon: "",
-    buttonurl: ""
+    buttonurl: "",
+    hashpath: ""
   },
 
   async create() {
     try {
-      const docRef = db.collection('web').doc('body').collection('hero').doc('content');
+      // The document is 'body', the map field inside it is 'hero'
+      const docRef = db.collection('web').doc('body');
       const doc = await docRef.get();
       
-      if (!doc.exists) {
-        await docRef.set(this._defaultFields);
-        console.log(`✅ Hero document created at web/body/hero/content with lowercase fields`);
+      if (!doc.exists || !doc.data().hero) {
+        // We use merge: true so we don't accidentally overwrite other potential fields in 'body'
+        await docRef.set({ hero: this._defaultHeroMap }, { merge: true });
+        console.log(`✅ Body Hero map created successfully at web/body with lowercase fields`);
       } else {
-        console.log(`ℹ️ Hero document already exists at web/body/hero/content:\n${JSON.stringify(doc.data(), null, 2)}`);
+        console.log(`✅ Success! Body Hero map already exists at web/body:\n${JSON.stringify(doc.data().hero, null, 2)}`);
       }
     } catch (err) {
-      console.error("Error in hero.create:", err);
+      console.error("Error in bodyHeroManager.create:", err);
     }
   }
 };
 
-const sidebarDoc = {
+// ===============================
+// 7. SIDEBAR MANAGER
+// ===============================
+const sidebarManager = {
   async create() {
     try {
       const docRef = db.collection('web').doc('sidebar');
@@ -128,21 +137,22 @@ const sidebarDoc = {
           footer: footerData
         };
 
-        console.log(`ℹ️ Sidebar document already exists at web/sidebar:\n${JSON.stringify(combinedLogObject, null, 2)}`);
+        console.log(`✅ Success! Sidebar document already exists at web/sidebar:\n${JSON.stringify(combinedLogObject, null, 2)}`);
       }
 
     } catch (err) {
-      console.error("Error in sidebar.create:", err);
+      console.error("Error in sidebarManager.create:", err);
     }
   }
 };
 
 // ===============================
-// 6. REAL-TIME LISTENERS
+// 8. REAL-TIME LISTENERS
 // ===============================
 function startRealtimeListeners() {
   console.log("\n📡 Starting DB Listeners...");
 
+  // Header Listener
   db.collection('web').doc('header').onSnapshot(doc => {
     if (doc.exists) {
       serverCache.header = doc.data();
@@ -150,38 +160,42 @@ function startRealtimeListeners() {
     }
   });
 
-  db.collection('web').doc('body').collection('hero').doc('content').onSnapshot(doc => {
-    if (doc.exists) {
-      serverCache.hero = doc.data();
-      console.log(`🔄 Cache Updated: [Bodysize:${getCacheSize(serverCache.hero)}]\n${JSON.stringify(serverCache.hero, null, 2)}`);
+  // Body Hero Map Listener (Updated to look for the 'hero' map field in the 'body' document)
+  db.collection('web').doc('body').onSnapshot(doc => {
+    if (doc.exists && doc.data().hero) {
+      serverCache.hero = doc.data().hero;
+      console.log(`🔄 Cache Updated: [Body hero size:${getCacheSize(serverCache.hero)}]\n${JSON.stringify(serverCache.hero, null, 2)}`);
     }
   });
 
+  // Sidebar Header Listener
   db.collection('web').doc('sidebar').onSnapshot(doc => {
     if (doc.exists && doc.data().header) {
       serverCache.sidebar.header = doc.data().header;
-      console.log(`🔄 Cache Updated: [Sidebarsize:${getCacheSize(serverCache.sidebar)}]\n${JSON.stringify(serverCache.sidebar, null, 2)}`);
+      console.log(`🔄 Cache Updated:[Sidebar size:${getCacheSize(serverCache.sidebar)}]\n${JSON.stringify(serverCache.sidebar, null, 2)}`);
     }
   });
 
+  // Sidebar Body Subcollection Listener
   db.collection('web').doc('sidebar').collection('body').onSnapshot(snapshot => {
     serverCache.sidebar.body = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    console.log(`🔄 Cache Updated:[Sidebarsize:${getCacheSize(serverCache.sidebar)}]\n${JSON.stringify(serverCache.sidebar, null, 2)}`);
+    console.log(`🔄 Cache Updated:[Sidebar size:${getCacheSize(serverCache.sidebar)}]\n${JSON.stringify(serverCache.sidebar, null, 2)}`);
   });
 
+  // Sidebar Footer Subcollection Listener
   db.collection('web').doc('sidebar').collection('footer').onSnapshot(snapshot => {
     serverCache.sidebar.footer = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    console.log(`🔄 Cache Updated:[Sidebarsize:${getCacheSize(serverCache.sidebar)}]\n${JSON.stringify(serverCache.sidebar, null, 2)}`);
+    console.log(`🔄 Cache Updated: [Sidebar size:${getCacheSize(serverCache.sidebar)}]\n${JSON.stringify(serverCache.sidebar, null, 2)}`);
   });
 }
 
 // ===============================
-// 7. WRAPPER FUNCTIONS & EXPORTS
+// 9. WRAPPER FUNCTIONS & EXPORTS
 // ===============================
 async function initializeFirestore() {
-  await headerDoc.create();
-  await heroDoc.create();
-  await sidebarDoc.create();
+  await headerManager.create();
+  await bodyHeroManager.create();
+  await sidebarManager.create();
   startRealtimeListeners();
 }
 
