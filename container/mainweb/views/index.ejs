@@ -1,3 +1,17 @@
+<%
+  function fmt(t) {
+    if (!t) return '';
+    const m = t.match(/^#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(.*)$/is);
+    if (m) t = '<span style="color: #' + m[1] + ';">' + m[2] + '</span>';
+    return t.replace(/\[color=(#[0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: $1;">$2</span>')
+            .replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
+            .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
+            .replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>')
+            .replace(/<color:"([^"]+)">([\s\S]*?)<\/color>/gi, '<span style="color: $1;">$2</span>')
+            .replace(/\[br\]/gi, '<br>')
+            .replace(/\n/g, '<br>');
+  }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +26,6 @@
       --header-glass: rgba(15, 15, 20, 0.75);
       --sidebar-glass: rgba(15, 15, 20, 0.85);
       --accent-muted: #6B7280;
-      --accent-soft: #9CA3AF;
       --text-primary: #F1F5F9;
       --text-secondary: #94A3B8;
       --text-muted: #94A3B8;
@@ -21,453 +34,65 @@
       --border-subtle: rgba(255, 255, 255, 0.08);
       --shadow-elevated: 0 10px 30px -8px rgba(0, 0, 0, 0.6);
     }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* Added html overflow-x reset to strictly prevent mobile layout breaking */
-    html, body {
-      max-width: 100vw;
-      overflow-x: hidden;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-deep);
-      color: var(--text-primary);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      scroll-behavior: smooth;
-    }
-
-    #snow-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .content-wrapper {
-      position: relative;
-      z-index: 2;
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    /* ---------- HEADER ---------- */
-    .app-header {
-      width: 100%;
-      background: var(--header-glass);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid var(--border-subtle);
-      box-shadow: var(--shadow-elevated);
-    }
-
-    .app-header::after {
-      content: "";
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 100%;
-      height: 240px;
-      background: radial-gradient(
-        ellipse 80% 100% at 50% 0%,
-        rgba(34, 197, 94, 0.20) 0%,
-        rgba(16, 185, 129, 0.08) 55%,
-        transparent 100%
-      );
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: opacity 0.2s ease;
-      text-decoration: none;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { max-width: 100vw; overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-deep); color: var(--text-primary); line-height: 1.6; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; scroll-behavior: smooth; }
+    #snow-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+    .content-wrapper { position: relative; z-index: 2; max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+    .app-header { width: 100%; background: var(--header-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-subtle); box-shadow: var(--shadow-elevated); }
+    .app-header::after { content: ""; position: absolute; top: 100%; left: 0; width: 100%; height: 240px; background: radial-gradient(ellipse 80% 100% at 50% 0%, rgba(34, 197, 94, 0.20) 0%, rgba(16, 185, 129, 0.08) 55%, transparent 100%); z-index: -1; pointer-events: none; }
+    .navbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+    .brand { display: flex; align-items: center; gap: 10px; transition: opacity 0.2s ease; text-decoration: none; }
     .brand--header { height: 40px; margin-left: -12px; }
     .brand--sidebar { height: 32px; }
     .brand:hover { opacity: 0.8; }
-
-    .brand__image {
-      height: 100%;
-      width: auto;
-      object-fit: contain;
-    }
-
-    .brand__icon {
-      font-size: 1.6rem;
-      color: var(--glow-primary);
-      text-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
-      display: inline-block;
-    }
-
-    .brand__text {
-      font-size: 1.7rem;
-      font-weight: 800;
-      color: var(--glow-primary);
-      text-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
-      letter-spacing: -0.5px;
-    }
-
-    .menu-toggle {
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 1.6rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      transition: all 0.15s ease;
-      margin-right: -8px;
-    }
-
+    .brand__image { height: 100%; width: auto; object-fit: contain; }
+    .brand__icon { font-size: 1.6rem; color: var(--glow-primary); text-shadow: 0 0 12px rgba(34, 197, 94, 0.45); display: inline-block; }
+    .brand__text { font-size: 1.7rem; font-weight: 800; color: var(--glow-primary); text-shadow: 0 0 12px rgba(34, 197, 94, 0.45); letter-spacing: -0.5px; }
+    .menu-toggle { background: transparent; border: none; color: var(--text-secondary); font-size: 1.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; transition: all 0.15s ease; margin-right: -8px; }
     .menu-toggle i { transition: transform 0.2s ease; }
     .menu-toggle:hover { background: rgba(255, 255, 255, 0.06); color: #FFFFFF; }
     .menu-toggle:active i { transform: scale(0.85); }
-
-    /* ---------- REFINED SIDEBAR ---------- */
-    .sidebar-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px);
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-      z-index: 998;
-      cursor: pointer;
-    }
-
-    .sidebar-overlay.is-visible {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .app-sidebar {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      height: 100vh;
-      height: 100dvh;
-      width: 280px;
-      max-width: 80vw;
-      background: var(--sidebar-glass);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      z-index: 999;
-      display: flex;
-      flex-direction: column;
-      border-top-right-radius: 24px;
-      border-bottom-right-radius: 24px;
-      border-right: 1px solid var(--border-subtle);
-      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
-      transform: translateX(-100%);
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .app-sidebar.is-expanded {
-      transform: translateX(0);
-    }
-
-    .sidebar__header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 24px;
-      border-bottom: 1px solid var(--border-subtle);
-      height: 73px;
-      flex-shrink: 0;
-    }
-
-    .sidebar__body {
-      flex: 1;
-      padding: 16px 12px 20px 12px;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
-    }
-    
+    .sidebar-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 998; cursor: pointer; }
+    .sidebar-overlay.is-visible { opacity: 1; visibility: visible; }
+    .app-sidebar { position: fixed; top: 0; bottom: 0; left: 0; height: 100vh; height: 100dvh; width: 280px; max-width: 80vw; background: var(--sidebar-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 999; display: flex; flex-direction: column; border-top-right-radius: 24px; border-bottom-right-radius: 24px; border-right: 1px solid var(--border-subtle); box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5); transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    .app-sidebar.is-expanded { transform: translateX(0); }
+    .sidebar__header { display: flex; justify-content: space-between; align-items: center; padding: 0 24px; border-bottom: 1px solid var(--border-subtle); height: 73px; flex-shrink: 0; }
+    .sidebar__body { flex: 1; padding: 16px 12px 20px 12px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent; }
     .sidebar__body::-webkit-scrollbar { width: 5px; }
     .sidebar__body::-webkit-scrollbar-track { background: transparent; }
-    .sidebar__body::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 10px;
-    }
-    .sidebar__body::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
-
-    .nav-menu {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 15px;
-      min-height: 56px;
-      color: var(--glow-primary);
-      text-decoration: none;
-      border-radius: 12px;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .nav-link i {
-      font-size: 1.25rem;
-      width: 28px;
-      text-align: center;
-      flex-shrink: 0;
-      color: var(--glow-primary);
-      transition: color 0.2s ease;
-    }
-
-    .nav-link__content {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      line-height: 1.3;
-    }
-
-    .nav-link__title {
-      font-size: 1.05rem;
-      font-weight: 500;
-      color: inherit;
-      transition: color 0.2s ease;
-    }
-
-    .nav-link:hover {
-      background: rgba(34, 197, 94, 0.1);
-      transform: translateX(4px);
-      color: var(--glow-deep);
-    }
-    
-    .nav-link:hover i { color: var(--glow-deep); }
-
-    .nav-link.is-active {
-      background: var(--glow-primary);
-      color: var(--bg-deep);
-    }
-
-    .nav-link.is-active i {
-      color: var(--bg-deep);
-      text-shadow: none;
-    }
-
-    .nav-link.is-active .nav-link__title {
-      font-weight: 700;
-      color: var(--bg-deep);
-    }
-
-    .sidebar__footer {
-      border-top: 1px solid var(--border-subtle);
-      flex-shrink: 0;
-      min-height: calc(73px + env(safe-area-inset-bottom));
-      padding: 15px 24px;
-      padding-bottom: calc(15px + env(safe-area-inset-bottom));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: auto;
-      background: rgba(0, 0, 0, 0.15);
-    }
-
-    .social-list {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-    }
-
-    .social-link {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 42px;
-      height: 42px;
-      background-color: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
-      border-radius: 50%;
-      text-decoration: none;
-      font-size: 19px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .social-link:hover {
-      background-color: var(--glow-primary);
-      border-color: var(--glow-primary);
-      color: #ffffff;
-      transform: translateY(-4px) scale(1.05);
-      box-shadow: 0 10px 20px -5px rgba(34, 197, 94, 0.5);
-    }
-
-    .sidebar__close {
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 1.5rem;
-      cursor: pointer;
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s ease;
-      margin-right: -8px;
-    }
-
-    .sidebar__close i { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    .sidebar__body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+    .nav-menu { display: flex; flex-direction: column; gap: 6px; }
+    .nav-link { display: flex; align-items: center; gap: 12px; padding: 14px 15px; min-height: 56px; color: var(--glow-primary); text-decoration: none; border-radius: 12px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+    .nav-link i { font-size: 1.25rem; width: 28px; text-align: center; flex-shrink: 0; color: var(--glow-primary); transition: color 0.2s ease; }
+    .nav-link__content { display: flex; flex-direction: column; justify-content: center; line-height: 1.3; }
+    .nav-link__title { font-size: 1.05rem; font-weight: 500; color: inherit; transition: color 0.2s ease; }
+    .nav-link:hover { background: rgba(34, 197, 94, 0.1); transform: translateX(4px); color: var(--glow-deep); }
+    .nav-link.is-active { background: var(--glow-primary); color: var(--bg-deep); }
+    .nav-link.is-active i { color: var(--bg-deep); text-shadow: none; }
+    .nav-link.is-active .nav-link__title { font-weight: 700; color: var(--bg-deep); }
+    .sidebar__footer { border-top: 1px solid var(--border-subtle); flex-shrink: 0; min-height: calc(73px + env(safe-area-inset-bottom)); padding: 15px 24px; padding-bottom: calc(15px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; margin-top: auto; background: rgba(0, 0, 0, 0.15); }
+    .social-list { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 100%; }
+    .social-link { display: flex; justify-content: center; align-items: center; width: 42px; height: 42px; background-color: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-primary); border-radius: 50%; text-decoration: none; font-size: 19px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .social-link:hover { background-color: var(--glow-primary); border-color: var(--glow-primary); color: #ffffff; transform: translateY(-4px) scale(1.05); box-shadow: 0 10px 20px -5px rgba(34, 197, 94, 0.5); }
+    .sidebar__close { background: transparent; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; margin-right: -8px; }
     .app-sidebar.is-expanded .sidebar__close i { transform: rotate(90deg); }
     .sidebar__close:hover { background: rgba(255, 255, 255, 0.06); color: #FFFFFF; }
-
-    .sidebar__header, .sidebar__body, .sidebar__footer {
-      opacity: 0;
-      transform: translateY(15px);
-      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
+    .sidebar__header, .sidebar__body, .sidebar__footer { opacity: 0; transform: translateY(15px); transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     .app-sidebar.is-expanded .sidebar__header { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
     .app-sidebar.is-expanded .sidebar__body { opacity: 1; transform: translateY(0); transition-delay: 0.18s; }
     .app-sidebar.is-expanded .sidebar__footer { opacity: 1; transform: translateY(0); transition-delay: 0.26s; }
-
-    body.has-menu-open {
-      overflow: hidden;
-      touch-action: none;
-    }
-
-    /* ---------- HERO SECTION ---------- */
-    .hero {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 40px 24px 60px;
-      position: relative;
-    }
-
-    .hero__primary {
-      font-size: clamp(1.8rem, 5vw, 2.8rem);
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
-      color: var(--text-primary);
-      text-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
-      margin-bottom: 20px;
-      width: 100%;
-      max-width: 100%;
-      /* Forces unbroken text (like Aaaaaa...) to wrap and not break layout */
-      overflow-wrap: break-word; 
-      word-break: break-word;
-      hyphens: auto;
-    }
-    
-    .hero__primary:empty, .hero__secondary:empty {
-      margin-bottom: 0;
-      display: none;
-    }
-
-    .hero__secondary {
-      font-size: clamp(1.1rem, 4vw, 1.4rem);
-      font-weight: 400;
-      color: var(--text-secondary);
-      width: 100%;
-      max-width: 100%;
-      margin-bottom: 32px;
-      /* Forces unbroken text (like Aaaaaa...) to wrap and not break layout */
-      overflow-wrap: break-word; 
-      word-break: break-word;
-      hyphens: auto;
-    }
-
-    /* Text formatting inherit rules */
+    body.has-menu-open { overflow: hidden; touch-action: none; }
+    .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 24px 60px; position: relative; }
+    .hero__primary { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; color: var(--text-primary); text-shadow: 0 0 30px rgba(34, 197, 94, 0.3); margin-bottom: 20px; width: 100%; max-width: 100%; overflow-wrap: break-word; word-break: break-word; hyphens: auto; }
+    .hero__secondary { font-size: clamp(1.1rem, 4vw, 1.4rem); font-weight: 400; color: var(--text-secondary); width: 100%; max-width: 100%; margin-bottom: 32px; overflow-wrap: break-word; word-break: break-word; hyphens: auto; }
     .hero b, .hero strong { font-weight: 900; color: inherit; }
-    
-    .hero u {
-      text-decoration: underline;
-      text-decoration-color: var(--glow-primary);
-      text-decoration-thickness: 0.1em;
-      text-underline-offset: 6px;
-    }
-    
-    /* Safely make <i> and <em> tags italic WITHOUT affecting FontAwesome icons */
-    .hero i:not([class*="fa-"]), .hero em {
-      font-style: italic;
-    }
-
-    .hero__cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background-color: #50C878; 
-      color: #ffffff;
-      font-weight: 600;
-      font-size: 1.1rem;
-      padding: 14px 24px;
-      border-radius: 60px;
-      text-decoration: none;
-      transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 8px 20px -6px rgba(80, 200, 120, 0.5); 
-      margin-bottom: 40px;
-    }
-
-    /* Hard reset to guarantee FontAwesome icons inside buttons NEVER turn italic */
-    .hero__cta i { 
-      font-size: 1.3rem; 
-      font-style: normal !important; 
-    }
-    
-    .hero__cta:hover {
-      background-color: #42b565; 
-      transform: translateY(-2px);
-      box-shadow: 0 12px 24px -8px rgba(80, 200, 120, 0.6);
-    }
-
-    .hero__footer {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      opacity: 0.8;
-      width: 100%;
-      max-width: 100%;
-      /* Protects the footer text from overflowing too */
-      overflow-wrap: break-word; 
-      word-break: break-word;
-    }
+    .hero u { text-decoration: underline; text-decoration-color: var(--glow-primary); text-decoration-thickness: 0.1em; text-underline-offset: 6px; }
+    .hero i:not([class*="fa-"]), .hero em { font-style: italic; }
+    .hero__cta { display: inline-flex; align-items: center; gap: 8px; background-color: #50C878; color: #ffffff; font-weight: 600; font-size: 1.1rem; padding: 14px 24px; border-radius: 60px; text-decoration: none; transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 8px 20px -6px rgba(80, 200, 120, 0.5); margin-bottom: 40px; }
+    .hero__cta i { font-size: 1.3rem; font-style: normal !important; }
+    .hero__cta:hover { background-color: #42b565; transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(80, 200, 120, 0.6); }
+    .hero__footer { font-size: 0.95rem; color: var(--text-muted); opacity: 0.8; width: 100%; max-width: 100%; overflow-wrap: break-word; word-break: break-word; }
   </style>
 </head>
 <body>
@@ -477,7 +102,14 @@
 <header class="app-header">
   <div class="content-wrapper">
     <nav class="navbar">
-      <a href="/" class="brand brand--header" id="header-brand"></a>
+      <a href="/" class="brand brand--header">
+        <% if (header.logourl) { %>
+          <img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="brand__image">
+        <% } else { %>
+          <% if (header.alticon) { %><i class="<%= header.alticon %> brand__icon"></i><% } %>
+          <% if (header.alttext) { %><span class="brand__text"><%= header.alttext %></span><% } %>
+        <% } %>
+      </a>
       <button class="menu-toggle" id="open-sidebar" aria-label="Open Menu">
         <i class="fa-solid fa-bars"></i>
       </button>
@@ -489,260 +121,121 @@
 
 <aside class="app-sidebar" id="app-sidebar">
   <div class="sidebar__header">
-    <a href="/" class="brand brand--sidebar" id="sidebar-brand"></a>
+    <a href="/" class="brand brand--sidebar">
+      <% if (sidebar.header && sidebar.header.logourl) { %>
+        <img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="brand__image">
+      <% } else { %>
+        <% if (sidebar.header && sidebar.header.alticon) { %><i class="<%= sidebar.header.alticon %> brand__icon"></i><% } %>
+        <% if (sidebar.header && sidebar.header.alttext) { %><span class="brand__text"><%= sidebar.header.alttext %></span><% } %>
+      <% } %>
+    </a>
     <button class="sidebar__close" id="close-sidebar" aria-label="Close Menu">
       <i class="fa-solid fa-xmark"></i>
     </button>
   </div>
 
   <div class="sidebar__body">
-    <nav class="nav-menu" id="sidebar-navigation"></nav>
+    <nav class="nav-menu" id="sidebar-navigation">
+      <% if (sidebar.body && sidebar.body.length > 0) { %>
+        <% sidebar.body.forEach(link => { %>
+          <a href="<%= link.url || '#' %>" class="nav-link">
+            <% if (link.icon) { %><i class="<%= link.icon %>"></i><% } %>
+            <div class="nav-link__content">
+              <span class="nav-link__title"><%= link.text || '' %></span>
+            </div>
+          </a>
+        <% }) %>
+      <% } %>
+    </nav>
   </div>
 
   <div class="sidebar__footer">
-    <div class="social-list" id="social-links"></div>
+    <div class="social-list" id="social-links">
+      <% if (sidebar.footer && sidebar.footer.length > 0) { %>
+        <% sidebar.footer.forEach(social => { %>
+          <a href="<%= social.url || '#' %>" target="_blank" class="social-link" rel="noopener">
+            <% if (social.icon) { %><i class="<%= social.icon %>"></i><% } %>
+          </a>
+        <% }) %>
+      <% } %>
+    </div>
   </div>
 </aside>
 
 <section class="hero" id="home">
   <div class="content-wrapper" style="padding: 0; width: 100%; max-width: 100%;">
-    <h1 class="hero__primary" id="hero-primary"></h1>
-    <p class="hero__secondary" id="hero-secondary"></p>
-    <a href="#" class="hero__cta" id="hero-cta" style="display: none;">
-      <i style="display: none;"></i>
-      <span id="hero-cta-text"></span>
-    </a>
-    <div class="hero__footer" id="hero-footer" style="display: none;"></div>
+    <% if (hero.primarytext) { %>
+      <h1 class="hero__primary"><%- fmt(hero.primarytext) %></h1>
+    <% } %>
+    
+    <% if (hero.secondarytext) { %>
+      <p class="hero__secondary"><%- fmt(hero.secondarytext) %></p>
+    <% } %>
+    
+    <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
+      <a href="<%= hero.buttonurl || '#' %>" class="hero__cta">
+        <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %>
+        <span><%= hero.buttontext || '' %></span>
+      </a>
+    <% } %>
+    
+    <% if (hero.footertext) { %>
+      <div class="hero__footer"><%- fmt(hero.footertext) %></div>
+    <% } %>
   </div>
 </section>
 
 <script>
-  window.__FALLBACK_DATA = {
-    header: {
-      alticon: <%- JSON.stringify(header.alticon || "") %>,
-      alttext: <%- JSON.stringify(header.alttext || "") %>
-    },
-    sidebar: {
-      alticon: <%- JSON.stringify(sidebar.header?.alticon || "") %>,
-      alttext: <%- JSON.stringify(sidebar.header?.alttext || "") %>
-    },
-    hero: <%- JSON.stringify(hero || {}) %>
-  };
-</script>
-
-<script>
   (function() {
-    // ---------- HEADER & SIDEBAR BRAND ----------
-    const headerBrand = document.getElementById('header-brand');
-    const sidebarBrand = document.getElementById('sidebar-brand');
-
-    function renderBrand(container, logourl, alticon, alttext, context) {
-      if (logourl && logourl.trim() !== '') {
-        const img = document.createElement('img');
-        img.src = logourl;
-        img.alt = alttext || '';
-        img.className = 'brand__image';
-        img.dataset.fallback = context;
-        img.onerror = function() {
-          this.onerror = null;
-          const parent = this.parentNode;
-          if (!parent) return;
-          const fallback = window.__FALLBACK_DATA?.[context] || { alticon: '', alttext: '' };
-          let html = '';
-          if (fallback.alticon) html += `<i class="${fallback.alticon} brand__icon"></i>`;
-          if (fallback.alttext) html += `<span class="brand__text">${fallback.alttext}</span>`;
-          parent.innerHTML = html || '';
-        };
-        container.innerHTML = '';
-        container.appendChild(img);
-      } else {
-        let html = '';
-        if (alticon) html += `<i class="${alticon} brand__icon"></i>`;
-        if (alttext) html += `<span class="brand__text">${alttext}</span>`;
-        container.innerHTML = html;
-      }
-    }
-
-    renderBrand(
-      headerBrand,
-      <%- JSON.stringify(header.logourl || "") %>,
-      <%- JSON.stringify(header.alticon || "") %>,
-      <%- JSON.stringify(header.alttext || "") %>,
-      'header'
-    );
-
-    renderBrand(
-      sidebarBrand,
-      <%- JSON.stringify(sidebar.header?.logourl || "") %>,
-      <%- JSON.stringify(sidebar.header?.alticon || "") %>,
-      <%- JSON.stringify(sidebar.header?.alttext || "") %>,
-      'sidebar'
-    );
-
-    // ---------- SIDEBAR NAVIGATION ----------
-    const navContainer = document.getElementById('sidebar-navigation');
-    const bodyLinks = <%- JSON.stringify(sidebar.body ||[]) %>;
+    const navLinks = document.querySelectorAll('.nav-link');
+    const hashLinks = Array.from(navLinks).map(l => l.getAttribute('href')).filter(h => h && h.startsWith('#'));
     
-    function renderNavLinks() {
-      if (bodyLinks && bodyLinks.length > 0) {
-        navContainer.innerHTML = bodyLinks.map(link => `
-          <a href="${link.url || '#'}" class="nav-link">
-            ${link.icon ? `<i class="${link.icon}"></i>` : ''}
-            <div class="nav-link__content">
-              <span class="nav-link__title">${link.text || ''}</span>
-            </div>
-          </a>
-        `).join('');
-        
-        setupNavInteractions();
-      } else {
-        navContainer.innerHTML = '';
-      }
+    function updateActiveState(currentHash) {
+      navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentHash) link.classList.add('is-active');
+        else link.classList.remove('is-active');
+      });
     }
 
-    function setupNavInteractions() {
-      const navLinks = document.querySelectorAll('.nav-link');
-      const hashLinks = Array.from(navLinks).map(l => l.getAttribute('href')).filter(h => h && h.startsWith('#'));
-      
-      function updateActiveState(currentHash) {
-        navLinks.forEach(link => {
-          if (link.getAttribute('href') === currentHash) {
-            link.classList.add('is-active');
-          } else {
-            link.classList.remove('is-active');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          e.preventDefault();
+          const targetElement = document.querySelector(href);
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+            history.pushState(null, null, href);
+            updateActiveState(href);
+            window.dispatchEvent(new Event('close-sidebar'));
           }
-        });
-      }
-
-      navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-          const href = this.getAttribute('href');
-          if (href && href.startsWith('#')) {
-            e.preventDefault();
-            const targetElement = document.querySelector(href);
-            if (targetElement) {
-              targetElement.scrollIntoView({ behavior: 'smooth' });
-              history.pushState(null, null, href);
-              updateActiveState(href);
-              window.dispatchEvent(new Event('close-sidebar'));
-            }
-          }
-        });
-      });
-
-      const sections = document.querySelectorAll('section[id], div[id]');
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            const hash = `#${id}`;
-            if (hashLinks.includes(hash)) {
-              history.replaceState(null, null, hash);
-              updateActiveState(hash);
-            }
-          }
-        });
-      }, {
-        rootMargin: '-20% 0px -60% 0px'
-      });
-
-      sections.forEach(sec => {
-        if(hashLinks.includes(`#${sec.id}`)) {
-          observer.observe(sec);
         }
       });
+    });
 
-      if (!window.location.hash) {
-        navLinks.forEach(link => link.classList.remove('is-active'));
-      } else {
-        updateActiveState(window.location.hash);
-      }
-    }
-    
-    renderNavLinks();
+    const navObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const hash = `#${entry.target.id}`;
+          if (hashLinks.includes(hash)) {
+            history.replaceState(null, null, hash);
+            updateActiveState(hash);
+          }
+        }
+      });
+    }, { rootMargin: '-20% 0px -60% 0px' });
 
-    // ---------- SIDEBAR SOCIAL LINKS ----------
-    const socialContainer = document.getElementById('social-links');
-    const socialLinks = <%- JSON.stringify(sidebar.footer ||[]) %>;
-    
-    if (socialLinks && socialLinks.length > 0) {
-      socialContainer.innerHTML = socialLinks.map(social => `
-        <a href="${social.url || '#'}" target="_blank" class="social-link" rel="noopener">
-          ${social.icon ? `<i class="${social.icon}"></i>` : ''}
-        </a>
-      `).join('');
-    } else {
-      socialContainer.innerHTML = '';
-    }
+    document.querySelectorAll('section[id], div[id]').forEach(sec => {
+      if(hashLinks.includes(`#${sec.id}`)) navObserver.observe(sec);
+    });
 
-    // ---------- HERO SECTION TEXT FORMATTING ----------
-    const heroData = window.__FALLBACK_DATA.hero || {};
-    
-    function formatHeroText(text) {
-      if (!text) return '';
-      
-      // Auto-detect hex prefix at the very beginning of the string
-      const prefixRegex = /^#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(.*)$/is;
-      const match = text.match(prefixRegex);
-      if (match) {
-        text = `<span style="color: #${match[1]};">${match[2]}</span>`;
-      }
-      
-      text = text
-        // Legacy formats
-        .replace(/\[color=(#[0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: $1;">$2</span>')
-        .replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
-        .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
-        .replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>')
-        // New <color:"HEX/RGB">text</color> syntax support
-        .replace(/<color:"([^"]+)">([\s\S]*?)<\/color>/gi, '<span style="color: $1;">$2</span>')
-        // Line break support (safely replace \n and [br] with <br>)
-        .replace(/\[br\]/gi, '<br>')
-        .replace(/\n/g, '<br>');
-        
-      return text;
-    }
-    
-    document.getElementById('hero-primary').innerHTML = formatHeroText(heroData.primarytext || '');
-    document.getElementById('hero-secondary').innerHTML = formatHeroText(heroData.secondarytext || '');
-    
-    const footerEl = document.getElementById('hero-footer');
-    if (heroData.footertext) {
-      footerEl.innerHTML = formatHeroText(heroData.footertext);
-      footerEl.style.display = 'block';
-    } else {
-      footerEl.style.display = 'none';
-    }
-    
-    const ctaBtn = document.getElementById('hero-cta');
-    const ctaText = document.getElementById('hero-cta-text');
-    const buttonEnabled = heroData.buttonenabled === true || heroData.buttonenabled === 'true';
-    
-    if (buttonEnabled) {
-      ctaBtn.style.display = 'inline-flex';
-      ctaBtn.href = heroData.buttonurl || '#';
-      ctaText.textContent = heroData.buttontext || '';
-      
-      const iconElement = ctaBtn.querySelector('i');
-      if (heroData.buttonicon) {
-        iconElement.className = heroData.buttonicon;
-        iconElement.style.display = 'inline-block';
-      } else {
-        iconElement.className = '';
-        iconElement.style.display = 'none';
-      }
-    } else {
-      ctaBtn.style.display = 'none';
-    }
+    if (!window.location.hash) navLinks.forEach(link => link.classList.remove('is-active'));
+    else updateActiveState(window.location.hash);
   })();
-</script>
 
-<script>
   (function() {
-    // Canvas Snow Effect
     const canvas = document.getElementById('snow-canvas');
     const ctx = canvas.getContext('2d');
-
     let width = window.innerWidth;
     let height = window.innerHeight;
     canvas.width = width;
@@ -750,7 +243,6 @@
 
     const maxFlakes = width < 768 ? 25 : 60;
     const flakes =[];
-
     for (let i = 0; i < maxFlakes; i++) {
       flakes.push({
         x: Math.random() * width,
@@ -782,10 +274,7 @@
         f.y += f.d;
         f.a += f.aStep;
         f.x += Math.sin(f.a) * 0.5;
-        if (f.y > height) {
-          f.y = -10;
-          f.x = Math.random() * width;
-        }
+        if (f.y > height) { f.y = -10; f.x = Math.random() * width; }
         if (f.x > width + 10) f.x = -10;
         if (f.x < -10) f.x = width + 10;
       }
@@ -800,7 +289,6 @@
 
     drawSnow();
 
-    // Sidebar Interactions
     const openBtn = document.getElementById('open-sidebar');
     const closeBtn = document.getElementById('close-sidebar');
     const sidebarEl = document.getElementById('app-sidebar');
@@ -811,7 +299,6 @@
       overlay.classList.add('is-visible');
       document.body.classList.add('has-menu-open');
     }
-
     function closeSidebar() {
       sidebarEl.classList.remove('is-expanded');
       overlay.classList.remove('is-visible');
@@ -821,7 +308,6 @@
     openBtn.addEventListener('click', openSidebar);
     closeBtn.addEventListener('click', closeSidebar);
     overlay.addEventListener('click', closeSidebar);
-    
     window.addEventListener('close-sidebar', closeSidebar);
   })();
 </script>
