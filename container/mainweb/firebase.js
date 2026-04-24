@@ -33,7 +33,23 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 // ===============================
-// 4. HEADER DOCUMENT (web/header)
+// 4. IN-MEMORY CACHE (Saves DB Reads!)
+// ===============================
+const serverCache = {
+  header: { alticon: "", alttext: "", logourl: "" },
+  hero: {
+    primarytext: "", secondarytext: "", footertext: "",
+    buttonenabled: false, buttontext: "", buttonicon: "", buttonurl: ""
+  },
+  sidebar: {
+    header: { alticon: "", alttext: "", logourl: "" },
+    body: [],
+    footer:[]
+  }
+};
+
+// ===============================
+// 5. DOCUMENT CREATORS (Run once on startup)
 // ===============================
 const headerDoc = {
   async create() {
@@ -41,176 +57,119 @@ const headerDoc = {
       const docRef = db.collection('web').doc('header');
       const doc = await docRef.get();
       if (!doc.exists) {
-        await docRef.set({ alticon: "", alttext: "", logourl: "" });
-        console.log(`✅ Header document created at web/header`);
+        await docRef.set(serverCache.header);
+        console.log(`✅ Header document created`);
       } else {
-        console.log(`ℹ️ Header document already exists at web/header:\n${JSON.stringify(doc.data(), null, 2)}`);
+        console.log(`ℹ️ Header document already exists`);
       }
-    } catch (err) {
-      console.error("Error in header.create:", err);
-    }
-  },
-
-  async get() {
-    try {
-      const docRef = db.collection('web').doc('header');
-      const doc = await docRef.get();
-      return doc.exists ? doc.data() : { alticon: "", alttext: "", logourl: "" };
-    } catch (err) {
-      console.error("Error in header.get:", err);
-      return { alticon: "", alttext: "", logourl: "" };
-    }
+    } catch (err) { console.error("Error in header.create:", err); }
   }
 };
 
-// ===============================
-// 5. HERO DOCUMENT (web/body/hero)
-// ===============================
 const heroDoc = {
-  _defaultFields: {
-    primarytext: "",
-    secondarytext: "",
-    footertext: "",
-    buttonenabled: false,
-    buttontext: "",
-    buttonicon: "",
-    buttonurl: ""
-  },
-
   async create() {
     try {
       const docRef = db.collection('web').doc('body').collection('hero').doc('content');
       const doc = await docRef.get();
-      
       if (!doc.exists) {
-        await docRef.set(this._defaultFields);
-        console.log(`✅ Hero document created at web/body/hero/content with lowercase fields`);
+        await docRef.set(serverCache.hero);
+        console.log(`✅ Hero document created`);
       } else {
-        console.log(`ℹ️ Hero document already exists at web/body/hero/content:\n${JSON.stringify(doc.data(), null, 2)}`);
+        console.log(`ℹ️ Hero document already exists`);
       }
-    } catch (err) {
-      console.error("Error in hero.create:", err);
-    }
-  },
-
-  async get() {
-    try {
-      const docRef = db.collection('web').doc('body').collection('hero').doc('content');
-      const doc = await docRef.get();
-      return doc.exists ? doc.data() : this._defaultFields;
-    } catch (err) {
-      console.error("Error in hero.get:", err);
-      return this._defaultFields;
-    }
+    } catch (err) { console.error("Error in hero.create:", err); }
   }
 };
 
-// ===============================
-// 6. SIDEBAR DOCUMENTS (web/sidebar)
-// ===============================
 const sidebarDoc = {
   async create() {
     try {
       const docRef = db.collection('web').doc('sidebar');
       const doc = await docRef.get();
-
       if (!doc.exists) {
-        await docRef.set({
-          header: { alticon: "", alttext: "", logourl: "" }
-        });
-        console.log(`✅ Sidebar document created at web/sidebar (empty body and footer subcollections)`);
+        await docRef.set({ header: serverCache.sidebar.header });
+        console.log(`✅ Sidebar document created`);
       } else {
-        const bodySnapshot = await docRef.collection('body').orderBy(admin.firestore.FieldPath.documentId()).get();
-        let bodyData = {};
-        bodySnapshot.docs.forEach(doc => {
-          bodyData[doc.id] = doc.data();
-        });
-
-        const footerSnapshot = await docRef.collection('footer').orderBy(admin.firestore.FieldPath.documentId()).get();
-        let footerData = {};
-        footerSnapshot.docs.forEach(doc => {
-          footerData[doc.id] = doc.data();
-        });
-
-        const combinedLogObject = {
-          header: doc.data().header,
-          body: bodyData,
-          footer: footerData
-        };
-
-        console.log(`ℹ️ Sidebar document already exists at web/sidebar:\n${JSON.stringify(combinedLogObject, null, 2)}`);
+        console.log(`ℹ️ Sidebar document already exists`);
       }
-
-    } catch (err) {
-      console.error("Error in sidebar.create:", err);
-    }
-  },
-
-  async getHeader() {
-    try {
-      const docRef = db.collection('web').doc('sidebar');
-      const doc = await docRef.get();
-      if (doc.exists && doc.data().header) {
-        return doc.data().header;
-      }
-      return { alticon: "", alttext: "", logourl: "" };
-    } catch (err) {
-      console.error("Error in sidebar.getHeader:", err);
-      return { alticon: "", alttext: "", logourl: "" };
-    }
-  },
-
-  async getBody() {
-    try {
-      const snapshot = await db.collection('web').doc('sidebar').collection('body').orderBy(admin.firestore.FieldPath.documentId()).get();
-      return snapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        icon: doc.data().icon || "",
-        url: doc.data().url || "#",
-        text: doc.data().text || "Untitled",
-        description: doc.data().description || ""
-      }));
-    } catch (err) {
-      console.error("Error in sidebar.getBody:", err);
-      return [];
-    }
-  },
-
-  async getFooter() {
-    try {
-      const snapshot = await db.collection('web').doc('sidebar').collection('footer').orderBy(admin.firestore.FieldPath.documentId()).get();
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    } catch (err) {
-      console.error("Error in sidebar.getFooter:", err);
-      return [];
-    }
+    } catch (err) { console.error("Error in sidebar.create:", err); }
   }
 };
+
+// ===============================
+// 6. REAL-TIME LISTENERS (Updates Cache automatically)
+// ===============================
+function startRealtimeListeners() {
+  console.log("📡 Starting Firebase Real-Time Listeners...");
+
+  // Listen to Header updates
+  db.collection('web').doc('header').onSnapshot(doc => {
+    if (doc.exists) {
+      serverCache.header = doc.data();
+      console.log("🔄 Cache Updated: [Header]");
+    }
+  }, err => console.error("Header listen error:", err));
+
+  // Listen to Hero updates
+  db.collection('web').doc('body').collection('hero').doc('content').onSnapshot(doc => {
+    if (doc.exists) {
+      serverCache.hero = doc.data();
+      console.log("🔄 Cache Updated: [Hero]");
+    }
+  }, err => console.error("Hero listen error:", err));
+
+  // Listen to Sidebar Header updates
+  db.collection('web').doc('sidebar').onSnapshot(doc => {
+    if (doc.exists && doc.data().header) {
+      serverCache.sidebar.header = doc.data().header;
+      console.log("🔄 Cache Updated:[Sidebar Header]");
+    }
+  }, err => console.error("Sidebar listen error:", err));
+
+  // Listen to Sidebar Body updates
+  db.collection('web').doc('sidebar').collection('body').onSnapshot(snapshot => {
+    serverCache.sidebar.body = snapshot.docs.map(doc => ({
+      id: doc.id,
+      icon: doc.data().icon || "",
+      url: doc.data().url || "#",
+      text: doc.data().text || "Untitled",
+      description: doc.data().description || ""
+    }));
+    console.log("🔄 Cache Updated: [Sidebar Body]");
+  }, err => console.error("Sidebar Body listen error:", err));
+
+  // Listen to Sidebar Footer updates
+  db.collection('web').doc('sidebar').collection('footer').onSnapshot(snapshot => {
+    serverCache.sidebar.footer = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    console.log("🔄 Cache Updated: [Sidebar Footer]");
+  }, err => console.error("Sidebar Footer listen error:", err));
+}
 
 // ===============================
 // 7. WRAPPER FUNCTIONS & EXPORTS
 // ===============================
 
 async function initializeFirestore() {
+  // 1. Ensure structural docs exist on boot
   await headerDoc.create();
   await heroDoc.create();
   await sidebarDoc.create();
+  
+  // 2. Attach listeners to constantly keep serverCache updated
+  startRealtimeListeners();
 }
 
+// 🚀 These now fetch instantly from RAM (0 database reads on page refresh!)
 async function getHeader() {
-  return await headerDoc.get();
+  return serverCache.header;
 }
 
 async function getHero() {
-  return await heroDoc.get();
+  return serverCache.hero;
 }
 
 async function getSidebar() {
-  const header = await sidebarDoc.getHeader();
-  const body = await sidebarDoc.getBody();
-  const footer = await sidebarDoc.getFooter();
-  
-  return { header, body, footer }; 
+  return serverCache.sidebar; 
 }
 
 module.exports = {
