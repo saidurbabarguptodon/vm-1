@@ -37,7 +37,7 @@ const db = admin.firestore();
 // ===============================
 const serverCache = {
   header: null,
-  hero: null,           // will hold the hero map from web/body.hero
+  hero: null,
   sidebar: {
     header: null,
     body: [],
@@ -56,7 +56,6 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
       } else if (cacheKey === 'sidebar.header') {
         serverCache.sidebar.header = transform(snap);
       } else if (cacheKey === 'hero') {
-        // hero is a field inside web/body document
         const data = snap.data();
         serverCache.hero = data.hero || null;
       } else {
@@ -94,7 +93,6 @@ async function initializeCacheAndListeners() {
   const headerRef = db.collection('web').doc('header');
   await attachListenerAndInit(headerRef, 'header');
   
-  // Hero: listen to the web/body document and extract the 'hero' field
   const bodyRef = db.collection('web').doc('body');
   await attachListenerAndInit(bodyRef, 'hero');
   
@@ -132,7 +130,7 @@ const headerDoc = {
 };
 
 // ===============================
-// 6. SIDEBAR
+// 6. SIDEBAR 
 // ===============================
 const defaultSidebarHeader = { alticon: "", alttext: "", logourl: "" };
 serverCache.sidebar.header = defaultSidebarHeader;
@@ -140,8 +138,8 @@ serverCache.sidebar.header = defaultSidebarHeader;
 const defaultNavButton = { 
   text: "Home", 
   icon: "fa-solid fa-house", 
-  url: "/", 
-  enabled: true
+  url: "/"
+  // No 'enabled' field
 };
 const defaultSocialLink = { icon: "fa-brands fa-discord", url: "#" };
 
@@ -183,11 +181,12 @@ const sidebarDoc = {
 };
 
 // ===============================
-// 7. BODY / HERO (hero as a map field inside web/body document)
+// 7. BODY / HERO 
 // ===============================
 const defaultHero = {
   primarytext: "", secondarytext: "", footertext: "",
-  buttonenabled: false, buttontext: "", buttonicon: "", buttonurl: ""
+  buttonenabled: true,  
+  buttontext: "", buttonicon: "", buttonurl: ""
 };
 serverCache.hero = defaultHero;
 
@@ -198,11 +197,9 @@ const heroDoc = {
       const bodyDoc = await bodyDocRef.get();
       
       if (!bodyDoc.exists) {
-        // Create the body document with the hero field
         await bodyDocRef.set({ hero: defaultHero });
         console.log(`Successfully create body document with hero ${JSON.stringify(defaultHero)}`);
       } else {
-        // Check if the hero field exists; if not, add it without overwriting other fields
         const existingHero = bodyDoc.data().hero;
         if (!existingHero) {
           await bodyDocRef.update({ hero: defaultHero });
