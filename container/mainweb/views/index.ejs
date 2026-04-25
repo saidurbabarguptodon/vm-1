@@ -9,20 +9,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    :root {
-      --bg-deep: #0A0A0F;
-      --header-glass: rgba(15, 15, 20, 0.75);
-      --sidebar-glass: rgba(15, 15, 20, 0.85);
-      --accent-muted: #6B7280;
-      --text-primary: #F1F5F9;
-      --text-secondary: #94A3B8;
-      --text-muted: #94A3B8;
-      --glow-primary: #22C55E;
-      --glow-deep: #16a34a;
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --shadow-elevated: 0 10px 30px -8px rgba(0, 0, 0, 0.6);
-    }
-
     * {
       margin: 0;
       padding: 0;
@@ -37,8 +23,8 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background-color: var(--bg-deep);
-      color: var(--text-primary);
+      background-color: #0A0A0F;
+      color: #F1F5F9;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
@@ -81,14 +67,14 @@
 
     .header {
       width: 100%;
-      background: var(--header-glass);
+      background: rgba(15, 15, 20, 0.75);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       position: sticky;
       top: 0;
       z-index: 100;
-      border-bottom: 1px solid var(--border-subtle);
-      box-shadow: var(--shadow-elevated);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6);
     }
 
     .header__nav {
@@ -101,7 +87,7 @@
     .header__toggle {
       background: transparent;
       border: none;
-      color: var(--text-secondary);
+      color: #94A3B8;
       font-size: 1.6rem;
       cursor: pointer;
       display: flex;
@@ -156,7 +142,7 @@
 
     .brand__icon {
       font-size: 1.6rem;
-      color: var(--glow-primary);
+      color: #22C55E;
       text-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
       display: inline-block;
     }
@@ -164,7 +150,7 @@
     .brand__text {
       font-size: 1.7rem;
       font-weight: 800;
-      color: var(--glow-primary);
+      color: #22C55E;
       text-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
       letter-spacing: -0.5px;
     }
@@ -196,7 +182,7 @@
       height: 100dvh;
       width: 280px;
       max-width: 80vw;
-      background: var(--sidebar-glass);
+      background: rgba(15, 15, 20, 0.85);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       z-index: 999;
@@ -204,7 +190,7 @@
       flex-direction: column;
       border-top-right-radius: 24px;
       border-bottom-right-radius: 24px;
-      border-right: 1px solid var(--border-subtle);
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
       transform: translateX(-100%);
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -245,7 +231,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 0 24px;
-      border-bottom: 1px solid var(--border-subtle);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       height: 73px;
       flex-shrink: 0;
     }
@@ -253,7 +239,7 @@
     .sidebar__close {
       background: transparent;
       border: none;
-      color: var(--text-secondary);
+      color: #94A3B8;
       font-size: 1.5rem;
       cursor: pointer;
       width: 36px;
@@ -297,7 +283,7 @@
     }
 
     .sidebar__footer {
-      border-top: 1px solid var(--border-subtle);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
       flex-shrink: 0;
       min-height: calc(73px + env(safe-area-inset-bottom));
       padding: 15px 24px;
@@ -321,7 +307,7 @@
       gap: 12px;
       padding: 14px 15px;
       min-height: 56px;
-      color: var(--glow-primary);
+      color: #22C55E;
       text-decoration: none;
       border-radius: 12px;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -334,29 +320,29 @@
       width: 28px;
       text-align: center;
       flex-shrink: 0;
-      color: var(--glow-primary);
+      color: #22C55E;
       transition: color 0.2s ease;
     }
 
     .menu__link:hover {
       background: rgba(34, 197, 94, 0.1);
       transform: translateX(4px);
-      color: var(--glow-deep);
+      color: #16a34a;
     }
 
     .menu__link.is-active {
-      background: var(--glow-primary);
-      color: var(--bg-deep);
+      background: #22C55E;
+      color: #0A0A0F;
     }
 
     .menu__link.is-active i {
-      color: var(--bg-deep);
+      color: #0A0A0F;
       text-shadow: none;
     }
 
     .menu__link.is-active .menu__title {
       font-weight: 700;
-      color: var(--bg-deep);
+      color: #0A0A0F;
     }
 
     .menu__content {
@@ -389,7 +375,7 @@
       height: 42px;
       background-color: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
+      color: #F1F5F9;
       border-radius: 50%;
       text-decoration: none;
       font-size: 19px;
@@ -397,8 +383,8 @@
     }
 
     .social__link:hover {
-      background-color: var(--glow-primary);
-      border-color: var(--glow-primary);
+      background-color: #22C55E;
+      border-color: #22C55E;
       color: #ffffff;
       transform: translateY(-4px) scale(1.05);
       box-shadow: 0 10px 20px -5px rgba(34, 197, 94, 0.5);
@@ -416,7 +402,7 @@
     .hero b, .hero strong { font-weight: 900; color: inherit; }
     .hero u { 
       text-decoration: underline; 
-      text-decoration-color: var(--glow-primary); 
+      text-decoration-color: #22C55E; 
       text-decoration-thickness: 0.1em; 
       text-underline-offset: 6px; 
     }
@@ -427,7 +413,7 @@
       font-weight: 800;
       line-height: 1.2;
       letter-spacing: -0.02em;
-      color: var(--text-primary);
+      color: #F1F5F9;
       text-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
       margin-bottom: 20px;
       width: 100%;
@@ -440,7 +426,7 @@
     .hero__subtitle {
       font-size: clamp(1.1rem, 4vw, 1.4rem);
       font-weight: 400;
-      color: var(--text-secondary);
+      color: #94A3B8;
       width: 100%;
       max-width: 100%;
       margin-bottom: 32px;
@@ -478,7 +464,7 @@
 
     .hero__text {
       font-size: 0.95rem;
-      color: var(--text-muted);
+      color: #94A3B8;
       opacity: 0.8;
       width: 100%;
       max-width: 100%;
