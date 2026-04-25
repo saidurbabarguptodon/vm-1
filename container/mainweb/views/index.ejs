@@ -4,10 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KexCloud | Dynamic Header & Sidebar</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
   <style>
     * {
       margin: 0;
@@ -15,12 +13,10 @@
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
-
     html, body {
       max-width: 100vw;
       overflow-x: hidden;
     }
-
     body {
       font-family: 'Inter', sans-serif;
       background-color: #0A0A0F;
@@ -30,12 +26,10 @@
       text-rendering: optimizeLegibility;
       scroll-behavior: smooth;
     }
-
     body.has-sidebar-open {
       overflow: hidden;
       touch-action: none;
     }
-
     #snow-canvas {
       position: fixed;
       top: 0;
@@ -45,7 +39,6 @@
       pointer-events: none;
       z-index: 1;
     }
-
     .page-glow {
       position: absolute;
       top: 0;
@@ -56,7 +49,6 @@
       z-index: 0;
       pointer-events: none;
     }
-
     .container {
       position: relative;
       z-index: 2;
@@ -64,7 +56,6 @@
       margin: 0 auto;
       padding: 0 24px;
     }
-
     .header {
       width: 100%;
       background: rgba(15, 15, 20, 0.75);
@@ -76,14 +67,12 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6);
     }
-
     .header__nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 10px 0;
     }
-
     .header__toggle {
       background: transparent;
       border: none;
@@ -99,20 +88,16 @@
       transition: all 0.15s ease;
       margin-right: -8px;
     }
-
     .header__toggle i {
       transition: transform 0.2s ease;
     }
-
     .header__toggle:hover {
       background: rgba(255, 255, 255, 0.06);
       color: #FFFFFF;
     }
-
     .header__toggle:active i {
       transform: scale(0.85);
     }
-
     .brand {
       display: flex;
       align-items: center;
@@ -120,33 +105,27 @@
       transition: opacity 0.2s ease;
       text-decoration: none;
     }
-
     .brand:hover {
       opacity: 0.8;
     }
-
     .brand--header {
       height: 40px;
       margin-left: -12px;
     }
-
     .brand--sidebar {
       height: 32px;
     }
-
     .brand__img {
       height: 100%;
       width: auto;
       object-fit: contain;
     }
-
     .brand__icon {
       font-size: 1.6rem;
       color: #22C55E;
       text-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
       display: inline-block;
     }
-
     .brand__text {
       font-size: 1.7rem;
       font-weight: 800;
@@ -154,7 +133,6 @@
       text-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
       letter-spacing: -0.5px;
     }
-
     .overlay {
       position: fixed;
       inset: 0;
@@ -167,12 +145,10 @@
       z-index: 998;
       cursor: pointer;
     }
-
     .overlay.is-visible {
       opacity: 1;
       visibility: visible;
     }
-
     .sidebar {
       position: fixed;
       top: 0;
@@ -195,11 +171,9 @@
       transform: translateX(-100%);
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
     .sidebar.is-expanded {
       transform: translateX(0);
     }
-
     .sidebar__header, 
     .sidebar__body, 
     .sidebar__footer {
@@ -207,25 +181,21 @@
       transform: translateY(15px);
       transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
     .sidebar.is-expanded .sidebar__header {
       opacity: 1;
       transform: translateY(0);
       transition-delay: 0.1s;
     }
-
     .sidebar.is-expanded .sidebar__body {
       opacity: 1;
       transform: translateY(0);
       transition-delay: 0.18s;
     }
-
     .sidebar.is-expanded .sidebar__footer {
       opacity: 1;
       transform: translateY(0);
       transition-delay: 0.26s;
     }
-
     .sidebar__header {
       display: flex;
       justify-content: space-between;
@@ -235,7 +205,6 @@
       height: 73px;
       flex-shrink: 0;
     }
-
     .sidebar__close {
       background: transparent;
       border: none;
@@ -251,16 +220,13 @@
       transition: all 0.15s ease;
       margin-right: -8px;
     }
-
     .sidebar.is-expanded .sidebar__close i {
       transform: rotate(90deg);
     }
-
     .sidebar__close:hover {
       background: rgba(255, 255, 255, 0.06);
       color: #FFFFFF;
     }
-
     .sidebar__body {
       flex: 1;
       padding: 16px 12px 20px 12px;
@@ -268,20 +234,16 @@
       scrollbar-width: thin;
       scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
     }
-
     .sidebar__body::-webkit-scrollbar {
       width: 5px;
     }
-
     .sidebar__body::-webkit-scrollbar-track {
       background: transparent;
     }
-
     .sidebar__body::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.15);
       border-radius: 10px;
     }
-
     .sidebar__footer {
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       flex-shrink: 0;
@@ -294,13 +256,11 @@
       margin-top: auto;
       background: rgba(0, 0, 0, 0.15);
     }
-
     .menu {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
-
     .menu__link {
       display: flex;
       align-items: center;
@@ -314,7 +274,6 @@
       position: relative;
       overflow: hidden;
     }
-
     .menu__link i {
       font-size: 1.25rem;
       width: 28px;
@@ -323,42 +282,35 @@
       color: #22C55E;
       transition: color 0.2s ease;
     }
-
     .menu__link:hover {
       background: rgba(34, 197, 94, 0.1);
       transform: translateX(4px);
       color: #16a34a;
     }
-
     .menu__link.is-active {
       background: #22C55E;
       color: #0A0A0F;
     }
-
     .menu__link.is-active i {
       color: #0A0A0F;
       text-shadow: none;
     }
-
     .menu__link.is-active .menu__title {
       font-weight: 700;
       color: #0A0A0F;
     }
-
     .menu__content {
       display: flex;
       flex-direction: column;
       justify-content: center;
       line-height: 1.3;
     }
-
     .menu__title {
       font-size: 1.05rem;
       font-weight: 500;
       color: inherit;
       transition: color 0.2s ease;
     }
-
     .social {
       display: flex;
       gap: 12px;
@@ -366,7 +318,6 @@
       justify-content: center;
       width: 100%;
     }
-
     .social__link {
       display: flex;
       justify-content: center;
@@ -381,7 +332,6 @@
       font-size: 19px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
     .social__link:hover {
       background-color: #22C55E;
       border-color: #22C55E;
@@ -389,7 +339,6 @@
       transform: translateY(-4px) scale(1.05);
       box-shadow: 0 10px 20px -5px rgba(34, 197, 94, 0.5);
     }
-
     .hero {
       display: flex;
       flex-direction: column;
@@ -398,7 +347,6 @@
       padding: 40px 24px 60px;
       position: relative;
     }
-
     .hero b, .hero strong { font-weight: 900; color: inherit; }
     .hero u { 
       text-decoration: underline; 
@@ -407,7 +355,6 @@
       text-underline-offset: 6px; 
     }
     .hero i:not([class*="fa-"]), .hero em { font-style: italic; }
-
     .hero__title {
       font-size: clamp(1.8rem, 5vw, 2.8rem);
       font-weight: 800;
@@ -422,7 +369,6 @@
       word-break: break-word;
       hyphens: auto;
     }
-
     .hero__subtitle {
       font-size: clamp(1.1rem, 4vw, 1.4rem);
       font-weight: 400;
@@ -434,7 +380,6 @@
       word-break: break-word;
       hyphens: auto;
     }
-
     .hero__btn {
       display: inline-flex;
       align-items: center;
@@ -450,18 +395,15 @@
       box-shadow: 0 8px 20px -6px rgba(80, 200, 120, 0.5);
       margin-bottom: 40px;
     }
-
     .hero__btn i {
       font-size: 1.3rem;
       font-style: normal !important;
     }
-
     .hero__btn:hover {
       background-color: #42b565;
       transform: translateY(-2px);
       box-shadow: 0 12px 24px -8px rgba(80, 200, 120, 0.6);
     }
-
     .hero__text {
       font-size: 0.95rem;
       color: #94A3B8;
@@ -474,7 +416,6 @@
   </style>
 </head>
 <body>
-
   <canvas id="snow-canvas"></canvas>
   <div class="page-glow"></div>
 
@@ -546,58 +487,46 @@
       <% if (hero.primarytext) { %>
         <h1 class="hero__title"><%- fmt(hero.primarytext) %></h1>
       <% } %>
-      
       <% if (hero.secondarytext) { %>
         <p class="hero__subtitle"><%- fmt(hero.secondarytext) %></p>
       <% } %>
-      
       <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
         <a href="<%= hero.buttonurl || '#' %>" class="hero__btn">
           <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %>
           <span><%= hero.buttontext || '' %></span>
         </a>
       <% } %>
-      
       <% if (hero.footertext) { %>
         <div class="hero__text"><%- fmt(hero.footertext) %></div>
       <% } %>
     </div>
   </section>
 
-  <%
-    function fmt(t) {
-      if (!t) return '';
-      
-      const m = t.match(/^#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(.*)$/is);
-      if (m) {
-        t = '<span style="color: #' + m[1] + ';">' + m[2] + '</span>';
-      }
-      
-      return t.replace(/\[color=(#[0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: $1;">$2</span>')
-              .replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
-              .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
-              .replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>')
-              .replace(/<color:"([^"]+)">([\s\S]*?)<\/color>/gi, '<span style="color: $1;">$2</span>')
-              .replace(/\[br\]/gi, '<br>')
-              .replace(/\n/g, '<br>');
+  <% function fmt(t) {
+    if (!t) return '';
+    const m = t.match(/^#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(.*)$/is);
+    if (m) {
+      t = '<span style="color: #' + m[1] + ';">' + m[2] + '</span>';
     }
-  %>
-  
+    return t.replace(/\[color=(#[0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: $1;">$2</span>')
+            .replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
+            .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
+            .replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>')
+            .replace(/<color:"([^"]+)">([\s\S]*?)<\/color>/gi, '<span style="color: $1;">$2</span>')
+            .replace(/\[br\]/gi, '<br>')
+            .replace(/\n/g, '<br>');
+  } %>
+
   <script>
     (function() {
       const menuLinks = document.querySelectorAll('.menu__link');
       const hashLinks = Array.from(menuLinks).map(l => l.getAttribute('href')).filter(h => h && h.startsWith('#'));
-      
       function updateActiveState(currentHash) {
         menuLinks.forEach(link => {
-          if (link.getAttribute('href') === currentHash) {
-            link.classList.add('is-active');
-          } else {
-            link.classList.remove('is-active');
-          }
+          if (link.getAttribute('href') === currentHash) link.classList.add('is-active');
+          else link.classList.remove('is-active');
         });
       }
-
       menuLinks.forEach(link => {
         link.addEventListener('click', function(e) {
           const href = this.getAttribute('href');
@@ -613,7 +542,6 @@
           }
         });
       });
-
       const navObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -625,32 +553,21 @@
           }
         });
       }, { rootMargin: '-20% 0px -60% 0px' });
-
       document.querySelectorAll('section[id], div[id]').forEach(sec => {
-        if (hashLinks.includes(`#${sec.id}`)) {
-          navObserver.observe(sec);
-        }
+        if (hashLinks.includes(`#${sec.id}`)) navObserver.observe(sec);
       });
-
-      if (!window.location.hash) {
-        menuLinks.forEach(link => link.classList.remove('is-active'));
-      } else {
-        updateActiveState(window.location.hash);
-      }
+      if (!window.location.hash) menuLinks.forEach(link => link.classList.remove('is-active'));
+      else updateActiveState(window.location.hash);
     })();
-
     (function() {
       const canvas = document.getElementById('snow-canvas');
       const ctx = canvas.getContext('2d');
       let width = window.innerWidth;
       let height = window.innerHeight;
-      
       canvas.width = width;
       canvas.height = height;
-
       const maxFlakes = width < 768 ? 25 : 60;
-      const flakes =[];
-      
+      const flakes = [];
       for (let i = 0; i < maxFlakes; i++) {
         flakes.push({
           x: Math.random() * width,
@@ -662,7 +579,6 @@
           opacity: Math.random() * 0.4 + 0.1
         });
       }
-
       function drawSnow() {
         ctx.clearRect(0, 0, width, height);
         for (let i = 0; i < maxFlakes; i++) {
@@ -675,49 +591,38 @@
         moveSnow();
         requestAnimationFrame(drawSnow);
       }
-
       function moveSnow() {
         for (let i = 0; i < maxFlakes; i++) {
           let f = flakes[i];
           f.y += f.d;
           f.a += f.aStep;
           f.x += Math.sin(f.a) * 0.5;
-          
-          if (f.y > height) { 
-            f.y = -10; 
-            f.x = Math.random() * width; 
-          }
+          if (f.y > height) { f.y = -10; f.x = Math.random() * width; }
           if (f.x > width + 10) f.x = -10;
           if (f.x < -10) f.x = width + 10;
         }
       }
-
       window.addEventListener('resize', () => {
         width = window.innerWidth;
         height = window.innerHeight;
         canvas.width = width;
         canvas.height = height;
       });
-
       drawSnow();
-
       const openBtn = document.getElementById('open-sidebar');
       const closeBtn = document.getElementById('close-sidebar');
       const sidebarEl = document.getElementById('sidebar');
       const overlay = document.getElementById('overlay');
-
       function openSidebar() {
         sidebarEl.classList.add('is-expanded');
         overlay.classList.add('is-visible');
         document.body.classList.add('has-sidebar-open');
       }
-      
       function closeSidebar() {
         sidebarEl.classList.remove('is-expanded');
         overlay.classList.remove('is-visible');
         document.body.classList.remove('has-sidebar-open');
       }
-
       openBtn.addEventListener('click', openSidebar);
       closeBtn.addEventListener('click', closeSidebar);
       overlay.addEventListener('click', closeSidebar);
