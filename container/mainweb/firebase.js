@@ -29,7 +29,7 @@ const db = admin.firestore();
 // =============================== // 4. IN-MEMORY CACHE // ===============================
 const serverCache = { 
   header: {}, 
-  hero: [], 
+  hero: {}, 
   sidebar: { header: {}, body: [], footer:[] } 
 };
 
@@ -75,7 +75,7 @@ const sidebarDoc = {
       const docRef = db.collection('web').doc('sidebar'); 
       const doc = await docRef.get();
 
-      // Check Sidebar Header
+      // Check Sidebar Header Map
       if (!doc.exists || !doc.data().header) {
         await docRef.set({ header: { ...sidebarHeaderData } }, { merge: true });
       } else {
@@ -123,16 +123,19 @@ const heroData = {
   buttonurl: ""
 };
 
-serverCache.hero = [heroData];
+serverCache.hero = { ...heroData };
 
 const heroDoc = { 
   async create() { 
     try { 
-      const collectionRef = db.collection('web').doc('body').collection('hero'); 
-      const snapshot = await collectionRef.get(); 
+      const docRef = db.collection('web').doc('body'); 
+      const doc = await docRef.get(); 
       
-      if (snapshot.empty) {
-        await collectionRef.add(heroData); 
+      // Directly checking and creating the 'hero' Map inside the 'body' document
+      if (!doc.exists || !doc.data().hero) {
+        await docRef.set({ hero: heroData }, { merge: true }); 
+      } else {
+        console.log("✅ Hero data already exists:\n", doc.data().hero);
       }
     } catch (err) { 
       console.error(err); 
@@ -152,26 +155,29 @@ function startRealtimeListeners() {
     } 
   });
 
-  db.collection('web').doc('body').collection('hero').onSnapshot(snapshot => { 
-    serverCache.hero = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-    console.log(`🔄 Cache Updated:[Hero size: ${getCacheSize(serverCache.hero)}]\n${JSON.stringify(serverCache.hero, null, 2)}`); 
+  // Listening to the 'body' document and pulling the 'hero' map field
+  db.collection('web').doc('body').onSnapshot(doc => { 
+    if (doc.exists && doc.data().hero) { 
+      serverCache.hero = doc.data().hero; 
+      console.log(`🔄 Cache Updated:[Hero size: ${getCacheSize(serverCache.hero)}]\n${JSON.stringify(serverCache.hero, null, 2)}`); 
+    } 
   });
 
   db.collection('web').doc('sidebar').onSnapshot(doc => { 
     if (doc.exists && doc.data().header) { 
       serverCache.sidebar.header = doc.data().header;
-      console.log(`🔄 Cache Updated:[Sidebar size: ${getCacheSize(serverCache.sidebar)}]\n${JSON.stringify(serverCache.sidebar, null, 2)}`); 
+      console.log(`🔄 Cache Updated:[Sidebar size: ${getCacheSize(serverCache.sidebar.header)}]\n${JSON.stringify(serverCache.sidebar.header, null, 2)}`); 
     } 
   });
 
   db.collection('web').doc('sidebar').collection('body').onSnapshot(snapshot => {
     serverCache.sidebar.body = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-    console.log(`🔄 Cache Updated:[Sidebar size: ${getCacheSize(serverCache.sidebar)}]\n${JSON.stringify(serverCache.sidebar, null, 2)}`); 
+    console.log(`🔄 Cache Updated:[Sidebar Body size: ${getCacheSize(serverCache.sidebar.body)}]\n${JSON.stringify(serverCache.sidebar.body, null, 2)}`); 
   });
 
   db.collection('web').doc('sidebar').collection('footer').onSnapshot(snapshot => { 
     serverCache.sidebar.footer = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-    console.log(`🔄 Cache Updated:[Sidebar size: ${getCacheSize(serverCache.sidebar)}]\n${JSON.stringify(serverCache.sidebar, null, 2)}`); 
+    console.log(`🔄 Cache Updated:[Sidebar Footer size: ${getCacheSize(serverCache.sidebar.footer)}]\n${JSON.stringify(serverCache.sidebar.footer, null, 2)}`); 
   }); 
 }
 
