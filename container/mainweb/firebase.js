@@ -1,193 +1,237 @@
-// =============================== // 1. IMPORTS // ===============================
+// ===============================
+// 1. IMPORTS
+// ===============================
 const admin = require('firebase-admin');
 require('dotenv').config();
 
-// =============================== // 2. LOAD ENVIRONMENT VARIABLES // ===============================
-const { 
+// ===============================
+// 2. LOAD ENVIRONMENT VARIABLES
+// ===============================
+const {
   FIREBASE_PROJECT_ID,
-  FIREBASE_PRIVATE_KEY, 
-  FIREBASE_CLIENT_EMAIL, 
-  FIREBASE_DATABASE_URL 
+  FIREBASE_PRIVATE_KEY,
+  FIREBASE_CLIENT_EMAIL,
+  FIREBASE_DATABASE_URL
 } = process.env;
 
-// =============================== // 3. INITIALIZE FIREBASE ADMIN SDK // ===============================
-const serviceAccount = { 
-  projectId: FIREBASE_PROJECT_ID, 
-  privateKey: FIREBASE_PRIVATE_KEY ? FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined, 
-  clientEmail: FIREBASE_CLIENT_EMAIL, 
+// ===============================
+// 3. INITIALIZE FIREBASE ADMIN SDK
+// ===============================
+const serviceAccount = {
+  projectId: FIREBASE_PROJECT_ID,
+  privateKey: FIREBASE_PRIVATE_KEY ? FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+  clientEmail: FIREBASE_CLIENT_EMAIL,
 };
 
-if (!admin.apps.length) { 
-  admin.initializeApp({ 
-    credential: admin.credential.cert(serviceAccount), 
-    databaseURL: FIREBASE_DATABASE_URL, 
-  }); 
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: FIREBASE_DATABASE_URL,
+  });
 }
 
 const db = admin.firestore();
 
-// =============================== // 4. IN-MEMORY CACHE // ===============================
-const serverCache = { 
-  header: {}, 
-  hero: {}, 
-  sidebar: { header: {}, body: [], footer:[] } 
+// ===============================
+// 4. IN-MEMORY CACHE WITH REAL-TIME LISTENERS
+// ===============================
+const serverCache = {
+  header: null,
+  hero: null,           // will hold the hero map from web/body.hero
+  sidebar: {
+    header: null,
+    body: [],
+    footer: []
+  }
 };
 
-const getCacheSize = (obj) => `${Buffer.byteLength(JSON.stringify(obj), 'utf8')} bytes`;
-
-
-// =============================== // 5. HEADER DOC // ===============================
-const headerData = {
-  alticon: "",
-  alttext: "",
-  logourl: ""
-};
-
-serverCache.header = { ...headerData };
-
-const headerDoc = { 
-  async create() { 
-    try { 
-      const docRef = db.collection('web').doc('header'); 
-      const doc = await docRef.get(); 
-      
-      // Smart merge: adds missing default fields without deleting existing data
-      const existingData = doc.exists ? doc.data() : {};
-      await docRef.set({ ...headerData, ...existingData }, { merge: true }); 
-    } catch (err) {
-      console.error(err); 
-    } 
-  } 
-};
-
-
-// =============================== // 6. SIDEBAR DOC // ===============================
-const sidebarHeaderData = {
-  alticon: "",
-  alttext: "",
-  logourl: ""
-};
-
-serverCache.sidebar.header = { ...sidebarHeaderData };
-
-const sidebarDoc = { 
-  async create() { 
-    try { 
-      const docRef = db.collection('web').doc('sidebar'); 
-      const doc = await docRef.get();
-
-      // Smart merge Sidebar Header Map
-      const existingHeader = (doc.exists && doc.data().header) ? doc.data().header : {};
-      await docRef.set({ header: { ...sidebarHeaderData, ...existingHeader } }, { merge: true });
-
-      // Check Sidebar Body (navbutton-{num})
-      const bodySnapshot = await docRef.collection('body').get();
-      const hasNavButton = bodySnapshot.docs.some(d => /^navbutton-\d+$/.test(d.id));
-      
-      if (!hasNavButton) {
-        await docRef.collection('body').doc('navbutton-1').set({ 
-          text: "Home", 
-          icon: "fa-solid fa-house", 
-          hash: "#" 
-        });
+function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
+  // Initial fetch
+  return ref.get().then(snap => {
+    if (snap.exists) {
+      if (cacheKey === 'sidebar.body' || cacheKey === 'sidebar.footer') {
+        const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (cacheKey === 'sidebar.body') serverCache.sidebar.body = data;
+        else serverCache.sidebar.footer = data;
+      } else if (cacheKey === 'sidebar.header') {
+        serverCache.sidebar.header = transform(snap);
+      } else if (cacheKey === 'hero') {
+        // hero is a field inside web/body document
+        const data = snap.data();
+        serverCache.hero = data.hero || null;
+      } else {
+        serverCache[cacheKey] = transform(snap);
       }
-
-      // Check Sidebar Footer (social-{num})
-      const footerSnapshot = await docRef.collection('footer').get();
-      const hasSocial = footerSnapshot.docs.some(d => /^social-\d+$/.test(d.id));
-      
-      if (!hasSocial) {
-        await docRef.collection('footer').doc('social-1').set({ 
-          text: "Discord",
-          icon: "fa-brands fa-discord", 
-          url: "#" 
-        });
-      }
-    } catch (err) { 
-      console.error(err); 
     }
-  } 
+  }).catch(console.error);
+  
+  if (cacheKey === 'sidebar.body' || cacheKey === 'sidebar.footer') {
+    ref.onSnapshot(snapshot => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (cacheKey === 'sidebar.body') serverCache.sidebar.body = data;
+      else serverCache.sidebar.footer = data;
+    }, console.error);
+  } else if (cacheKey === 'hero') {
+    ref.onSnapshot(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        serverCache.hero = data.hero || null;
+      }
+    }, console.error);
+  } else {
+    ref.onSnapshot(doc => {
+      if (doc.exists) {
+        if (cacheKey === 'sidebar.header') serverCache.sidebar.header = doc.data();
+        else serverCache[cacheKey] = doc.data();
+      }
+    }, console.error);
+  }
+}
+
+async function initializeCacheAndListeners() {
+  console.log("\n📡 Initializing Firestore cache and real-time listeners...");
+  
+  const headerRef = db.collection('web').doc('header');
+  await attachListenerAndInit(headerRef, 'header');
+  
+  // Hero: listen to the web/body document and extract the 'hero' field
+  const bodyRef = db.collection('web').doc('body');
+  await attachListenerAndInit(bodyRef, 'hero');
+  
+  const sidebarMainRef = db.collection('web').doc('sidebar');
+  await attachListenerAndInit(sidebarMainRef, 'sidebar.header', (doc) => doc.data().header);
+  
+  const sidebarBodyRef = sidebarMainRef.collection('body');
+  await attachListenerAndInit(sidebarBodyRef, 'sidebar.body');
+  
+  const sidebarFooterRef = sidebarMainRef.collection('footer');
+  await attachListenerAndInit(sidebarFooterRef, 'sidebar.footer');
+  
+  console.log("✅ Cache populated and listeners active.");
+}
+
+// ===============================
+// 5. HEADER
+// ===============================
+const defaultHeader = { alticon: "", alttext: "", logourl: "" };
+serverCache.header = defaultHeader;
+
+const headerDoc = {
+  async create() {
+    try {
+      const docRef = db.collection('web').doc('header');
+      const doc = await docRef.get();
+      if (!doc.exists) {
+        await docRef.set(defaultHeader);
+        console.log(`Successfully create header ${JSON.stringify(defaultHeader)}`);
+      } else {
+        console.log(`Header already exists ${JSON.stringify(doc.data())}`);
+      }
+    } catch (err) { console.error(err); }
+  }
 };
 
+// ===============================
+// 6. SIDEBAR
+// ===============================
+const defaultSidebarHeader = { alticon: "", alttext: "", logourl: "" };
+serverCache.sidebar.header = defaultSidebarHeader;
 
-// =============================== // 7. BODY-HERO DOC // ===============================
-const heroData = {
-  primarytext: "",
-  secondarytext: "",
-  footertext: "",
-  buttonenabled: true,
-  buttontext: "",
-  buttonicon: "",
-  buttonurl: ""
+const defaultNavButton = { 
+  text: "Home", 
+  icon: "fa-solid fa-house", 
+  url: "/", 
+  enabled: true
 };
+const defaultSocialLink = { icon: "fa-brands fa-discord", url: "#" };
 
-serverCache.hero = { ...heroData };
-
-const heroDoc = { 
-  async create() { 
-    try { 
-      const docRef = db.collection('web').doc('body'); 
-      const doc = await docRef.get(); 
+const sidebarDoc = {
+  async create() {
+    try {
+      const docRef = db.collection('web').doc('sidebar');
+      const doc = await docRef.get();
       
-      // Smart merge: Gets existing hero data and injects any missing default fields
-      const existingHero = (doc.exists && doc.data().hero) ? doc.data().hero : {};
-      const mergedHero = { ...heroData, ...existingHero };
+      if (!doc.exists) {
+        await docRef.set({ header: defaultSidebarHeader });
+        console.log(`Successfully create sidebar document ${JSON.stringify({ header: defaultSidebarHeader })}`);
+      } else {
+        console.log(`Sidebar document already exists ${JSON.stringify(doc.data())}`);
+      }
 
-      await docRef.set({ hero: mergedHero }, { merge: true }); 
-    } catch (err) { 
-      console.error(err); 
-    } 
-  } 
+      const bodySnapshot = await docRef.collection('body').get();
+      const hasNavButton = bodySnapshot.docs.some(docSnap => docSnap.id.startsWith('navbutton-'));
+      if (!hasNavButton) {
+        await docRef.collection('body').doc('navbutton-1').set(defaultNavButton);
+        console.log(`Successfully create sidebar body navbutton-1 ${JSON.stringify(defaultNavButton)}`);
+      } else {
+        const existingNavButtons = bodySnapshot.docs
+          .filter(d => d.id.startsWith('navbutton-'))
+          .map(d => ({ id: d.id, ...d.data() }));
+        console.log(`Sidebar body navbuttons already exist: ${JSON.stringify(existingNavButtons)}`);
+      }
+
+      const footerSnapshot = await docRef.collection('footer').get();
+      if (footerSnapshot.empty) {
+        await docRef.collection('footer').doc('social-1').set(defaultSocialLink);
+        console.log(`Successfully create sidebar footer social-1 ${JSON.stringify(defaultSocialLink)}`);
+      } else {
+        const existingFooter = footerSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        console.log(`Sidebar footer already exists: ${JSON.stringify(existingFooter)}`);
+      }
+    } catch (err) { console.error(err); }
+  }
 };
 
+// ===============================
+// 7. BODY / HERO (hero as a map field inside web/body document)
+// ===============================
+const defaultHero = {
+  primarytext: "", secondarytext: "", footertext: "",
+  buttonenabled: false, buttontext: "", buttonicon: "", buttonurl: ""
+};
+serverCache.hero = defaultHero;
 
-// =============================== // 8. REAL-TIME LISTENERS // ===============================
-function startRealtimeListeners() {
-  console.log("\n📡 Starting DB Listeners...");
+const heroDoc = {
+  async create() {
+    try {
+      const bodyDocRef = db.collection('web').doc('body');
+      const bodyDoc = await bodyDocRef.get();
+      
+      if (!bodyDoc.exists) {
+        // Create the body document with the hero field
+        await bodyDocRef.set({ hero: defaultHero });
+        console.log(`Successfully create body document with hero ${JSON.stringify(defaultHero)}`);
+      } else {
+        // Check if the hero field exists; if not, add it without overwriting other fields
+        const existingHero = bodyDoc.data().hero;
+        if (!existingHero) {
+          await bodyDocRef.update({ hero: defaultHero });
+          console.log(`Hero field missing; added successfully ${JSON.stringify(defaultHero)}`);
+        } else {
+          console.log(`Hero already exists in body document: ${JSON.stringify(existingHero)}`);
+        }
+      }
+    } catch (err) { console.error(err); }
+  }
+};
 
-  db.collection('web').doc('header').onSnapshot(doc => { 
-    if (doc.exists) {
-      serverCache.header = { id: doc.id, ...doc.data() }; 
-      console.log(`🔄 Cache Updated:[Header size: ${getCacheSize(serverCache.header)}]\n${JSON.stringify(serverCache.header, null, 2)}`); 
-    } 
-  });
-
-  db.collection('web').doc('body').onSnapshot(doc => { 
-    if (doc.exists && doc.data().hero) { 
-      serverCache.hero = doc.data().hero; 
-      console.log(`🔄 Cache Updated:[Hero size: ${getCacheSize(serverCache.hero)}]\n${JSON.stringify(serverCache.hero, null, 2)}`); 
-    } 
-  });
-
-  db.collection('web').doc('sidebar').onSnapshot(doc => { 
-    if (doc.exists && doc.data().header) { 
-      serverCache.sidebar.header = doc.data().header;
-      console.log(`🔄 Cache Updated:[Sidebar size: ${getCacheSize(serverCache.sidebar.header)}]\n${JSON.stringify(serverCache.sidebar.header, null, 2)}`); 
-    } 
-  });
-
-  db.collection('web').doc('sidebar').collection('body').onSnapshot(snapshot => {
-    serverCache.sidebar.body = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-    console.log(`🔄 Cache Updated:[Sidebar Body size: ${getCacheSize(serverCache.sidebar.body)}]\n${JSON.stringify(serverCache.sidebar.body, null, 2)}`); 
-  });
-
-  db.collection('web').doc('sidebar').collection('footer').onSnapshot(snapshot => { 
-    serverCache.sidebar.footer = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
-    console.log(`🔄 Cache Updated:[Sidebar Footer size: ${getCacheSize(serverCache.sidebar.footer)}]\n${JSON.stringify(serverCache.sidebar.footer, null, 2)}`); 
-  }); 
-}
-
-
-// =============================== // 9. WRAPPER FUNCTIONS & EXPORTS // ===============================
-async function initializeFirestore() { 
+// ===============================
+// 8. WRAPPER FUNCTIONS & EXPORTS
+// ===============================
+async function initializeFirestore() {
   await headerDoc.create();
-  await sidebarDoc.create(); 
-  await heroDoc.create();  
-  startRealtimeListeners(); 
+  await heroDoc.create();
+  await sidebarDoc.create();
+  await initializeCacheAndListeners();
 }
 
-async function getHeader() { return serverCache.header; } 
-async function getHero() { return serverCache.hero; } 
+async function getHeader() { return serverCache.header; }
+async function getHero() { return serverCache.hero; }
 async function getSidebar() { return serverCache.sidebar; }
 
-module.exports = { initializeFirestore, getHeader, getHero, getSidebar };
+module.exports = {
+  initializeFirestore,
+  getHeader,
+  getHero,
+  getSidebar
+};
