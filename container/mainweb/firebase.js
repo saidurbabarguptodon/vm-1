@@ -46,44 +46,75 @@ const serverCache = {
 };
 
 function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
-  // Initial fetch
-  return ref.get().then(snap => {
-    if (snap.exists) {
-      if (cacheKey === 'sidebar.body' || cacheKey === 'sidebar.footer') {
-        const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        if (cacheKey === 'sidebar.body') serverCache.sidebar.body = data;
-        else serverCache.sidebar.footer = data;
-      } else if (cacheKey === 'sidebar.header') {
-        serverCache.sidebar.header = transform(snap);
-      } else if (cacheKey === 'hero') {
-        const data = snap.data();
-        serverCache.hero = data.hero || null;
-      } else {
-        serverCache[cacheKey] = transform(snap);
-      }
-    }
-  }).catch(console.error);
-  
-  if (cacheKey === 'sidebar.body' || cacheKey === 'sidebar.footer') {
+  const isCollection = cacheKey === 'sidebar.body' || cacheKey === 'sidebar.footer';
+
+  // ─── FIX 1: Don't return early — attach listeners first, then do initial fetch ───
+  // ─── FIX 2: Use !snap.empty for collection refs, snap.exists for document refs ───
+
+  if (isCollection) {
+    // Real-time listener for collections
     ref.onSnapshot(snapshot => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       if (cacheKey === 'sidebar.body') serverCache.sidebar.body = data;
       else serverCache.sidebar.footer = data;
     }, console.error);
+
+    // Initial fetch for collections
+    return ref.get().then(snap => {
+      if (!snap.empty) {
+        const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (cacheKey === 'sidebar.body') serverCache.sidebar.body = data;
+        else serverCache.sidebar.footer = data;
+      }
+    }).catch(console.error);
+
+  } else if (cacheKey === 'sidebar.header') {
+    // Real-time listener for sidebar header document
+    ref.onSnapshot(doc => {
+      if (doc.exists) {
+        // ─── FIX 3: Use doc.data().header, not doc.data() ───
+        serverCache.sidebar.header = doc.data().header;
+      }
+    }, console.error);
+
+    // Initial fetch for sidebar header
+    return ref.get().then(snap => {
+      if (snap.exists) {
+        serverCache.sidebar.header = transform(snap);
+      }
+    }).catch(console.error);
+
   } else if (cacheKey === 'hero') {
+    // Real-time listener for hero (nested in body doc)
     ref.onSnapshot(doc => {
       if (doc.exists) {
         const data = doc.data();
         serverCache.hero = data.hero || null;
       }
     }, console.error);
+
+    // Initial fetch for hero
+    return ref.get().then(snap => {
+      if (snap.exists) {
+        const data = snap.data();
+        serverCache.hero = data.hero || null;
+      }
+    }).catch(console.error);
+
   } else {
+    // Real-time listener for generic documents (e.g. header)
     ref.onSnapshot(doc => {
       if (doc.exists) {
-        if (cacheKey === 'sidebar.header') serverCache.sidebar.header = doc.data();
-        else serverCache[cacheKey] = doc.data();
+        serverCache[cacheKey] = doc.data();
       }
     }, console.error);
+
+    // Initial fetch for generic documents
+    return ref.get().then(snap => {
+      if (snap.exists) {
+        serverCache[cacheKey] = transform(snap);
+      }
+    }).catch(console.error);
   }
 }
 
@@ -139,7 +170,6 @@ const defaultNavButton = {
   text: "Home", 
   icon: "fa-solid fa-house", 
   url: "/"
-  // No 'enabled' field
 };
 const defaultSocialLink = { icon: "fa-brands fa-discord", url: "#" };
 
