@@ -5,14 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KexCloud | Dynamic Header & Sidebar</title>
 
-  <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* =========================================
-       CSS Variables
-       ========================================= */
     :root {
       --bg-deep: #0A0A0F;
       --header-glass: rgba(15, 15, 20, 0.75);
@@ -27,9 +23,6 @@
       --shadow-elevated: 0 10px 30px -8px rgba(0, 0, 0, 0.6);
     }
 
-    /* =========================================
-       Global Reset & Base Styles
-       ========================================= */
     * {
       margin: 0;
       padding: 0;
@@ -52,14 +45,11 @@
       scroll-behavior: smooth;
     }
 
-    body.has-menu-open {
+    body.has-sidebar-open {
       overflow: hidden;
       touch-action: none;
     }
 
-    /* =========================================
-       Snow Canvas
-       ========================================= */
     #snow-canvas {
       position: fixed;
       top: 0;
@@ -70,7 +60,18 @@
       z-index: 1;
     }
 
-    .content-wrapper {
+    .page-glow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 350px;
+      background: radial-gradient(ellipse 80% 100% at 50% 0%, rgba(34, 197, 94, 0.20) 0%, rgba(16, 185, 129, 0.08) 55%, transparent 100%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .container {
       position: relative;
       z-index: 2;
       max-width: 1280px;
@@ -78,10 +79,7 @@
       padding: 0 24px;
     }
 
-    /* =========================================
-       App Header & Navbar
-       ========================================= */
-    .app-header {
+    .header {
       width: 100%;
       background: var(--header-glass);
       backdrop-filter: blur(20px);
@@ -93,26 +91,42 @@
       box-shadow: var(--shadow-elevated);
     }
 
-    .app-header::after {
-      content: "";
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 100%;
-      height: 240px;
-      background: radial-gradient(ellipse 80% 100% at 50% 0%, rgba(34, 197, 94, 0.20) 0%, rgba(16, 185, 129, 0.08) 55%, transparent 100%);
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    .navbar {
+    .header__nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 10px 0;
     }
 
-    /* Brand Logo/Text */
+    .header__toggle {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.6rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+      margin-right: -8px;
+    }
+
+    .header__toggle i {
+      transition: transform 0.2s ease;
+    }
+
+    .header__toggle:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #FFFFFF;
+    }
+
+    .header__toggle:active i {
+      transform: scale(0.85);
+    }
+
     .brand {
       display: flex;
       align-items: center;
@@ -134,7 +148,7 @@
       height: 32px;
     }
 
-    .brand__image {
+    .brand__img {
       height: 100%;
       width: auto;
       object-fit: contain;
@@ -155,40 +169,7 @@
       letter-spacing: -0.5px;
     }
 
-    /* Toggle Button */
-    .menu-toggle {
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 1.6rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      transition: all 0.15s ease;
-      margin-right: -8px;
-    }
-
-    .menu-toggle i {
-      transition: transform 0.2s ease;
-    }
-
-    .menu-toggle:hover {
-      background: rgba(255, 255, 255, 0.06);
-      color: #FFFFFF;
-    }
-
-    .menu-toggle:active i {
-      transform: scale(0.85);
-    }
-
-    /* =========================================
-       Sidebar Overlay
-       ========================================= */
-    .sidebar-overlay {
+    .overlay {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.6);
@@ -201,15 +182,12 @@
       cursor: pointer;
     }
 
-    .sidebar-overlay.is-visible {
+    .overlay.is-visible {
       opacity: 1;
       visibility: visible;
     }
 
-    /* =========================================
-       App Sidebar
-       ========================================= */
-    .app-sidebar {
+    .sidebar {
       position: fixed;
       top: 0;
       bottom: 0;
@@ -232,8 +210,34 @@
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .app-sidebar.is-expanded {
+    .sidebar.is-expanded {
       transform: translateX(0);
+    }
+
+    .sidebar__header, 
+    .sidebar__body, 
+    .sidebar__footer {
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .sidebar.is-expanded .sidebar__header {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.1s;
+    }
+
+    .sidebar.is-expanded .sidebar__body {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.18s;
+    }
+
+    .sidebar.is-expanded .sidebar__footer {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.26s;
     }
 
     .sidebar__header {
@@ -246,7 +250,6 @@
       flex-shrink: 0;
     }
 
-    /* Close Sidebar Button */
     .sidebar__close {
       background: transparent;
       border: none;
@@ -263,7 +266,7 @@
       margin-right: -8px;
     }
 
-    .app-sidebar.is-expanded .sidebar__close i {
+    .sidebar.is-expanded .sidebar__close i {
       transform: rotate(90deg);
     }
 
@@ -272,7 +275,6 @@
       color: #FFFFFF;
     }
 
-    /* Sidebar Body */
     .sidebar__body {
       flex: 1;
       padding: 16px 12px 20px 12px;
@@ -294,72 +296,6 @@
       border-radius: 10px;
     }
 
-    /* Navigation Links */
-    .nav-menu {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 15px;
-      min-height: 56px;
-      color: var(--glow-primary);
-      text-decoration: none;
-      border-radius: 12px;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .nav-link i {
-      font-size: 1.25rem;
-      width: 28px;
-      text-align: center;
-      flex-shrink: 0;
-      color: var(--glow-primary);
-      transition: color 0.2s ease;
-    }
-
-    .nav-link__content {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      line-height: 1.3;
-    }
-
-    .nav-link__title {
-      font-size: 1.05rem;
-      font-weight: 500;
-      color: inherit;
-      transition: color 0.2s ease;
-    }
-
-    .nav-link:hover {
-      background: rgba(34, 197, 94, 0.1);
-      transform: translateX(4px);
-      color: var(--glow-deep);
-    }
-
-    .nav-link.is-active {
-      background: var(--glow-primary);
-      color: var(--bg-deep);
-    }
-
-    .nav-link.is-active i {
-      color: var(--bg-deep);
-      text-shadow: none;
-    }
-
-    .nav-link.is-active .nav-link__title {
-      font-weight: 700;
-      color: var(--bg-deep);
-    }
-
-    /* Sidebar Footer */
     .sidebar__footer {
       border-top: 1px solid var(--border-subtle);
       flex-shrink: 0;
@@ -373,8 +309,71 @@
       background: rgba(0, 0, 0, 0.15);
     }
 
-    /* Social Links */
-    .social-list {
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .menu__link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 15px;
+      min-height: 56px;
+      color: var(--glow-primary);
+      text-decoration: none;
+      border-radius: 12px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu__link i {
+      font-size: 1.25rem;
+      width: 28px;
+      text-align: center;
+      flex-shrink: 0;
+      color: var(--glow-primary);
+      transition: color 0.2s ease;
+    }
+
+    .menu__link:hover {
+      background: rgba(34, 197, 94, 0.1);
+      transform: translateX(4px);
+      color: var(--glow-deep);
+    }
+
+    .menu__link.is-active {
+      background: var(--glow-primary);
+      color: var(--bg-deep);
+    }
+
+    .menu__link.is-active i {
+      color: var(--bg-deep);
+      text-shadow: none;
+    }
+
+    .menu__link.is-active .menu__title {
+      font-weight: 700;
+      color: var(--bg-deep);
+    }
+
+    .menu__content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      line-height: 1.3;
+    }
+
+    .menu__title {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: inherit;
+      transition: color 0.2s ease;
+    }
+
+    .social {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -382,7 +381,7 @@
       width: 100%;
     }
 
-    .social-link {
+    .social__link {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -397,7 +396,7 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .social-link:hover {
+    .social__link:hover {
       background-color: var(--glow-primary);
       border-color: var(--glow-primary);
       color: #ffffff;
@@ -405,36 +404,6 @@
       box-shadow: 0 10px 20px -5px rgba(34, 197, 94, 0.5);
     }
 
-    /* Sidebar Animations */
-    .sidebar__header, 
-    .sidebar__body, 
-    .sidebar__footer {
-      opacity: 0;
-      transform: translateY(15px);
-      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .app-sidebar.is-expanded .sidebar__header {
-      opacity: 1;
-      transform: translateY(0);
-      transition-delay: 0.1s;
-    }
-
-    .app-sidebar.is-expanded .sidebar__body {
-      opacity: 1;
-      transform: translateY(0);
-      transition-delay: 0.18s;
-    }
-
-    .app-sidebar.is-expanded .sidebar__footer {
-      opacity: 1;
-      transform: translateY(0);
-      transition-delay: 0.26s;
-    }
-
-    /* =========================================
-       Hero Section
-       ========================================= */
     .hero {
       display: flex;
       flex-direction: column;
@@ -444,7 +413,16 @@
       position: relative;
     }
 
-    .hero__primary {
+    .hero b, .hero strong { font-weight: 900; color: inherit; }
+    .hero u { 
+      text-decoration: underline; 
+      text-decoration-color: var(--glow-primary); 
+      text-decoration-thickness: 0.1em; 
+      text-underline-offset: 6px; 
+    }
+    .hero i:not([class*="fa-"]), .hero em { font-style: italic; }
+
+    .hero__title {
       font-size: clamp(1.8rem, 5vw, 2.8rem);
       font-weight: 800;
       line-height: 1.2;
@@ -459,7 +437,7 @@
       hyphens: auto;
     }
 
-    .hero__secondary {
+    .hero__subtitle {
       font-size: clamp(1.1rem, 4vw, 1.4rem);
       font-weight: 400;
       color: var(--text-secondary);
@@ -471,18 +449,7 @@
       hyphens: auto;
     }
 
-    /* Text formatting utilities */
-    .hero b, .hero strong { font-weight: 900; color: inherit; }
-    .hero u { 
-      text-decoration: underline; 
-      text-decoration-color: var(--glow-primary); 
-      text-decoration-thickness: 0.1em; 
-      text-underline-offset: 6px; 
-    }
-    .hero i:not([class*="fa-"]), .hero em { font-style: italic; }
-
-    /* Call To Action Button */
-    .hero__cta {
+    .hero__btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -498,18 +465,18 @@
       margin-bottom: 40px;
     }
 
-    .hero__cta i {
+    .hero__btn i {
       font-size: 1.3rem;
       font-style: normal !important;
     }
 
-    .hero__cta:hover {
+    .hero__btn:hover {
       background-color: #42b565;
       transform: translateY(-2px);
       box-shadow: 0 12px 24px -8px rgba(80, 200, 120, 0.6);
     }
 
-    .hero__footer {
+    .hero__text {
       font-size: 0.95rem;
       color: var(--text-muted);
       opacity: 0.8;
@@ -522,37 +489,34 @@
 </head>
 <body>
 
-  <!-- Snow Overlay -->
   <canvas id="snow-canvas"></canvas>
+  <div class="page-glow"></div>
 
-  <!-- Header -->
-  <header class="app-header">
-    <div class="content-wrapper">
-      <nav class="navbar">
+  <header class="header">
+    <div class="container">
+      <nav class="header__nav">
         <a href="/" class="brand brand--header">
           <% if (header.logourl) { %>
-            <img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="brand__image">
+            <img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="brand__img">
           <% } else { %>
             <% if (header.alticon) { %><i class="<%= header.alticon %> brand__icon"></i><% } %>
             <% if (header.alttext) { %><span class="brand__text"><%= header.alttext %></span><% } %>
           <% } %>
         </a>
-        <button class="menu-toggle" id="open-sidebar" aria-label="Open Menu">
+        <button class="header__toggle" id="open-sidebar" aria-label="Open Menu">
           <i class="fa-solid fa-bars"></i>
         </button>
       </nav>
     </div>
   </header>
 
-  <!-- Sidebar Overlay -->
-  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="overlay" id="overlay"></div>
 
-  <!-- Sidebar -->
-  <aside class="app-sidebar" id="app-sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar__header">
       <a href="/" class="brand brand--sidebar">
         <% if (sidebar.header && sidebar.header.logourl) { %>
-          <img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="brand__image">
+          <img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="brand__img">
         <% } else { %>
           <% if (sidebar.header && sidebar.header.alticon) { %><i class="<%= sidebar.header.alticon %> brand__icon"></i><% } %>
           <% if (sidebar.header && sidebar.header.alttext) { %><span class="brand__text"><%= sidebar.header.alttext %></span><% } %>
@@ -564,13 +528,13 @@
     </div>
 
     <div class="sidebar__body">
-      <nav class="nav-menu" id="sidebar-navigation">
+      <nav class="menu" id="menu">
         <% if (sidebar.body && sidebar.body.length > 0) { %>
           <% sidebar.body.forEach(link => { %>
-            <a href="<%= link.url || '#' %>" class="nav-link">
+            <a href="<%= link.url || '#' %>" class="menu__link">
               <% if (link.icon) { %><i class="<%= link.icon %>"></i><% } %>
-              <div class="nav-link__content">
-                <span class="nav-link__title"><%= link.text || '' %></span>
+              <div class="menu__content">
+                <span class="menu__title"><%= link.text || '' %></span>
               </div>
             </a>
           <% }) %>
@@ -579,10 +543,10 @@
     </div>
 
     <div class="sidebar__footer">
-      <div class="social-list" id="social-links">
+      <div class="social" id="social">
         <% if (sidebar.footer && sidebar.footer.length > 0) { %>
           <% sidebar.footer.forEach(social => { %>
-            <a href="<%= social.url || '#' %>" target="_blank" class="social-link" rel="noopener">
+            <a href="<%= social.url || '#' %>" target="_blank" class="social__link" rel="noopener">
               <% if (social.icon) { %><i class="<%= social.icon %>"></i><% } %>
             </a>
           <% }) %>
@@ -591,31 +555,29 @@
     </div>
   </aside>
 
-  <!-- Hero Section -->
   <section class="hero" id="home">
-    <div class="content-wrapper" style="padding: 0; width: 100%; max-width: 100%;">
+    <div class="container" style="padding: 0; width: 100%; max-width: 100%;">
       <% if (hero.primarytext) { %>
-        <h1 class="hero__primary"><%- fmt(hero.primarytext) %></h1>
+        <h1 class="hero__title"><%- fmt(hero.primarytext) %></h1>
       <% } %>
       
       <% if (hero.secondarytext) { %>
-        <p class="hero__secondary"><%- fmt(hero.secondarytext) %></p>
+        <p class="hero__subtitle"><%- fmt(hero.secondarytext) %></p>
       <% } %>
       
       <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
-        <a href="<%= hero.buttonurl || '#' %>" class="hero__cta">
+        <a href="<%= hero.buttonurl || '#' %>" class="hero__btn">
           <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %>
           <span><%= hero.buttontext || '' %></span>
         </a>
       <% } %>
       
       <% if (hero.footertext) { %>
-        <div class="hero__footer"><%- fmt(hero.footertext) %></div>
+        <div class="hero__text"><%- fmt(hero.footertext) %></div>
       <% } %>
     </div>
   </section>
 
-  <!-- Server-Side JS formatting function positioned right above the Client-Side JS script tag -->
   <%
     function fmt(t) {
       if (!t) return '';
@@ -635,17 +597,13 @@
     }
   %>
   
-  <!-- Client-Side JS -->
   <script>
-    // -----------------------------------------------------
-    // Navigation / Active State Logic
-    // -----------------------------------------------------
     (function() {
-      const navLinks = document.querySelectorAll('.nav-link');
-      const hashLinks = Array.from(navLinks).map(l => l.getAttribute('href')).filter(h => h && h.startsWith('#'));
+      const menuLinks = document.querySelectorAll('.menu__link');
+      const hashLinks = Array.from(menuLinks).map(l => l.getAttribute('href')).filter(h => h && h.startsWith('#'));
       
       function updateActiveState(currentHash) {
-        navLinks.forEach(link => {
+        menuLinks.forEach(link => {
           if (link.getAttribute('href') === currentHash) {
             link.classList.add('is-active');
           } else {
@@ -654,8 +612,7 @@
         });
       }
 
-      // Smooth scroll and click handling
-      navLinks.forEach(link => {
+      menuLinks.forEach(link => {
         link.addEventListener('click', function(e) {
           const href = this.getAttribute('href');
           if (href && href.startsWith('#')) {
@@ -671,7 +628,6 @@
         });
       });
 
-      // Intersection Observer for scroll highlights
       const navObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -690,19 +646,14 @@
         }
       });
 
-      // Initial check on page load
       if (!window.location.hash) {
-        navLinks.forEach(link => link.classList.remove('is-active'));
+        menuLinks.forEach(link => link.classList.remove('is-active'));
       } else {
         updateActiveState(window.location.hash);
       }
     })();
 
-    // -----------------------------------------------------
-    // Snow Canvas Animation & Sidebar Toggle Logic
-    // -----------------------------------------------------
     (function() {
-      // Setup Snow
       const canvas = document.getElementById('snow-canvas');
       const ctx = canvas.getContext('2d');
       let width = window.innerWidth;
@@ -764,22 +715,21 @@
 
       drawSnow();
 
-      // Sidebar Toggle Logic
       const openBtn = document.getElementById('open-sidebar');
       const closeBtn = document.getElementById('close-sidebar');
-      const sidebarEl = document.getElementById('app-sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
+      const sidebarEl = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
 
       function openSidebar() {
         sidebarEl.classList.add('is-expanded');
         overlay.classList.add('is-visible');
-        document.body.classList.add('has-menu-open');
+        document.body.classList.add('has-sidebar-open');
       }
       
       function closeSidebar() {
         sidebarEl.classList.remove('is-expanded');
         overlay.classList.remove('is-visible');
-        document.body.classList.remove('has-menu-open');
+        document.body.classList.remove('has-sidebar-open');
       }
 
       openBtn.addEventListener('click', openSidebar);
