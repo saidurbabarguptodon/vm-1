@@ -50,9 +50,10 @@ const headerDoc = {
     try { 
       const docRef = db.collection('web').doc('header'); 
       const doc = await docRef.get(); 
-      if (!doc.exists) {
-        await docRef.set({ ...headerData }); 
-      }
+      
+      // Smart merge: adds missing default fields without deleting existing data
+      const existingData = doc.exists ? doc.data() : {};
+      await docRef.set({ ...headerData, ...existingData }, { merge: true }); 
     } catch (err) {
       console.error(err); 
     } 
@@ -75,12 +76,9 @@ const sidebarDoc = {
       const docRef = db.collection('web').doc('sidebar'); 
       const doc = await docRef.get();
 
-      // Check Sidebar Header Map
-      if (!doc.exists || !doc.data().header) {
-        await docRef.set({ header: { ...sidebarHeaderData } }, { merge: true });
-      } else {
-        console.log("✅ Sidebar header data already exists:\n", doc.data().header);
-      }
+      // Smart merge Sidebar Header Map
+      const existingHeader = (doc.exists && doc.data().header) ? doc.data().header : {};
+      await docRef.set({ header: { ...sidebarHeaderData, ...existingHeader } }, { merge: true });
 
       // Check Sidebar Body (navbutton-{num})
       const bodySnapshot = await docRef.collection('body').get();
@@ -131,12 +129,11 @@ const heroDoc = {
       const docRef = db.collection('web').doc('body'); 
       const doc = await docRef.get(); 
       
-      // Directly checking and creating the 'hero' Map inside the 'body' document
-      if (!doc.exists || !doc.data().hero) {
-        await docRef.set({ hero: heroData }, { merge: true }); 
-      } else {
-        console.log("✅ Hero data already exists:\n", doc.data().hero);
-      }
+      // Smart merge: Gets existing hero data and injects any missing default fields
+      const existingHero = (doc.exists && doc.data().hero) ? doc.data().hero : {};
+      const mergedHero = { ...heroData, ...existingHero };
+
+      await docRef.set({ hero: mergedHero }, { merge: true }); 
     } catch (err) { 
       console.error(err); 
     } 
@@ -155,7 +152,6 @@ function startRealtimeListeners() {
     } 
   });
 
-  // Listening to the 'body' document and pulling the 'hero' map field
   db.collection('web').doc('body').onSnapshot(doc => { 
     if (doc.exists && doc.data().hero) { 
       serverCache.hero = doc.data().hero; 
