@@ -1,7 +1,7 @@
 {
-  "name": "KexCloud Mainweb",
+  "name": "kexcloud web",
   "version": "1.0.0",
-  "description": "",
+  "description": "kexcloud web",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
