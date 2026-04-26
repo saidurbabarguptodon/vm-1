@@ -414,42 +414,76 @@
       let height = window.innerHeight;
       canvas.width = width;
       canvas.height = height;
-      const maxFlakes = width < 768 ? 25 : 60;
-      const flakes = [];
+      
+      // 1. Considerably reduced the number of particles
+      const maxFlakes = width < 768 ? 12 : 30; 
+      const flakes =[];
+      const heroSection = document.getElementById('home');
+      const initMaxY = Math.min(height, heroSection ? heroSection.getBoundingClientRect().bottom : height);
+
       for (let i = 0; i < maxFlakes; i++) {
         flakes.push({
           x: Math.random() * width,
-          y: Math.random() * height,
-          r: Math.random() * 2.0 + 0.5,
-          d: Math.random() * 1.0 + 0.3,
+          y: Math.random() * initMaxY,
+          r: Math.random() * 1.5 + 0.5,
+          // 2. Slowed down dropping speed (`d`) and reduced extreme horizontal jumps (`aStep`)
+          d: Math.random() * 0.4 + 0.15, 
           a: Math.random() * Math.PI * 2,
-          aStep: Math.random() * 0.015 + 0.005,
-          opacity: Math.random() * 0.4 + 0.1
+          aStep: Math.random() * 0.01 + 0.005,
+          opacity: Math.random() * 0.4 + 0.15
         });
       }
+
       function drawSnow() {
         ctx.clearRect(0, 0, width, height);
+        
+        // Find bottom boundary dynamically
+        const heroBottom = heroSection ? heroSection.getBoundingClientRect().bottom : height;
+        const fadeDistance = 120; // How many pixels before the end it should start fading out
+        const fadeStart = heroBottom - fadeDistance;
+
         for (let i = 0; i < maxFlakes; i++) {
           let f = flakes[i];
-          ctx.beginPath();
-          ctx.fillStyle = `rgba(255, 255, 255, ${f.opacity})`;
-          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
-          ctx.fill();
+          let currentOpacity = f.opacity;
+
+          // 3. Fade out calculations as they approach the end of the hero section
+          if (f.y > fadeStart) {
+            let ratio = (heroBottom - f.y) / fadeDistance;
+            currentOpacity = f.opacity * Math.max(0, Math.min(1, ratio));
+          }
+
+          if (currentOpacity > 0) {
+            ctx.beginPath();
+            ctx.fillStyle = `rgba(255, 255, 255, ${currentOpacity})`;
+            ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
+            ctx.fill();
+          }
         }
-        moveSnow();
+        
+        moveSnow(heroBottom);
         requestAnimationFrame(drawSnow);
       }
-      function moveSnow() {
+
+      function moveSnow(heroBottom) {
+        // Prevent flakes from falling beyond the hero section bound or screen
+        const maxY = Math.min(height, heroBottom);
+        
         for (let i = 0; i < maxFlakes; i++) {
           let f = flakes[i];
           f.y += f.d;
           f.a += f.aStep;
-          f.x += Math.sin(f.a) * 0.5;
-          if (f.y > height) { f.y = -10; f.x = Math.random() * width; }
+          f.x += Math.sin(f.a) * 0.25; // Gentler sway effect
+
+          // Loop them back to the top once they fade entirely
+          if (f.y > maxY) { 
+            f.y = -10; 
+            f.x = Math.random() * width; 
+          }
           if (f.x > width + 10) f.x = -10;
           if (f.x < -10) f.x = width + 10;
         }
       }
+
       window.addEventListener('resize', () => {
         width = window.innerWidth;
         height = window.innerHeight;
