@@ -72,7 +72,6 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
     // Real-time listener for sidebar header document
     ref.onSnapshot(doc => {
       if (doc.exists) {
-        // ─── FIX 3: Use doc.data().header, not doc.data() ───
         serverCache.sidebar.header = doc.data().header;
       }
     }, console.error);
@@ -211,7 +210,7 @@ const sidebarDoc = {
 };
 
 // ===============================
-// 7. BODY / HERO 
+// 7. BODY (HERO + CARDS)
 // ===============================
 const defaultHero = {
   primarytext: "", secondarytext: "", footertext: "",
@@ -220,23 +219,44 @@ const defaultHero = {
 };
 serverCache.hero = defaultHero;
 
-const heroDoc = {
+const defaultCard = {
+  title: "",
+  description: "",
+  icon: ""
+};
+
+const bodyDoc = {
   async create() {
     try {
       const bodyDocRef = db.collection('web').doc('body');
-      const bodyDoc = await bodyDocRef.get();
+      const bodyDocSnap = await bodyDocRef.get();
       
-      if (!bodyDoc.exists) {
+      // ---------- HERO ----------
+      if (!bodyDocSnap.exists) {
         await bodyDocRef.set({ hero: defaultHero });
-        console.log(`Successfully create body document with hero ${JSON.stringify(defaultHero)}`);
+        console.log(`Successfully created body document with hero ${JSON.stringify(defaultHero)}`);
       } else {
-        const existingHero = bodyDoc.data().hero;
+        const existingHero = bodyDocSnap.data().hero;
         if (!existingHero) {
           await bodyDocRef.update({ hero: defaultHero });
           console.log(`Hero field missing; added successfully ${JSON.stringify(defaultHero)}`);
         } else {
           console.log(`Hero already exists in body document: ${JSON.stringify(existingHero)}`);
         }
+      }
+
+      // ---------- CARDS ----------
+      const cardsSnapshot = await bodyDocRef.collection('cards').get();
+      const hasCards = cardsSnapshot.docs.some(docSnap => docSnap.id.startsWith('card-'));
+      
+      if (!hasCards) {
+        await bodyDocRef.collection('cards').doc('card-1').set(defaultCard);
+        console.log(`Successfully created body/cards/card-1 ${JSON.stringify(defaultCard)}`);
+      } else {
+        const existingCards = cardsSnapshot.docs
+          .filter(d => d.id.startsWith('card-'))
+          .map(d => ({ id: d.id, ...d.data() }));
+        console.log(`Body cards already exist: ${JSON.stringify(existingCards)}`);
       }
     } catch (err) { console.error(err); }
   }
@@ -247,7 +267,7 @@ const heroDoc = {
 // ===============================
 async function initializeFirestore() {
   await headerDoc.create();
-  await heroDoc.create();
+  await bodyDoc.create();
   await sidebarDoc.create();
   await initializeCacheAndListeners();
 }
