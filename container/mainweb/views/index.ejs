@@ -79,7 +79,6 @@
     .brand--header { height: 40px; margin-left: -12px; }
     .brand--sidebar { height: 32px; }
 
-    /* Matches header/sidebar.header db fields: logourl → img, alticon, alttext */
     .logoimg { height: 100%; width: auto; object-fit: contain; }
     .alticon, .alttext { color: #22C55E; text-shadow: 0 0 12px rgba(34,197,94,.45); }
     .alticon { font-size: 1.6rem; display: inline-block; }
@@ -113,7 +112,6 @@
     }
     .sidebar.is-expanded { transform: translateX(0); }
 
-    /* sidebar doc sections: header / body (navbuttons) / footer (socials) */
     .sidebar__header, .sidebar__body, .sidebar__footer {
       opacity: 0; transform: translateY(15px);
       transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1);
@@ -150,7 +148,7 @@
       background: rgba(0,0,0,.15);
     }
 
-    /* ── Navbuttons — sidebar/body collection fields: icon, text, url ── */
+    /* ── Navbuttons ── */
     .navmenu { display: flex; flex-direction: column; gap: 6px; }
     .navbutton {
       display: flex; align-items: center; gap: 12px;
@@ -160,19 +158,16 @@
       transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
       position: relative; overflow: hidden;
     }
-    /* navbutton i = `icon` field */
     .navbutton i { font-size: 1.25rem; width: 28px; text-align: center; flex-shrink: 0; color: #22C55E; transition: color 0.2s ease; }
     .navbutton:hover { background: rgba(34,197,94,.1); transform: translateX(4px); color: #16a34a; }
     .navbutton.is-active { background: #22C55E; color: #0A0A0F; }
     .navbutton.is-active i,
     .navbutton.is-active .navbutton__text { color: #0A0A0F; }
-    .navbutton.is-active i { text-shadow: none; }
     .navbutton.is-active .navbutton__text { font-weight: 700; }
     .navbutton__content { display: flex; flex-direction: column; justify-content: center; line-height: 1.3; }
-    /* navbutton__text = `text` field */
     .navbutton__text { font-size: 1.05rem; font-weight: 500; color: inherit; transition: color 0.2s ease; }
 
-    /* ── Sociallinks — sidebar/footer collection fields: icon, url ── */
+    /* ── Sociallinks ── */
     .sociallinks { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 100%; }
     .sociallink {
       display: flex; align-items: center; justify-content: center;
@@ -189,28 +184,18 @@
       box-shadow: 0 10px 20px -5px rgba(34,197,94,.5);
     }
 
-    /* ── Hero — body doc > hero map fields ── */
+    /* ── Hero ── */
     .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 24px 60px; position: relative; }
-    .hero b, .hero strong { font-weight: 900; color: inherit; }
-    .hero u { text-decoration: underline; text-decoration-color: #22C55E; text-decoration-thickness: 0.1em; text-underline-offset: 6px; }
-    .hero i:not([class*="fa-"]), .hero em { font-style: italic; }
-
-    /* Class names = exact hero map field names */
-    .primarytext, .secondarytext, .footertext { width: 100%; overflow-wrap: break-word; word-break: break-word; }
-
-    /* primarytext field */
     .primarytext {
       font-size: clamp(1.8rem,5vw,2.8rem);
       font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
       color: #F1F5F9; text-shadow: 0 0 30px rgba(34,197,94,.3);
       margin-bottom: 20px; hyphens: auto;
     }
-    /* secondarytext field */
     .secondarytext {
       font-size: clamp(1.1rem,4vw,1.4rem);
       color: #94A3B8; margin-bottom: 32px; hyphens: auto;
     }
-    /* herobtn wraps: buttonenabled, buttontext, buttonicon, buttonurl */
     .herobtn {
       display: inline-flex; align-items: center; gap: 8px;
       background-color: #50C878; color: #fff;
@@ -223,7 +208,6 @@
     }
     .herobtn i { font-size: 1.3rem; font-style: normal !important; }
     .herobtn:hover { background-color: #42b565; transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(80,200,120,.6); }
-    /* footertext field */
     .footertext { font-size: 0.95rem; color: #94A3B8; opacity: 0.8; }
   </style>
 </head>
@@ -268,7 +252,6 @@
       </button>
     </div>
 
-    <!-- sidebar/body: icon, text, url -->
     <div class="sidebar__body">
       <nav class="navmenu" id="navmenu">
         <% if (sidebar.body && sidebar.body.length > 0) { %>
@@ -284,7 +267,6 @@
       </nav>
     </div>
 
-    <!-- sidebar/footer: icon, url -->
     <div class="sidebar__footer">
       <div class="sociallinks" id="sociallinks">
         <% if (sidebar.footer && sidebar.footer.length > 0) { %>
@@ -319,19 +301,22 @@
     </div>
   </section>
 
+  <% /* Updated fmt function – only BBCode [] syntax remains */ %>
   <% function fmt(t) {
     if (!t) return '';
-    const m = t.match(/^#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(.*)$/is);
-    if (m) {
-      t = '<span style="color: #' + m[1] + ';">' + m[2] + '</span>';
-    }
-    return t.replace(/\[color=(#[0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: $1;">$2</span>')
-            .replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>')
-            .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
-            .replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>')
-            .replace(/<color:"([^"]+)">([\s\S]*?)<\/color>/gi, '<span style="color: $1;">$2</span>')
-            .replace(/\[br\]/gi, '<br>')
-            .replace(/\n/g, '<br>');
+    // [color=#RRGGBB]   supports hex 3,4,6,8 digits
+    t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1;">$2</span>');
+    // [b] [/b]
+    t = t.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
+    // [i] [/i]
+    t = t.replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>');
+    // [u] [/u]
+    t = t.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
+    // [br] line break
+    t = t.replace(/\[br\]/gi, '<br>');
+    // newline to <br>
+    t = t.replace(/\n/g, '<br>');
+    return t;
   } %>
 
   <script>
@@ -339,7 +324,6 @@
       const navButtons = document.querySelectorAll('.navbutton');
       const hashLinks = Array.from(navButtons).map(b => b.getAttribute('href')).filter(h => h && h.startsWith('#'));
 
-      // setNavActive — checks each navbutton's `url` field against current hash
       function setNavActive(currentHash) {
         navButtons.forEach(btn => {
           if (btn.getAttribute('href') === currentHash) btn.classList.add('is-active');
@@ -439,7 +423,6 @@
       const sidebarEl = document.getElementById('sidebar');
       const overlay   = document.getElementById('overlay');
 
-      // showSidebar / hideSidebar — named after the action on the sidebar doc
       function showSidebar() {
         sidebarEl.classList.add('is-expanded');
         overlay.classList.add('is-visible');
