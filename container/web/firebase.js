@@ -210,7 +210,7 @@ const sidebarDoc = {
 };
 
 // ===============================
-// 7. BODY (HERO + CARDS)
+// 7. BODY (HERO, TITLE, DESCRIPTION & CARDS)
 // ===============================
 const defaultHero = {
   primarytext: "", secondarytext: "", footertext: "",
@@ -218,6 +218,11 @@ const defaultHero = {
   buttontext: "", buttonicon: "", buttonurl: ""
 };
 serverCache.hero = defaultHero;
+
+const defaultBodyFields = {
+  title: "",
+  description: ""
+};
 
 const defaultCard = {
   title: "",
@@ -233,15 +238,34 @@ const bodyDoc = {
       
       // ---------- HERO ----------
       if (!bodyDocSnap.exists) {
-        await bodyDocRef.set({ hero: defaultHero });
-        console.log(`Successfully created body document with hero ${JSON.stringify(defaultHero)}`);
+        // Create document with hero and default body fields
+        await bodyDocRef.set({ 
+          hero: defaultHero,
+          ...defaultBodyFields
+        });
+        console.log(`Successfully created body document with hero and fields ${JSON.stringify({ hero: defaultHero, ...defaultBodyFields })}`);
       } else {
-        const existingHero = bodyDocSnap.data().hero;
-        if (!existingHero) {
+        const data = bodyDocSnap.data();
+        // Ensure hero exists
+        if (!data.hero) {
           await bodyDocRef.update({ hero: defaultHero });
           console.log(`Hero field missing; added successfully ${JSON.stringify(defaultHero)}`);
         } else {
-          console.log(`Hero already exists in body document: ${JSON.stringify(existingHero)}`);
+          console.log(`Hero already exists in body document: ${JSON.stringify(data.hero)}`);
+        }
+        // Ensure title and description fields exist
+        const updates = {};
+        if (!data.title && data.title !== "") {
+          updates.title = defaultBodyFields.title;
+        }
+        if (!data.description && data.description !== "") {
+          updates.description = defaultBodyFields.description;
+        }
+        if (Object.keys(updates).length > 0) {
+          await bodyDocRef.update(updates);
+          console.log(`Added missing body fields: ${JSON.stringify(updates)}`);
+        } else {
+          console.log(`Body fields title and description already present.`);
         }
       }
 
