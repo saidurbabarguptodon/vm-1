@@ -7,15 +7,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* ── ROOT COLORS (green & dark green) ── */
     :root {
-      --kex-green: #0FFF50;       /* primary green – used by header */
-      --kex-dark-green: #166534;  /* dark green – used for hover / active states */
+      --kex-green: #10B981;
+      --kex-dark-green: #065F46;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-    /* ── Base ── */
     body {
       max-width: 100vw;
       overflow-x: hidden;
@@ -29,7 +27,6 @@
     }
     body.has-sidebar-open { overflow: hidden; touch-action: none; }
 
-    /* ── Background layers ── */
     #snow-canvas {
       position: fixed;
       top: 0; left: 0;
@@ -41,15 +38,13 @@
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 350px;
-      background: radial-gradient(ellipse 80% 100% at 50% 0%, rgba(34,197,94,.20) 0%, rgba(16,185,129,.08) 55%, transparent 100%);
+      background: radial-gradient(ellipse 80% 100% at 50% 0%, rgba(16,185,129,.20) 0%, rgba(16,185,129,.06) 55%, transparent 100%);
       z-index: 0;
       pointer-events: none;
     }
 
-    /* ── Layout ── */
     .container { position: relative; z-index: 2; max-width: 1280px; margin: 0 auto; padding: 0 24px; }
 
-    /* ── Header ── */
     .header {
       width: 100%;
       background: rgba(15,15,20,.75);
@@ -61,7 +56,6 @@
     }
     .header__nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
 
-    /* ── Icon buttons (header uses --kex-green) ── */
     .header__toggle, .sidebar__close {
       background: transparent;
       border: none;
@@ -79,7 +73,6 @@
     .sidebar__close { font-size: 1.5rem; width: 36px; height: 36px; }
     .sidebar.is-expanded .sidebar__close i { transform: rotate(90deg); }
 
-    /* ── Brand (logo container) – header uses --kex-green ── */
     .brand { display: flex; align-items: center; gap: 10px; transition: opacity 0.2s ease; text-decoration: none; }
     .brand:hover { opacity: 0.8; }
     .brand--header { height: 40px; margin-left: -12px; }
@@ -88,12 +81,11 @@
     .logoimg { height: 100%; width: auto; object-fit: contain; }
     .alticon, .alttext { 
       color: var(--kex-green); 
-      text-shadow: 0 0 12px rgba(34,197,94,.45); 
+      text-shadow: 0 0 12px rgba(16,185,129,.45); 
     }
     .alticon { font-size: 1.6rem; display: inline-block; }
     .alttext { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; }
 
-    /* ── Overlay ── */
     .overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,0,.6);
@@ -104,7 +96,6 @@
     }
     .overlay.is-visible { opacity: 1; visibility: visible; }
 
-    /* ── Sidebar (uses --kex-green and --kex-dark-green) ── */
     .sidebar {
       position: fixed; top: 0; bottom: 0; left: 0;
       height: 100vh; height: 100dvh;
@@ -157,7 +148,6 @@
       background: rgba(0,0,0,.15);
     }
 
-    /* ── Navbuttons (use --kex-green active, --kex-dark-green hover) ── */
     .navmenu { display: flex; flex-direction: column; gap: 6px; }
     .navbutton {
       display: flex; align-items: center; gap: 12px;
@@ -172,7 +162,7 @@
       color: var(--kex-green); transition: color 0.2s ease; 
     }
     .navbutton:hover { 
-      background: rgba(34,197,94,.1); 
+      background: rgba(16,185,129,.1); 
       transform: translateX(4px); 
       color: var(--kex-dark-green); 
     }
@@ -186,7 +176,6 @@
     .navbutton__content { display: flex; flex-direction: column; justify-content: center; line-height: 1.3; }
     .navbutton__text { font-size: 1.05rem; font-weight: 500; color: inherit; transition: color 0.2s ease; }
 
-    /* ── Sociallinks (uses --kex-green on hover) ── */
     .sociallinks { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 100%; }
     .sociallink {
       display: flex; align-items: center; justify-content: center;
@@ -202,10 +191,9 @@
       border-color: var(--kex-green); 
       color: #fff;
       transform: translateY(-4px) scale(1.05);
-      box-shadow: 0 10px 20px -5px rgba(34,197,94,.5);
+      box-shadow: 0 10px 20px -5px rgba(16,185,129,.5);
     }
 
-    /* ── Hero button uses --kex-green ── */
     .herobtn {
       display: inline-flex; align-items: center; gap: 8px;
       background-color: var(--kex-green); 
@@ -214,22 +202,21 @@
       padding: 14px 24px; border-radius: 60px;
       text-decoration: none;
       transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 8px 20px -6px rgba(34,197,94,.5);
+      box-shadow: 0 8px 20px -6px rgba(16,185,129,.5);
       margin-bottom: 40px;
     }
     .herobtn i { font-size: 1.3rem; font-style: normal !important; }
     .herobtn:hover { 
       background-color: var(--kex-dark-green); 
       transform: translateY(-2px); 
-      box-shadow: 0 12px 24px -8px rgba(34,197,94,.6); 
+      box-shadow: 0 12px 24px -8px rgba(16,185,129,.6); 
     }
 
-    /* ── Rest of hero text styles ── */
     .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 24px 60px; position: relative; }
     .primarytext {
       font-size: clamp(1.8rem,5vw,2.8rem);
       font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
-      color: #F1F5F9; text-shadow: 0 0 30px rgba(34,197,94,.3);
+      color: #F1F5F9; text-shadow: none;
       margin-bottom: 20px; hyphens: auto;
     }
     .secondarytext {
@@ -243,7 +230,6 @@
   <canvas id="snow-canvas"></canvas>
   <div class="page-glow"></div>
 
-  <!-- header doc: alticon, alttext, logourl -->
   <header class="header">
     <div class="container">
       <nav class="header__nav">
@@ -264,7 +250,6 @@
 
   <div class="overlay" id="overlay"></div>
 
-  <!-- sidebar doc: header{alticon,alttext,logourl} / body[{icon,text,url}] / footer[{icon,url}] -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar__header">
       <a href="/" class="brand brand--sidebar">
@@ -308,7 +293,6 @@
     </div>
   </aside>
 
-  <!-- body doc > hero: primarytext, secondarytext, footertext, buttonenabled, buttontext, buttonicon, buttonurl -->
   <section class="hero" id="home">
     <div class="container" style="padding: 0; width: 100%; max-width: 100%;">
       <% if (hero.primarytext) { %>
@@ -329,7 +313,6 @@
     </div>
   </section>
 
-  <% /* fmt function – only BBCode [] syntax */ %>
   <% function fmt(t) {
     if (!t) return '';
     t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1;">$2</span>');
