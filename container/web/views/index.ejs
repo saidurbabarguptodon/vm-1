@@ -237,7 +237,7 @@
   <header class="header">
     <div class="container">
       <nav class="header__nav">
-        <a href="/" class="brand brand--header">
+        <a href="/" class="brand brand--header" id="brand-header">
           <% if (header.logourl) { %>
             <img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="logoimg">
           <% } else { %>
@@ -256,7 +256,7 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="sidebar__header">
-      <a href="/" class="brand brand--sidebar">
+      <a href="/" class="brand brand--sidebar" id="brand-sidebar">
         <% if (sidebar.header && sidebar.header.logourl) { %>
           <img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="logoimg">
         <% } else { %>
@@ -332,6 +332,7 @@
     (function() {
       const navButtons = document.querySelectorAll('.navbutton');
       const hashLinks = Array.from(navButtons).map(b => b.getAttribute('href')).filter(h => h && h.startsWith('#'));
+      const homeSection = document.getElementById('home');
 
       function setNavActive(currentHash) {
         navButtons.forEach(btn => {
@@ -339,6 +340,22 @@
           else btn.classList.remove('is-active');
         });
       }
+
+      function scrollToHome() {
+        if (homeSection) {
+          homeSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        history.pushState(null, null, '#home');
+        setNavActive('#home');
+      }
+
+      document.querySelectorAll('.brand').forEach(brand => {
+        brand.addEventListener('click', function(e) {
+          e.preventDefault();
+          scrollToHome();
+          window.dispatchEvent(new Event('hideSidebar'));
+        });
+      });
 
       navButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
@@ -372,8 +389,17 @@
         if (hashLinks.includes(`#${sec.id}`)) navObserver.observe(sec);
       });
 
-      if (!window.location.hash) navButtons.forEach(btn => btn.classList.remove('is-active'));
-      else setNavActive(window.location.hash);
+      if (!window.location.hash || window.location.hash === '#home') {
+        setNavActive('#home');
+        if (!window.location.hash) {
+          history.replaceState(null, null, '#home');
+        }
+      } else {
+        setNavActive(window.location.hash);
+        if (homeSection && window.location.hash === '#home') {
+          homeSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
     })();
 
     (function() {
