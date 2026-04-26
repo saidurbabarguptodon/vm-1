@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KexCloud | Dynamic Header & Sidebar</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Added Playfair Display to the Google Fonts link -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
@@ -89,7 +90,14 @@
       text-shadow: 0 0 12px rgba(26,215,111,.45); 
     }
     .alticon { font-size: 1.6rem; display: inline-block; }
-    .alttext { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; }
+    
+    /* Applied Playfair Display font here */
+    .alttext { 
+      font-size: 1.7rem; 
+      font-weight: 800; 
+      letter-spacing: -0.5px; 
+      font-family: 'Playfair Display', serif; 
+    }
 
     .overlay {
       position: fixed; inset: 0;
@@ -415,7 +423,6 @@
       canvas.width = width;
       canvas.height = height;
       
-      // 1. Considerably reduced the number of particles
       const maxFlakes = width < 768 ? 12 : 30; 
       const flakes =[];
       const heroSection = document.getElementById('home');
@@ -426,7 +433,6 @@
           x: Math.random() * width,
           y: Math.random() * initMaxY,
           r: Math.random() * 1.5 + 0.5,
-          // 2. Slowed down dropping speed (`d`) and reduced extreme horizontal jumps (`aStep`)
           d: Math.random() * 0.4 + 0.15, 
           a: Math.random() * Math.PI * 2,
           aStep: Math.random() * 0.01 + 0.005,
@@ -446,7 +452,6 @@
           let f = flakes[i];
           let currentOpacity = f.opacity;
 
-          // 3. Fade out calculations as they approach the end of the hero section
           if (f.y > fadeStart) {
             let ratio = (heroBottom - f.y) / fadeDistance;
             currentOpacity = f.opacity * Math.max(0, Math.min(1, ratio));
@@ -472,7 +477,7 @@
           let f = flakes[i];
           f.y += f.d;
           f.a += f.aStep;
-          f.x += Math.sin(f.a) * 0.25; // Gentler sway effect
+          f.x += Math.sin(f.a) * 0.25; 
 
           // Loop them back to the top once they fade entirely
           if (f.y > maxY) { 
