@@ -11,6 +11,8 @@
     :root {
       --kex-green: #1ad76f;
       --kex-dark-green: #0E713B;
+      --kex-white: #F1F5F9;
+      --kex-gray: #94A3B8;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -20,7 +22,7 @@
       overflow-x: hidden;
       font-family: 'Inter', sans-serif;
       background-color: #0A0A0F;
-      color: #F1F5F9;
+      color: var(--kex-white);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
@@ -65,7 +67,7 @@
     .header__toggle, .sidebar__close {
       background: transparent;
       border: none;
-      color: #94A3B8;
+      color: var(--kex-gray);
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       border-radius: 8px;
@@ -233,14 +235,14 @@
     .primarytext {
       font-size: clamp(1.8rem,5vw,2.8rem);
       font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
-      color: #F1F5F9; text-shadow: none;
+      color: var(--kex-white); text-shadow: none;
       margin-bottom: 20px; hyphens: auto;
     }
     .secondarytext {
       font-size: clamp(1.1rem,4vw,1.4rem);
-      color: #94A3B8; margin-bottom: 32px; hyphens: auto;
+      color: var(--kex-gray); margin-bottom: 32px; hyphens: auto;
     }
-    .footertext { font-size: 0.95rem; color: #94A3B8; opacity: 0.8; }
+    .footertext { font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; }
 
     /* ========================================= */
     /* CARDS SECTION STYLES                      */
@@ -257,13 +259,13 @@
     .section-title {
       font-size: clamp(1.8rem, 4vw, 2.4rem);
       font-weight: 800;
-      color: #F1F5F9;
+      color: var(--kex-white);
       margin-bottom: 16px;
       letter-spacing: -0.02em;
     }
     .section-desc {
       font-size: clamp(1rem, 3vw, 1.15rem);
-      color: #94A3B8;
+      color: var(--kex-gray);
       max-width: 650px;
       margin: 0 auto;
       line-height: 1.6;
@@ -291,7 +293,7 @@
     }
     .card:hover {
       transform: translateY(-8px);
-      background: rgba(30, 30, 45, 0.6);
+      /* Removed the hover background change to keep the card consistent */
       border-color: rgba(26, 215, 111, 0.4);
       box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(26, 215, 111, 0.08);
     }
@@ -317,14 +319,14 @@
     .card__title {
       font-size: 1.3rem;
       font-weight: 700;
-      color: #F1F5F9;
+      color: var(--kex-white);
       margin-bottom: 12px;
       line-height: 1.3;
       transition: color 0.3s ease;
     }
     .card__desc {
       font-size: 0.95rem;
-      color: #94A3B8;
+      color: var(--kex-gray);
       line-height: 1.6;
     }
     .card:hover .card__title {
