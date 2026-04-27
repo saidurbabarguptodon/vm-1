@@ -241,6 +241,95 @@
       color: #94A3B8; margin-bottom: 32px; hyphens: auto;
     }
     .footertext { font-size: 0.95rem; color: #94A3B8; opacity: 0.8; }
+
+    /* ========================================= */
+    /* CARDS SECTION STYLES                      */
+    /* ========================================= */
+    .cards-section {
+      padding: 60px 24px 100px;
+      position: relative;
+      z-index: 2;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      font-weight: 800;
+      color: #F1F5F9;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .section-desc {
+      font-size: clamp(1rem, 3vw, 1.15rem);
+      color: #94A3B8;
+      max-width: 650px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      width: 100%;
+    }
+    .card {
+      background: rgba(20, 20, 30, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 32px 28px;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+    }
+    .card:hover {
+      transform: translateY(-8px);
+      background: rgba(30, 30, 45, 0.6);
+      border-color: rgba(26, 215, 111, 0.4);
+      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(26, 215, 111, 0.08);
+    }
+    .card__icon-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: rgba(26, 215, 111, 0.1);
+      color: var(--kex-green);
+      border-radius: 14px;
+      font-size: 1.6rem;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+    }
+    .card:hover .card__icon-wrapper {
+      transform: scale(1.1) rotate(-5deg);
+      background: var(--kex-green);
+      color: #fff;
+      box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5);
+    }
+    .card__title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #F1F5F9;
+      margin-bottom: 12px;
+      line-height: 1.3;
+      transition: color 0.3s ease;
+    }
+    .card__desc {
+      font-size: 0.95rem;
+      color: #94A3B8;
+      line-height: 1.6;
+    }
+    .card:hover .card__title {
+      color: var(--kex-green);
+    }
   </style>
 </head>
 <body>
@@ -310,6 +399,7 @@
     </div>
   </aside>
 
+  <!-- HERO SECTION -->
   <section class="hero" id="home">
     <div class="container" style="padding: 0; width: 100%; max-width: 100%;">
       <% if (hero.primarytext) { %>
@@ -330,6 +420,37 @@
     </div>
   </section>
 
+  <!-- CARDS SECTION -->
+  <section class="cards-section container" id="features">
+    <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %>
+      <div class="section-header">
+        <% if (cards.data.title) { %>
+          <h2 class="section-title"><%- fmt(cards.data.title) %></h2>
+        <% } %>
+        <% if (cards.data.description) { %>
+          <p class="section-desc"><%- fmt(cards.data.description) %></p>
+        <% } %>
+      </div>
+    <% } %>
+
+    <div class="cards-grid">
+      <% if (cards && cards.items && cards.items.length > 0) { %>
+        <% cards.items.forEach(card => { %>
+          <a href="<%= card.url || '#' %>" class="card">
+            <% if (card.icon) { %>
+              <div class="card__icon-wrapper">
+                <i class="<%= card.icon %>"></i>
+              </div>
+            <% } %>
+            <h3 class="card__title"><%- fmt(card.title || '') %></h3>
+            <p class="card__desc"><%- fmt(card.description || '') %></p>
+          </a>
+        <% }) %>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- TEXT FORMATTING UTILITY FUNCTION -->
   <% function fmt(t) {
     if (!t) return '';
     t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1;">$2</span>');
@@ -341,6 +462,7 @@
     return t;
   } %>
 
+  <!-- SCRIPTS -->
   <script>
     (function() {
       const navButtons = document.querySelectorAll('.navbutton');
