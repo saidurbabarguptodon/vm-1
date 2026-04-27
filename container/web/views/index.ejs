@@ -26,8 +26,6 @@
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
       scroll-behavior: smooth;
-      
-      /* ANTI-COPY PROTECTION: Prevents highlighting and copying text */
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
@@ -57,9 +55,6 @@
 
     .container { position: relative; z-index: 2; max-width: 1280px; margin: 0 auto; padding: 0 24px; }
 
-    /* ========================================= */
-    /* HEADER & SIDEBAR STYLES                   */
-    /* ========================================= */
     .header {
       width: 100%;
       background: rgba(15,15,20,.75);
@@ -218,9 +213,6 @@
       border-color: var(--kex-dark-green);
     }
 
-    /* ========================================= */
-    /* HERO SECTION STYLES                       */
-    /* ========================================= */
     .hero { 
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center; 
@@ -260,9 +252,6 @@
       font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; 
     }
 
-    /* ========================================= */
-    /* CARDS SECTION STYLES                      */
-    /* ========================================= */
     .cards-section {
       padding: 60px 24px 100px; 
       margin-top: 40px; 
@@ -295,7 +284,6 @@
       width: 100%;
     }
     
-    /* Individual Card Styles */
     .card-bg {
       background: rgba(20, 20, 30, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.05);
@@ -352,7 +340,6 @@
       color: var(--kex-green);
     }
 
-    /* Cards Footer Button Area */
     .cards-footer {
       display: flex;
       justify-content: center;
@@ -360,7 +347,7 @@
       margin-top: 48px;
     }
     .cards-footer .hero-btn {
-      margin-bottom: 0; /* Reset margin for standard layout */
+      margin-bottom: 0;
     }
   </style>
 </head>
@@ -431,7 +418,6 @@
     </div>
   </aside>
 
-  <!-- HERO SECTION -->
   <section class="hero" id="home">
     <div class="container" style="padding: 0; width: 100%; max-width: 100%;">
       <% if (hero.primarytext) { %>
@@ -441,7 +427,7 @@
         <p class="hero-description"><%- fmt(hero.secondarytext) %></p>
       <% } %>
       <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
-        <a href="<%= hero.buttonurl || '#' %>" class="hero-btn">
+        <a href="<%= hero.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
           <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %>
           <span><%= hero.buttontext || '' %></span>
         </a>
@@ -452,7 +438,6 @@
     </div>
   </section>
 
-  <!-- CARDS SECTION -->
   <section class="cards-section container" id="services">
     <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %>
       <div class="cards-header">
@@ -467,9 +452,8 @@
 
     <div class="cards-grid">
       <% if (cards && cards.items && cards.items.length > 0) { %>
-        <!-- Using .slice(0, 6) limits the loop to a maximum of 6 elements -->
         <% cards.items.slice(0, 6).forEach(card => { %>
-          <a href="<%= card.url || '#' %>" class="card-bg">
+          <a href="<%= card.url || '#' %>" class="card-bg" target="_blank" rel="noopener">
             <% if (card.icon) { %>
               <div class="card-icon">
                 <i class="<%= card.icon %>"></i>
@@ -482,10 +466,9 @@
       <% } %>
     </div>
 
-    <!-- MORE BUTTON CONTAINER -->
     <% if (cards && cards.items && cards.items.length > 0) { %>
       <div class="cards-footer">
-        <a href="https://kexcloud.qzz.io/services" class="hero-btn">
+        <a href="https://kexcloud.qzz.io/services" class="hero-btn" target="_blank" rel="noopener">
           <span>More...</span>
         </a>
       </div>
@@ -493,7 +476,6 @@
 
   </section>
 
-  <!-- TEXT FORMATTING UTILITY FUNCTION -->
   <% function fmt(t) {
     if (!t) return '';
     t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1;">$2</span>');
@@ -505,26 +487,23 @@
     return t;
   } %>
 
-  <!-- SCRIPTS -->
   <script>
-    /* ========================================= */
-    /* ANTI-COPY PROTECTION JS                   */
-    /* ========================================= */
-    // Disable Right-Click Context Menu
     document.addEventListener('contextmenu', event => event.preventDefault());
     
-    // Disable typical developer keyboard shortcuts
     document.onkeydown = function(e) {
-      if (e.keyCode == 123) return false; // Block F12
-      if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Block Ctrl+Shift+I
-      if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; // Block Ctrl+Shift+C
-      if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Block Ctrl+Shift+J
-      if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Block Ctrl+U
+      if (e.keyCode == 123) return false; 
+      if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; 
+      if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; 
+      if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; 
+      if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
     };
 
-    /* ========================================= */
-    /* SCROLL AND BEHAVIOR JS                    */
-    /* ========================================= */
+    document.querySelectorAll('a[target="_blank"]').forEach(el => {
+      el.addEventListener('click', function() {
+        setTimeout(() => this.blur(), 100);
+      });
+    });
+
     (function() {
       const navButtons = document.querySelectorAll('.navbutton');
       const sections = Array.from(document.querySelectorAll('section[id]'));
@@ -664,9 +643,6 @@
       });
     })();
 
-    /* ========================================= */
-    /* SNOW ANIMATION & SIDEBAR JS               */
-    /* ========================================= */
     (function() {
       const canvas = document.getElementById('snow-canvas');
       const ctx = canvas.getContext('2d');
