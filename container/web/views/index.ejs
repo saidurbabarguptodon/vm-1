@@ -228,11 +228,10 @@
       box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); 
     }
 
-    /* Adjust padding to stretch perfectly from the header down to the footer text */
     .hero { 
       display: flex; flex-direction: column; align-items: center; 
       text-align: center; 
-      padding: 50px 24px 20px; /* Reduced gap padding */
+      padding: 50px 24px 20px; 
       position: relative; 
       scroll-margin-top: 80px;
     }
@@ -252,10 +251,10 @@
     /* CARDS SECTION STYLES                      */
     /* ========================================= */
     .cards-section {
-      padding: 30px 24px 100px; /* Reduced top gap padding */
+      padding: 30px 24px 100px; 
       position: relative;
       z-index: 2;
-      scroll-margin-top: 80px; /* Added to account for sticky header */
+      scroll-margin-top: 80px; 
     }
     .section-header {
       text-align: center;
@@ -472,11 +471,14 @@
   <script>
     (function() {
       const navButtons = document.querySelectorAll('.navbutton');
-      const hashLinks = Array.from(navButtons).map(b => b.getAttribute('href')).filter(h => h && h.startsWith('#'));
+      const sections = Array.from(document.querySelectorAll('section[id]'));
+      const headerHeight = 85; 
 
-      function setNavActive(currentHash) {
+      // Accurately highlights the right active button regardless of '/' or '#home'
+      function setNavActive(sectionId) {
         navButtons.forEach(btn => {
-          if (btn.getAttribute('href') === currentHash || (currentHash === '#home' && btn.getAttribute('href') === '/')) {
+          const href = btn.getAttribute('href');
+          if ((sectionId === 'home' && (href === '/' || href === '#home')) || href === `#${sectionId}`) {
             btn.classList.add('is-active');
           } else {
             btn.classList.remove('is-active');
@@ -484,12 +486,14 @@
         });
       }
 
+      // Smooth scrolling to absolute top and reverting URL appropriately to base pathname (eg: `/`)
       function scrollToTop() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        history.pushState(null, null, '#home');
-        setNavActive('#home');
+        history.pushState(null, null, window.location.pathname);
+        setNavActive('home');
       }
 
+      // Allow brand-logo to trigger completely home scrolling
       document.querySelectorAll('.brand').forEach(brand => {
         brand.addEventListener('click', function(e) {
           e.preventDefault();
@@ -498,59 +502,101 @@
         });
       });
 
+      // Handle clicking directly from sidebar
       navButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
           const href = this.getAttribute('href');
-          // Treat exactly "/" and "#home" identically – scroll to very top.
+          
           if (href === '/' || href === '#home') {
             e.preventDefault();
             scrollToTop();
             window.dispatchEvent(new Event('hideSidebar'));
           } else if (href && href.startsWith('#')) {
             e.preventDefault();
-            const target = document.querySelector(href);
+            const targetId = href.substring(1);
+            const target = document.getElementById(targetId);
             if (target) {
-              // Scroll to the targeted section (adjusted automatically by CSS scroll-margin-top)
               target.scrollIntoView({ behavior: 'smooth' });
               history.pushState(null, null, href);
-              setNavActive(href);
+              setNavActive(targetId);
               window.dispatchEvent(new Event('hideSidebar'));
             }
           }
         });
       });
 
-      // Updated IntersectionObserver limits to accurately match sections despite header offset
-      const navObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const hash = `#${entry.target.id}`;
-            if (hashLinks.includes(hash)) {
-              history.replaceState(null, null, hash);
-              setNavActive(hash);
+      // Flawless High-Performance ScrollSpy implementation to dynamically swap URLs and Actives 
+      // even when scrolling upwards to previously viewed sections
+      let isScrolling = false;
+
+      function updateScrollSpy() {
+        const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+        let currentSection = null;
+
+        // If scroller is hovering safely at very top, automatically assign 'home'
+        if (scrollPosition < 50) {
+          currentSection = 'home';
+        } else {
+          // Identify section deeply via inverse offsets ensuring bottom-to-top tracking works perfectly
+          for (let i = sections.length - 1; i >= 0; i--) {
+            const section = sections[i];
+            if (section.offsetTop - headerHeight <= scrollPosition + 5) {
+              currentSection = section.id;
+              break;
             }
           }
-        });
-      }, { rootMargin: '-80px 0px -50% 0px' });
+        }
 
-      document.querySelectorAll('section[id], div[id]').forEach(sec => {
-        if (hashLinks.includes(`#${sec.id}`)) navObserver.observe(sec);
-      });
+        // Fallback to first section 
+        if (!currentSection && sections.length) {
+          currentSection = sections[0].id;
+        }
 
-      // Handle Initial Load
-      if (!window.location.hash || window.location.hash === '#home' || window.location.pathname === '/') {
-        setNavActive('#home');
-        if (!window.location.hash) history.replaceState(null, null, '#home');
-        if (window.location.hash === '#home') window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        setNavActive(window.location.hash);
-        const target = document.querySelector(window.location.hash);
-        if (target) {
-          setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 50);
+        if (currentSection) {
+          setNavActive(currentSection);
+          
+          // Construct logical basepath removing strict forcing of '#home'
+          const basePath = window.location.pathname;
+          const newUrl = currentSection === 'home' ? basePath : basePath + '#' + currentSection;
+          
+          // Verify URL avoids infinite update replacing if nothing naturally changed 
+          if (window.location.pathname + window.location.hash !== newUrl) {
+            history.replaceState(null, null, newUrl);
+          }
         }
       }
+
+      // Hook onto page scroll reliably 
+      window.addEventListener('scroll', () => {
+        if (!isScrolling) {
+          window.requestAnimationFrame(() => {
+            updateScrollSpy();
+            isScrolling = false;
+          });
+          isScrolling = true;
+        }
+      }, { passive: true });
+
+      // Run on immediate page load effectively 
+      window.addEventListener('load', () => {
+        const hash = window.location.hash;
+        
+        // Strip out the loaded URL #home if loaded to default `/` state
+        if (!hash || hash === '#home') {
+          if (hash === '#home') history.replaceState(null, null, window.location.pathname);
+          setNavActive('home');
+        } else {
+          const targetId = hash.substring(1);
+          setNavActive(targetId);
+          const target = document.getElementById(targetId);
+          if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 50);
+        }
+        
+        updateScrollSpy(); // Ensure state aligns directly initially
+      });
     })();
 
+    // Animation Code (Maintained Intact)
     (function() {
       const canvas = document.getElementById('snow-canvas');
       const ctx = canvas.getContext('2d');
@@ -579,9 +625,8 @@
       function drawSnow() {
         ctx.clearRect(0, 0, width, height);
         
-        // Find bottom boundary dynamically
         const heroBottom = heroSection ? heroSection.getBoundingClientRect().bottom : height;
-        const fadeDistance = 120; // How many pixels before the end it should start fading out
+        const fadeDistance = 120; 
         const fadeStart = heroBottom - fadeDistance;
 
         for (let i = 0; i < maxFlakes; i++) {
@@ -606,7 +651,6 @@
       }
 
       function moveSnow(heroBottom) {
-        // Prevent flakes from falling beyond the hero section bound or screen
         const maxY = Math.min(height, heroBottom);
         
         for (let i = 0; i < maxFlakes; i++) {
@@ -615,7 +659,6 @@
           f.a += f.aStep;
           f.x += Math.sin(f.a) * 0.25; 
 
-          // Loop them back to the top once they fade entirely
           if (f.y > maxY) { 
             f.y = -10; 
             f.x = Math.random() * width; 
