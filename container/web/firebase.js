@@ -184,7 +184,7 @@ serverCache.sidebar.header = defaultSidebarHeader;
 const defaultNavButton = { 
   text: "Home", 
   icon: "fa-solid fa-house", 
-  url: "/"
+  url: "#home"
 };
 const defaultSocialLink = { icon: "fa-brands fa-discord", url: "#" };
 
