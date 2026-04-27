@@ -325,7 +325,7 @@
       .card-bg:hover .card-title { color: var(--kex-green); }
     }
 
-    .header__toggle:active i { transform: scale(0.85); }
+    .header__toggle:active i, .header__toggle.force-active i { transform: scale(0.85); }
     .sociallink:active, .sociallink.force-active { background-color: var(--kex-dark-green); border-color: var(--kex-dark-green); transform: scale(0.95); }
     .hero-btn:active, .hero-btn.force-active { background-color: var(--kex-dark-green); transform: scale(0.98); }
     
@@ -346,7 +346,7 @@
             <img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="logoimg">
           <% } else { %>
             <% if (header.alticon) { %><i class="<%= header.alticon %> alticon"></i><% } %>
-            <% if (header.alttext) { %><span class="alttext"><%= header.alttext %></span><% } %>
+            <% if (header.alttext) { %><span class="alttext"><span class="alttext"><%= header.alttext %></span><% } %>
           <% } %>
         </a>
         <button class="header__toggle" id="open-sidebar" aria-label="Open Menu">
@@ -449,10 +449,12 @@
       <% } %>
     </div>
 
-    <% if (cards && cards.items && cards.items.length > 0) { %>
+    <!-- DYNAMIC CARDS FOOTER BUTTON -->
+    <% if (cards && cards.data && (cards.data.buttonenabled === true || cards.data.buttonenabled === 'true')) { %>
       <div class="cards-footer">
-        <a href="https://kexcloud.qzz.io/services" class="hero-btn" target="_blank" rel="noopener">
-          <span>More...</span>
+        <a href="<%= cards.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
+          <% if (cards.data.buttonicon) { %><i class="<%= cards.data.buttonicon %>"></i><% } %>
+          <span><%= cards.data.buttontext || '' %></span>
         </a>
       </div>
     <% } %>
