@@ -228,14 +228,11 @@
       box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); 
     }
 
-    /* ========================================= */
-    /* FIXED OVERLAPPING: ADDED PROPER GAPS      */
-    /* ========================================= */
     .hero { 
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center; 
-      padding: 100px 24px 80px; /* Strong top/bottom padding */
-      min-height: 50vh; /* Natively prevents sections from immediately touching */
+      padding: 100px 24px 80px; 
+      min-height: 50vh; 
       position: relative; 
       scroll-margin-top: 80px; 
     }
@@ -251,25 +248,28 @@
     }
     .footertext { font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; }
 
+    /* ========================================= */
+    /* CARDS SECTION STYLES                      */
+    /* ========================================= */
     .cards-section {
       padding: 60px 24px 100px; 
-      margin-top: 40px; /* Absolute visual gap separating features from hero */
+      margin-top: 40px; 
       position: relative;
       z-index: 2;
-      scroll-margin-top: 85px; /* Offset for sticky header */
+      scroll-margin-top: 85px; 
     }
-    .section-header {
+    .cards-header {
       text-align: center;
       margin-bottom: 50px;
     }
-    .section-title {
+    .cards-section-title {
       font-size: clamp(1.8rem, 4vw, 2.4rem);
       font-weight: 800;
       color: var(--kex-white);
       margin-bottom: 16px;
       letter-spacing: -0.02em;
     }
-    .section-desc {
+    .cards-section-description {
       font-size: clamp(1rem, 3vw, 1.15rem);
       color: var(--kex-gray);
       max-width: 650px;
@@ -282,7 +282,7 @@
       gap: 24px;
       width: 100%;
     }
-    .card {
+    .card-bg {
       background: rgba(20, 20, 30, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 20px;
@@ -297,12 +297,12 @@
       position: relative;
       overflow: hidden;
     }
-    .card:hover {
+    .card-bg:hover {
       transform: translateY(-8px);
       border-color: rgba(26, 215, 111, 0.4);
       box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(26, 215, 111, 0.08);
     }
-    .card__icon-wrapper {
+    .card-icon {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -315,13 +315,13 @@
       margin-bottom: 24px;
       transition: all 0.3s ease;
     }
-    .card:hover .card__icon-wrapper {
+    .card-bg:hover .card-icon {
       transform: scale(1.1) rotate(-5deg);
       background: var(--kex-green);
       color: #fff;
       box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5);
     }
-    .card__title {
+    .card-title {
       font-size: 1.3rem;
       font-weight: 700;
       color: var(--kex-white);
@@ -329,12 +329,12 @@
       line-height: 1.3;
       transition: color 0.3s ease;
     }
-    .card__desc {
+    .card-description {
       font-size: 0.95rem;
       color: var(--kex-gray);
       line-height: 1.6;
     }
-    .card:hover .card__title {
+    .card-bg:hover .card-title {
       color: var(--kex-green);
     }
   </style>
@@ -430,12 +430,12 @@
   <!-- CARDS SECTION -->
   <section class="cards-section container" id="services">
     <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %>
-      <div class="section-header">
+      <div class="cards-header">
         <% if (cards.data.title) { %>
-          <h2 class="section-title"><%- fmt(cards.data.title) %></h2>
+          <h2 class="cards-section-title"><%- fmt(cards.data.title) %></h2>
         <% } %>
         <% if (cards.data.description) { %>
-          <p class="section-desc"><%- fmt(cards.data.description) %></p>
+          <p class="cards-section-description"><%- fmt(cards.data.description) %></p>
         <% } %>
       </div>
     <% } %>
@@ -443,14 +443,14 @@
     <div class="cards-grid">
       <% if (cards && cards.items && cards.items.length > 0) { %>
         <% cards.items.forEach(card => { %>
-          <a href="<%= card.url || '#' %>" class="card">
+          <a href="<%= card.url || '#' %>" class="card-bg">
             <% if (card.icon) { %>
-              <div class="card__icon-wrapper">
+              <div class="card-icon">
                 <i class="<%= card.icon %>"></i>
               </div>
             <% } %>
-            <h3 class="card__title"><%- fmt(card.title || '') %></h3>
-            <p class="card__desc"><%- fmt(card.description || '') %></p>
+            <h3 class="card-title"><%- fmt(card.title || '') %></h3>
+            <p class="card-description"><%- fmt(card.description || '') %></p>
           </a>
         <% }) %>
       <% } %>
@@ -499,7 +499,7 @@
         lastActiveSection = 'home';
         
         clearTimeout(navTimeout);
-        navTimeout = setTimeout(() => { isNavigating = false; }, 800); // Give smooth scroll time to finish
+        navTimeout = setTimeout(() => { isNavigating = false; }, 800); 
       }
 
       document.querySelectorAll('.brand').forEach(brand => {
@@ -524,7 +524,7 @@
             const target = document.getElementById(targetId);
             
             if (target) {
-              isNavigating = true; // Stop scroll tracker while clicking
+              isNavigating = true; 
               target.scrollIntoView({ behavior: 'smooth' });
               
               history.pushState(null, null, href);
@@ -539,43 +539,35 @@
         });
       });
 
-      // Rock solid layout tracking utilizing Rect calculations
       let isScrolling = false;
 
       function updateScrollSpy() {
-        if (isNavigating) return; // Prevent highlighting intermediate sections when auto-scrolling
+        if (isNavigating) return; 
         
         const scrollPosition = window.scrollY || document.documentElement.scrollTop;
         let currentSection = null;
 
-        // Focus point: Just below the header, representing the core content users are looking at
         const viewportMiddle = headerHeight + (window.innerHeight / 3);
 
-        // 1. Precise Bottom-of-Page Detection
         if ((window.innerHeight + scrollPosition) >= document.body.offsetHeight - 10) {
           currentSection = sections[sections.length - 1].id;
         } 
-        // 2. Precise Top-of-Page Detection
         else if (scrollPosition < 50) {
           currentSection = 'home';
         } 
-        // 3. Viewport-Based Rect Detection (Flawless Up/Down tracking)
         else {
           sections.forEach(sec => {
             const rect = sec.getBoundingClientRect();
-            // Checking if the focus point sits between the top and bottom of the section
             if (rect.top <= viewportMiddle && rect.bottom >= viewportMiddle) {
               currentSection = sec.id;
             }
           });
         }
 
-        // Fallback safety net
         if (!currentSection && sections.length) {
           currentSection = sections[0].id;
         }
 
-        // Only update DOM and State if it ACTUALLY changed (Performance Saver)
         if (currentSection !== lastActiveSection) {
           lastActiveSection = currentSection;
           setNavActive(currentSection);
@@ -599,7 +591,6 @@
         }
       }, { passive: true });
 
-      // Run reliably on load
       window.addEventListener('load', () => {
         const hash = window.location.hash;
         
@@ -619,7 +610,6 @@
       });
     })();
 
-    // Animation Code Fixed & Optimized
     (function() {
       const canvas = document.getElementById('snow-canvas');
       const ctx = canvas.getContext('2d');
@@ -632,7 +622,6 @@
       const flakes =[];
       const heroSection = document.getElementById('home');
       
-      // Calculate max absolute height based on the hero size rather than viewport position
       const heroHeightAbsolute = heroSection ? heroSection.offsetTop + heroSection.offsetHeight : height;
 
       for (let i = 0; i < maxFlakes; i++) {
@@ -648,7 +637,6 @@
       }
 
       function drawSnow() {
-        // Prevent calculating / drawing particles if the user scrolled completely past the hero 
         const heroBottomRect = heroSection ? heroSection.getBoundingClientRect().bottom : height;
         
         if (heroBottomRect <= 0) {
