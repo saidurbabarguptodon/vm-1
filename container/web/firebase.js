@@ -38,6 +38,10 @@ const db = admin.firestore();
 const serverCache = {
   header: null,
   hero: null,
+  cards: {
+    data: null,
+    items: []
+  },
   sidebar: {
     header: null,
     body: [],
@@ -46,7 +50,7 @@ const serverCache = {
 };
 
 function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
-  const isCollection = cacheKey === 'sidebar.body' || cacheKey === 'sidebar.footer';
+  const isCollection = cacheKey === 'sidebar.body' || cacheKey === 'sidebar.footer' || cacheKey === 'cards.items';
 
   // ─── FIX 1: Don't return early — attach listeners first, then do initial fetch ───
   // ─── FIX 2: Use !snap.empty for collection refs, snap.exists for document refs ───
@@ -54,17 +58,38 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
   if (isCollection) {
     // Real-time listener for collections
     ref.onSnapshot(snapshot => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const data = snapshot.docs
+        .filter(doc => doc.id !== 'data')
+        .map(doc => ({ id: doc.id, ...doc.data() }));
       if (cacheKey === 'sidebar.body') serverCache.sidebar.body = data;
-      else serverCache.sidebar.footer = data;
+      else if (cacheKey === 'sidebar.footer') serverCache.sidebar.footer = data;
+      else if (cacheKey === 'cards.items') serverCache.cards.items = data;
     }, console.error);
 
     // Initial fetch for collections
     return ref.get().then(snap => {
       if (!snap.empty) {
-        const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const data = snap.docs
+          .filter(doc => doc.id !== 'data')
+          .map(doc => ({ id: doc.id, ...doc.data() }));
         if (cacheKey === 'sidebar.body') serverCache.sidebar.body = data;
-        else serverCache.sidebar.footer = data;
+        else if (cacheKey === 'sidebar.footer') serverCache.sidebar.footer = data;
+        else if (cacheKey === 'cards.items') serverCache.cards.items = data;
+      }
+    }).catch(console.error);
+
+  } else if (cacheKey === 'cards.data') {
+    // Real-time listener for cards/data document
+    ref.onSnapshot(doc => {
+      if (doc.exists) {
+        serverCache.cards.data = doc.data();
+      }
+    }, console.error);
+
+    // Initial fetch for cards/data
+    return ref.get().then(snap => {
+      if (snap.exists) {
+        serverCache.cards.data = snap.data();
       }
     }).catch(console.error);
 
@@ -125,6 +150,10 @@ async function initializeCacheAndListeners() {
   
   const bodyRef = db.collection('web').doc('body');
   await attachListenerAndInit(bodyRef, 'hero');
+
+  const cardsRef = db.collection('web').doc('body').collection('cards');
+  await attachListenerAndInit(cardsRef.doc('data'), 'cards.data');
+  await attachListenerAndInit(cardsRef, 'cards.items');
   
   const sidebarMainRef = db.collection('web').doc('sidebar');
   await attachListenerAndInit(sidebarMainRef, 'sidebar.header', (doc) => doc.data().header);
@@ -210,24 +239,26 @@ const sidebarDoc = {
 };
 
 // ===============================
-// 7. BODY (HERO, TITLE, DESCRIPTION & CARDS)
+// 7. BODY
 // ===============================
 const defaultHero = {
   primarytext: "", secondarytext: "", footertext: "",
-  buttonenabled: true,  
+  buttonenabled: true,
   buttontext: "", buttonicon: "", buttonurl: ""
 };
 serverCache.hero = defaultHero;
 
-const defaultBodyFields = {
+const defaultCardsData = {
   title: "",
   description: ""
 };
+serverCache.cards.data = defaultCardsData;
 
 const defaultCard = {
   title: "",
   description: "",
-  icon: ""
+  icon: "",
+  url: ""
 };
 
 const bodyDoc = {
@@ -235,46 +266,38 @@ const bodyDoc = {
     try {
       const bodyDocRef = db.collection('web').doc('body');
       const bodyDocSnap = await bodyDocRef.get();
-      
+
       // ---------- HERO ----------
       if (!bodyDocSnap.exists) {
-        // Create document with hero and default body fields
-        await bodyDocRef.set({ 
-          hero: defaultHero,
-          ...defaultBodyFields
-        });
-        console.log(`Successfully created body document with hero and fields ${JSON.stringify({ hero: defaultHero, ...defaultBodyFields })}`);
+        await bodyDocRef.set({ hero: defaultHero });
+        console.log(`Successfully created body document with hero ${JSON.stringify({ hero: defaultHero })}`);
       } else {
         const data = bodyDocSnap.data();
-        // Ensure hero exists
         if (!data.hero) {
           await bodyDocRef.update({ hero: defaultHero });
           console.log(`Hero field missing; added successfully ${JSON.stringify(defaultHero)}`);
         } else {
           console.log(`Hero already exists in body document: ${JSON.stringify(data.hero)}`);
         }
-        // Ensure title and description fields exist
-        const updates = {};
-        if (!data.title && data.title !== "") {
-          updates.title = defaultBodyFields.title;
-        }
-        if (!data.description && data.description !== "") {
-          updates.description = defaultBodyFields.description;
-        }
-        if (Object.keys(updates).length > 0) {
-          await bodyDocRef.update(updates);
-          console.log(`Added missing body fields: ${JSON.stringify(updates)}`);
-        } else {
-          console.log(`Body fields title and description already present.`);
-        }
       }
 
       // ---------- CARDS ----------
-      const cardsSnapshot = await bodyDocRef.collection('cards').get();
+      const cardsRef = bodyDocRef.collection('cards');
+
+      // -- cards/data (section title & description) --
+      const cardsDataSnap = await cardsRef.doc('data').get();
+      if (!cardsDataSnap.exists) {
+        await cardsRef.doc('data').set(defaultCardsData);
+        console.log(`Successfully created body/cards/data ${JSON.stringify(defaultCardsData)}`);
+      } else {
+        console.log(`body/cards/data already exists: ${JSON.stringify(cardsDataSnap.data())}`);
+      }
+
+      // -- cards/card-{num} --
+      const cardsSnapshot = await cardsRef.get();
       const hasCards = cardsSnapshot.docs.some(docSnap => docSnap.id.startsWith('card-'));
-      
       if (!hasCards) {
-        await bodyDocRef.collection('cards').doc('card-1').set(defaultCard);
+        await cardsRef.doc('card-1').set(defaultCard);
         console.log(`Successfully created body/cards/card-1 ${JSON.stringify(defaultCard)}`);
       } else {
         const existingCards = cardsSnapshot.docs
@@ -298,11 +321,13 @@ async function initializeFirestore() {
 
 async function getHeader() { return serverCache.header; }
 async function getHero() { return serverCache.hero; }
+async function getCards() { return serverCache.cards; }
 async function getSidebar() { return serverCache.sidebar; }
 
 module.exports = {
   initializeFirestore,
   getHeader,
   getHero,
+  getCards,
   getSidebar
 };
