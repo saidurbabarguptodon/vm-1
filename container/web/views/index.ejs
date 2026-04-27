@@ -325,10 +325,13 @@
       .card-bg:hover .card-title { color: var(--kex-green); }
     }
 
-    .header__toggle:active i, .header__toggle.force-active i { transform: scale(0.85); }
+    .header__toggle:active i { transform: scale(0.85); }
     .sociallink:active, .sociallink.force-active { background-color: var(--kex-dark-green); border-color: var(--kex-dark-green); transform: scale(0.95); }
     .hero-btn:active, .hero-btn.force-active { background-color: var(--kex-dark-green); transform: scale(0.98); }
+    
     .card-bg:active, .card-bg.force-active { transform: scale(0.98); border-color: rgba(26, 215, 111, 0.4); }
+    .card-bg:active .card-icon, .card-bg.force-active .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
+    .card-bg:active .card-title, .card-bg.force-active .card-title { color: var(--kex-green); }
   </style>
 </head>
 <body>
@@ -478,24 +481,33 @@
       if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
     };
 
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden && document.activeElement) {
-        if (!document.activeElement.classList.contains('navbutton')) {
-          document.activeElement.blur();
-        }
-      }
-    });
+    document.querySelectorAll('.hero-btn, .card-bg, .sociallink').forEach(el => {
+      el.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        const target = this.getAttribute('target') || '_self';
+        const isActionable = href && href !== '#' && !href.startsWith('#');
 
-    document.querySelectorAll('a, button').forEach(el => {
-      if (!el.classList.contains('navbutton')) {
-        el.addEventListener('click', function() {
-          this.classList.add('force-active');
+        if (isActionable) {
+          e.preventDefault();
+        }
+
+        this.classList.add('force-active');
+
+        if (isActionable) {
           setTimeout(() => {
-            this.classList.remove('force-active');
-            this.blur();
-          }, 2500);
-        });
-      }
+            if (target === '_blank') {
+              window.open(href, '_blank');
+            } else {
+              window.location.href = href;
+            }
+          }, 200);
+        }
+
+        setTimeout(() => {
+          this.classList.remove('force-active');
+          this.blur();
+        }, 2500);
+      });
     });
 
     (function() {
