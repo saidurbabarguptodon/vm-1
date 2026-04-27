@@ -78,13 +78,10 @@
     }
     .header__toggle { font-size: 1.6rem; width: 44px; height: 44px; }
     .header__toggle i { transition: transform 0.2s ease; }
-    .header__toggle:hover, .sidebar__close:hover { background: rgba(255,255,255,.06); color: #fff; }
-    .header__toggle:active i { transform: scale(0.85); }
     .sidebar__close { font-size: 1.5rem; width: 36px; height: 36px; }
     .sidebar.is-expanded .sidebar__close i { transform: rotate(90deg); }
 
     .brand { display: flex; align-items: center; gap: 10px; transition: opacity 0.2s ease; text-decoration: none; }
-    .brand:hover { opacity: 0.8; }
     .brand--header { height: 40px; margin-left: -12px; }
     .brand--sidebar { height: 32px; }
 
@@ -176,12 +173,6 @@
       font-size: 1.25rem; width: 28px; text-align: center; flex-shrink: 0; 
       color: var(--kex-green); transition: color 0.2s ease; 
     }
-    .navbutton:hover { 
-      background: var(--kex-dark-green); 
-      transform: translateX(4px); 
-      color: #fff; 
-    }
-    .navbutton:hover i { color: var(--kex-green); }
     .navbutton.is-active { 
       background: var(--kex-dark-green); 
       color: #fff; 
@@ -200,17 +191,6 @@
       color: #fff; border-radius: 50%;
       text-decoration: none; font-size: 19px;
       transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-    }
-    .sociallink:hover {
-      background-color: var(--kex-dark-green);
-      border-color: var(--kex-dark-green);
-      color: #fff;
-      transform: translateY(-4px) scale(1.05);
-      box-shadow: 0 10px 20px -5px rgba(26,215,111,.5);
-    }
-    .sociallink:active {
-      background-color: var(--kex-dark-green);
-      border-color: var(--kex-dark-green);
     }
 
     .hero { 
@@ -241,13 +221,9 @@
       transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
       box-shadow: 0 8px 20px -6px rgba(26,215,111,.5);
       margin-bottom: 24px;
+      outline: none;
     }
     .hero-btn i { font-size: 1.3rem; font-style: normal !important; }
-    .hero-btn:hover { 
-      background-color: var(--kex-dark-green); 
-      transform: translateY(-2px); 
-      box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); 
-    }
     .hero-footer { 
       font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; 
     }
@@ -298,11 +274,7 @@
       -webkit-backdrop-filter: blur(12px);
       position: relative;
       overflow: hidden;
-    }
-    .card-bg:hover {
-      transform: translateY(-8px);
-      border-color: rgba(26, 215, 111, 0.4);
-      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(26, 215, 111, 0.08);
+      outline: none;
     }
     .card-icon {
       display: flex;
@@ -317,12 +289,6 @@
       margin-bottom: 24px;
       transition: all 0.3s ease;
     }
-    .card-bg:hover .card-icon {
-      transform: scale(1.1) rotate(-5deg);
-      background: var(--kex-green);
-      color: #fff;
-      box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5);
-    }
     .card-title {
       font-size: 1.3rem;
       font-weight: 700;
@@ -336,9 +302,6 @@
       color: var(--kex-gray);
       line-height: 1.6;
     }
-    .card-bg:hover .card-title {
-      color: var(--kex-green);
-    }
 
     .cards-footer {
       display: flex;
@@ -349,6 +312,23 @@
     .cards-footer .hero-btn {
       margin-bottom: 0;
     }
+
+    @media (hover: hover) {
+      .header__toggle:hover, .sidebar__close:hover { background: rgba(255,255,255,.06); color: #fff; }
+      .brand:hover { opacity: 0.8; }
+      .navbutton:hover { background: var(--kex-dark-green); transform: translateX(4px); color: #fff; }
+      .navbutton:hover i { color: var(--kex-green); }
+      .sociallink:hover { background-color: var(--kex-dark-green); border-color: var(--kex-dark-green); color: #fff; transform: translateY(-4px) scale(1.05); box-shadow: 0 10px 20px -5px rgba(26,215,111,.5); }
+      .hero-btn:hover { background-color: var(--kex-dark-green); transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); }
+      .card-bg:hover { transform: translateY(-8px); border-color: rgba(26, 215, 111, 0.4); box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(26, 215, 111, 0.08); }
+      .card-bg:hover .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
+      .card-bg:hover .card-title { color: var(--kex-green); }
+    }
+
+    .header__toggle:active i { transform: scale(0.85); }
+    .sociallink:active { background-color: var(--kex-dark-green); border-color: var(--kex-dark-green); transform: scale(0.95); }
+    .hero-btn:active { background-color: var(--kex-dark-green); transform: scale(0.98); }
+    .card-bg:active { transform: scale(0.98); border-color: rgba(26, 215, 111, 0.4); }
   </style>
 </head>
 <body>
@@ -498,10 +478,20 @@
       if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
     };
 
-    document.querySelectorAll('a[target="_blank"]').forEach(el => {
-      el.addEventListener('click', function() {
-        setTimeout(() => this.blur(), 100);
-      });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && document.activeElement) {
+        if (!document.activeElement.classList.contains('navbutton')) {
+          document.activeElement.blur();
+        }
+      }
+    });
+
+    document.querySelectorAll('a, button').forEach(el => {
+      if (!el.classList.contains('navbutton')) {
+        el.addEventListener('click', function() {
+          setTimeout(() => this.blur(), 150);
+        });
+      }
     });
 
     (function() {
