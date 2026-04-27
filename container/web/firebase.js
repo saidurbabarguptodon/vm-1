@@ -237,7 +237,11 @@ serverCache.hero = defaultHero;
 
 const defaultCardsData = {
   title: "",
-  description: ""
+  description: "",
+  buttonenabled: true,
+  buttonicon: "",
+  buttontext: "",
+  buttonurl: ""
 };
 serverCache.cards.data = defaultCardsData;
 
@@ -274,7 +278,17 @@ const bodyDoc = {
         await cardsRef.doc('data').set(defaultCardsData);
         console.log(`Successfully created body/cards/data ${JSON.stringify(defaultCardsData)}`);
       } else {
-        console.log(`body/cards/data already exists: ${JSON.stringify(cardsDataSnap.data())}`);
+        const existingData = cardsDataSnap.data();
+        const missingFields = {};
+        for (const [key, value] of Object.entries(defaultCardsData)) {
+          if (!(key in existingData)) missingFields[key] = value;
+        }
+        if (Object.keys(missingFields).length > 0) {
+          await cardsRef.doc('data').update(missingFields);
+          console.log(`Patched missing fields in body/cards/data: ${JSON.stringify(missingFields)}`);
+        } else {
+          console.log(`body/cards/data already exists: ${JSON.stringify(existingData)}`);
+        }
       }
 
       const cardsSnapshot = await cardsRef.get();
