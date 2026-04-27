@@ -52,11 +52,7 @@ const serverCache = {
 function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
   const isCollection = cacheKey === 'sidebar.body' || cacheKey === 'sidebar.footer' || cacheKey === 'cards.items';
 
-  // ─── FIX 1: Don't return early — attach listeners first, then do initial fetch ───
-  // ─── FIX 2: Use !snap.empty for collection refs, snap.exists for document refs ───
-
   if (isCollection) {
-    // Real-time listener for collections
     ref.onSnapshot(snapshot => {
       const data = snapshot.docs
         .filter(doc => doc.id !== 'data')
@@ -66,7 +62,6 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
       else if (cacheKey === 'cards.items') serverCache.cards.items = data;
     }, console.error);
 
-    // Initial fetch for collections
     return ref.get().then(snap => {
       if (!snap.empty) {
         const data = snap.docs
@@ -79,14 +74,12 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
     }).catch(console.error);
 
   } else if (cacheKey === 'cards.data') {
-    // Real-time listener for cards/data document
     ref.onSnapshot(doc => {
       if (doc.exists) {
         serverCache.cards.data = doc.data();
       }
     }, console.error);
 
-    // Initial fetch for cards/data
     return ref.get().then(snap => {
       if (snap.exists) {
         serverCache.cards.data = snap.data();
@@ -94,14 +87,12 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
     }).catch(console.error);
 
   } else if (cacheKey === 'sidebar.header') {
-    // Real-time listener for sidebar header document
     ref.onSnapshot(doc => {
       if (doc.exists) {
         serverCache.sidebar.header = doc.data().header;
       }
     }, console.error);
 
-    // Initial fetch for sidebar header
     return ref.get().then(snap => {
       if (snap.exists) {
         serverCache.sidebar.header = transform(snap);
@@ -109,7 +100,6 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
     }).catch(console.error);
 
   } else if (cacheKey === 'hero') {
-    // Real-time listener for hero (nested in body doc)
     ref.onSnapshot(doc => {
       if (doc.exists) {
         const data = doc.data();
@@ -117,7 +107,6 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
       }
     }, console.error);
 
-    // Initial fetch for hero
     return ref.get().then(snap => {
       if (snap.exists) {
         const data = snap.data();
@@ -126,14 +115,12 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
     }).catch(console.error);
 
   } else {
-    // Real-time listener for generic documents (e.g. header)
     ref.onSnapshot(doc => {
       if (doc.exists) {
         serverCache[cacheKey] = doc.data();
       }
     }, console.error);
 
-    // Initial fetch for generic documents
     return ref.get().then(snap => {
       if (snap.exists) {
         serverCache[cacheKey] = transform(snap);
@@ -267,7 +254,6 @@ const bodyDoc = {
       const bodyDocRef = db.collection('web').doc('body');
       const bodyDocSnap = await bodyDocRef.get();
 
-      // ---------- HERO ----------
       if (!bodyDocSnap.exists) {
         await bodyDocRef.set({ hero: defaultHero });
         console.log(`Successfully created body document with hero ${JSON.stringify({ hero: defaultHero })}`);
@@ -281,10 +267,8 @@ const bodyDoc = {
         }
       }
 
-      // ---------- CARDS ----------
       const cardsRef = bodyDocRef.collection('cards');
 
-      // -- cards/data (section title & description) --
       const cardsDataSnap = await cardsRef.doc('data').get();
       if (!cardsDataSnap.exists) {
         await cardsRef.doc('data').set(defaultCardsData);
@@ -293,7 +277,6 @@ const bodyDoc = {
         console.log(`body/cards/data already exists: ${JSON.stringify(cardsDataSnap.data())}`);
       }
 
-      // -- cards/card-{num} --
       const cardsSnapshot = await cardsRef.get();
       const hasCards = cardsSnapshot.docs.some(docSnap => docSnap.id.startsWith('card-'));
       if (!hasCards) {
