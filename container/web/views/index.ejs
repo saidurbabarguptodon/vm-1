@@ -228,12 +228,16 @@
       box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); 
     }
 
+    /* ========================================= */
+    /* FIXED OVERLAPPING: ADDED PROPER GAPS      */
+    /* ========================================= */
     .hero { 
-      display: flex; flex-direction: column; align-items: center; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center; 
-      padding: 50px 24px 20px; 
+      padding: 100px 24px 80px; /* Strong top/bottom padding */
+      min-height: 50vh; /* Natively prevents sections from immediately touching */
       position: relative; 
-      scroll-margin-top: 80px;
+      scroll-margin-top: 80px; 
     }
     .primarytext {
       font-size: clamp(1.8rem,5vw,2.8rem);
@@ -247,18 +251,16 @@
     }
     .footertext { font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; }
 
-    /* ========================================= */
-    /* CARDS SECTION STYLES                      */
-    /* ========================================= */
     .cards-section {
-      padding: 30px 24px 100px; 
+      padding: 60px 24px 100px; 
+      margin-top: 40px; /* Absolute visual gap separating features from hero */
       position: relative;
       z-index: 2;
-      scroll-margin-top: 80px; 
+      scroll-margin-top: 85px; /* Offset for sticky header */
     }
     .section-header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 50px;
     }
     .section-title {
       font-size: clamp(1.8rem, 4vw, 2.4rem);
@@ -473,8 +475,11 @@
       const navButtons = document.querySelectorAll('.navbutton');
       const sections = Array.from(document.querySelectorAll('section[id]'));
       const headerHeight = 85; 
+      
+      let isNavigating = false;
+      let navTimeout = null;
+      let lastActiveSection = '';
 
-      // Accurately highlights the right active button regardless of '/' or '#home'
       function setNavActive(sectionId) {
         navButtons.forEach(btn => {
           const href = btn.getAttribute('href');
@@ -486,14 +491,17 @@
         });
       }
 
-      // Smooth scrolling to absolute top and reverting URL appropriately to base pathname (eg: `/`)
       function scrollToTop() {
+        isNavigating = true;
         window.scrollTo({ top: 0, behavior: 'smooth' });
         history.pushState(null, null, window.location.pathname);
         setNavActive('home');
+        lastActiveSection = 'home';
+        
+        clearTimeout(navTimeout);
+        navTimeout = setTimeout(() => { isNavigating = false; }, 800); // Give smooth scroll time to finish
       }
 
-      // Allow brand-logo to trigger completely home scrolling
       document.querySelectorAll('.brand').forEach(brand => {
         brand.addEventListener('click', function(e) {
           e.preventDefault();
@@ -502,7 +510,6 @@
         });
       });
 
-      // Handle clicking directly from sidebar
       navButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
           const href = this.getAttribute('href');
@@ -515,58 +522,73 @@
             e.preventDefault();
             const targetId = href.substring(1);
             const target = document.getElementById(targetId);
+            
             if (target) {
+              isNavigating = true; // Stop scroll tracker while clicking
               target.scrollIntoView({ behavior: 'smooth' });
+              
               history.pushState(null, null, href);
               setNavActive(targetId);
+              lastActiveSection = targetId;
+              
               window.dispatchEvent(new Event('hideSidebar'));
+              clearTimeout(navTimeout);
+              navTimeout = setTimeout(() => { isNavigating = false; }, 800); 
             }
           }
         });
       });
 
-      // Flawless High-Performance ScrollSpy implementation to dynamically swap URLs and Actives 
-      // even when scrolling upwards to previously viewed sections
+      // Rock solid layout tracking utilizing Rect calculations
       let isScrolling = false;
 
       function updateScrollSpy() {
+        if (isNavigating) return; // Prevent highlighting intermediate sections when auto-scrolling
+        
         const scrollPosition = window.scrollY || document.documentElement.scrollTop;
         let currentSection = null;
 
-        // If scroller is hovering safely at very top, automatically assign 'home'
-        if (scrollPosition < 50) {
+        // Focus point: Just below the header, representing the core content users are looking at
+        const viewportMiddle = headerHeight + (window.innerHeight / 3);
+
+        // 1. Precise Bottom-of-Page Detection
+        if ((window.innerHeight + scrollPosition) >= document.body.offsetHeight - 10) {
+          currentSection = sections[sections.length - 1].id;
+        } 
+        // 2. Precise Top-of-Page Detection
+        else if (scrollPosition < 50) {
           currentSection = 'home';
-        } else {
-          // Identify section deeply via inverse offsets ensuring bottom-to-top tracking works perfectly
-          for (let i = sections.length - 1; i >= 0; i--) {
-            const section = sections[i];
-            if (section.offsetTop - headerHeight <= scrollPosition + 5) {
-              currentSection = section.id;
-              break;
+        } 
+        // 3. Viewport-Based Rect Detection (Flawless Up/Down tracking)
+        else {
+          sections.forEach(sec => {
+            const rect = sec.getBoundingClientRect();
+            // Checking if the focus point sits between the top and bottom of the section
+            if (rect.top <= viewportMiddle && rect.bottom >= viewportMiddle) {
+              currentSection = sec.id;
             }
-          }
+          });
         }
 
-        // Fallback to first section 
+        // Fallback safety net
         if (!currentSection && sections.length) {
           currentSection = sections[0].id;
         }
 
-        if (currentSection) {
+        // Only update DOM and State if it ACTUALLY changed (Performance Saver)
+        if (currentSection !== lastActiveSection) {
+          lastActiveSection = currentSection;
           setNavActive(currentSection);
           
-          // Construct logical basepath removing strict forcing of '#home'
           const basePath = window.location.pathname;
           const newUrl = currentSection === 'home' ? basePath : basePath + '#' + currentSection;
           
-          // Verify URL avoids infinite update replacing if nothing naturally changed 
           if (window.location.pathname + window.location.hash !== newUrl) {
             history.replaceState(null, null, newUrl);
           }
         }
       }
 
-      // Hook onto page scroll reliably 
       window.addEventListener('scroll', () => {
         if (!isScrolling) {
           window.requestAnimationFrame(() => {
@@ -577,26 +599,27 @@
         }
       }, { passive: true });
 
-      // Run on immediate page load effectively 
+      // Run reliably on load
       window.addEventListener('load', () => {
         const hash = window.location.hash;
         
-        // Strip out the loaded URL #home if loaded to default `/` state
         if (!hash || hash === '#home') {
           if (hash === '#home') history.replaceState(null, null, window.location.pathname);
           setNavActive('home');
+          lastActiveSection = 'home';
         } else {
           const targetId = hash.substring(1);
           setNavActive(targetId);
+          lastActiveSection = targetId;
           const target = document.getElementById(targetId);
           if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 50);
         }
         
-        updateScrollSpy(); // Ensure state aligns directly initially
+        updateScrollSpy(); 
       });
     })();
 
-    // Animation Code (Maintained Intact)
+    // Animation Code Fixed & Optimized
     (function() {
       const canvas = document.getElementById('snow-canvas');
       const ctx = canvas.getContext('2d');
@@ -608,12 +631,14 @@
       const maxFlakes = width < 768 ? 12 : 30; 
       const flakes =[];
       const heroSection = document.getElementById('home');
-      const initMaxY = Math.min(height, heroSection ? heroSection.getBoundingClientRect().bottom : height);
+      
+      // Calculate max absolute height based on the hero size rather than viewport position
+      const heroHeightAbsolute = heroSection ? heroSection.offsetTop + heroSection.offsetHeight : height;
 
       for (let i = 0; i < maxFlakes; i++) {
         flakes.push({
           x: Math.random() * width,
-          y: Math.random() * initMaxY,
+          y: Math.random() * heroHeightAbsolute,
           r: Math.random() * 1.5 + 0.5,
           d: Math.random() * 0.4 + 0.15, 
           a: Math.random() * Math.PI * 2,
@@ -623,18 +648,25 @@
       }
 
       function drawSnow() {
-        ctx.clearRect(0, 0, width, height);
+        // Prevent calculating / drawing particles if the user scrolled completely past the hero 
+        const heroBottomRect = heroSection ? heroSection.getBoundingClientRect().bottom : height;
         
-        const heroBottom = heroSection ? heroSection.getBoundingClientRect().bottom : height;
+        if (heroBottomRect <= 0) {
+          ctx.clearRect(0, 0, width, height);
+          requestAnimationFrame(drawSnow);
+          return;
+        }
+
+        ctx.clearRect(0, 0, width, height);
         const fadeDistance = 120; 
-        const fadeStart = heroBottom - fadeDistance;
+        const fadeStart = heroBottomRect - fadeDistance;
 
         for (let i = 0; i < maxFlakes; i++) {
           let f = flakes[i];
           let currentOpacity = f.opacity;
 
           if (f.y > fadeStart) {
-            let ratio = (heroBottom - f.y) / fadeDistance;
+            let ratio = (heroBottomRect - f.y) / fadeDistance;
             currentOpacity = f.opacity * Math.max(0, Math.min(1, ratio));
           }
 
@@ -646,7 +678,7 @@
           }
         }
         
-        moveSnow(heroBottom);
+        moveSnow(heroBottomRect);
         requestAnimationFrame(drawSnow);
       }
 
@@ -674,6 +706,7 @@
         canvas.width = width;
         canvas.height = height;
       });
+      
       drawSnow();
 
       const openBtn   = document.getElementById('open-sidebar');
