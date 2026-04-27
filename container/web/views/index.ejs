@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KexCloud | Dynamic Header & Sidebar</title>
-  <!-- Added Playfair Display to the Google Fonts link -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -38,7 +37,6 @@
       z-index: 1;
     }
 
-    /* Lamp glow – enhanced for a softer, brighter focus */
     .glow {
       position: absolute;
       top: 0; left: 0;
@@ -93,7 +91,6 @@
     }
     .alticon { font-size: 1.6rem; display: inline-block; }
     
-    /* Applied Playfair Display font here */
     .alttext { 
       font-size: 1.7rem; 
       font-weight: 800; 
@@ -222,7 +219,7 @@
       text-decoration: none;
       transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
       box-shadow: 0 8px 20px -6px rgba(26,215,111,.5);
-      margin-bottom: 40px;
+      margin-bottom: 24px;
     }
     .herobtn i { font-size: 1.3rem; font-style: normal !important; }
     .herobtn:hover { 
@@ -231,7 +228,14 @@
       box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); 
     }
 
-    .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 80px 24px 60px; position: relative; }
+    /* Adjust padding to stretch perfectly from the header down to the footer text */
+    .hero { 
+      display: flex; flex-direction: column; align-items: center; 
+      text-align: center; 
+      padding: 50px 24px 20px; /* Reduced gap padding */
+      position: relative; 
+      scroll-margin-top: 80px;
+    }
     .primarytext {
       font-size: clamp(1.8rem,5vw,2.8rem);
       font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
@@ -248,13 +252,14 @@
     /* CARDS SECTION STYLES                      */
     /* ========================================= */
     .cards-section {
-      padding: 60px 24px 100px;
+      padding: 30px 24px 100px; /* Reduced top gap padding */
       position: relative;
       z-index: 2;
+      scroll-margin-top: 80px; /* Added to account for sticky header */
     }
     .section-header {
       text-align: center;
-      margin-bottom: 48px;
+      margin-bottom: 40px;
     }
     .section-title {
       font-size: clamp(1.8rem, 4vw, 2.4rem);
@@ -293,7 +298,6 @@
     }
     .card:hover {
       transform: translateY(-8px);
-      /* Removed the hover background change to keep the card consistent */
       border-color: rgba(26, 215, 111, 0.4);
       box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(26, 215, 111, 0.08);
     }
@@ -469,19 +473,19 @@
     (function() {
       const navButtons = document.querySelectorAll('.navbutton');
       const hashLinks = Array.from(navButtons).map(b => b.getAttribute('href')).filter(h => h && h.startsWith('#'));
-      const homeSection = document.getElementById('home');
 
       function setNavActive(currentHash) {
         navButtons.forEach(btn => {
-          if (btn.getAttribute('href') === currentHash) btn.classList.add('is-active');
-          else btn.classList.remove('is-active');
+          if (btn.getAttribute('href') === currentHash || (currentHash === '#home' && btn.getAttribute('href') === '/')) {
+            btn.classList.add('is-active');
+          } else {
+            btn.classList.remove('is-active');
+          }
         });
       }
 
-      function scrollToHome() {
-        if (homeSection) {
-          homeSection.scrollIntoView({ behavior: 'smooth' });
-        }
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         history.pushState(null, null, '#home');
         setNavActive('#home');
       }
@@ -489,7 +493,7 @@
       document.querySelectorAll('.brand').forEach(brand => {
         brand.addEventListener('click', function(e) {
           e.preventDefault();
-          scrollToHome();
+          scrollToTop();
           window.dispatchEvent(new Event('hideSidebar'));
         });
       });
@@ -497,10 +501,16 @@
       navButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
           const href = this.getAttribute('href');
-          if (href && href.startsWith('#')) {
+          // Treat exactly "/" and "#home" identically – scroll to very top.
+          if (href === '/' || href === '#home') {
+            e.preventDefault();
+            scrollToTop();
+            window.dispatchEvent(new Event('hideSidebar'));
+          } else if (href && href.startsWith('#')) {
             e.preventDefault();
             const target = document.querySelector(href);
             if (target) {
+              // Scroll to the targeted section (adjusted automatically by CSS scroll-margin-top)
               target.scrollIntoView({ behavior: 'smooth' });
               history.pushState(null, null, href);
               setNavActive(href);
@@ -510,6 +520,7 @@
         });
       });
 
+      // Updated IntersectionObserver limits to accurately match sections despite header offset
       const navObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -520,21 +531,22 @@
             }
           }
         });
-      }, { rootMargin: '-20% 0px -60% 0px' });
+      }, { rootMargin: '-80px 0px -50% 0px' });
 
       document.querySelectorAll('section[id], div[id]').forEach(sec => {
         if (hashLinks.includes(`#${sec.id}`)) navObserver.observe(sec);
       });
 
-      if (!window.location.hash || window.location.hash === '#home') {
+      // Handle Initial Load
+      if (!window.location.hash || window.location.hash === '#home' || window.location.pathname === '/') {
         setNavActive('#home');
-        if (!window.location.hash) {
-          history.replaceState(null, null, '#home');
-        }
+        if (!window.location.hash) history.replaceState(null, null, '#home');
+        if (window.location.hash === '#home') window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setNavActive(window.location.hash);
-        if (homeSection && window.location.hash === '#home') {
-          homeSection.scrollIntoView({ behavior: 'smooth' });
+        const target = document.querySelector(window.location.hash);
+        if (target) {
+          setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 50);
         }
       }
     })();
