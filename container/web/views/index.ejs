@@ -26,6 +26,12 @@
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
       scroll-behavior: smooth;
+      
+      /* ANTI-COPY PROTECTION: Prevents highlighting and copying text */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
     body.has-sidebar-open { overflow: hidden; touch-action: none; }
 
@@ -51,6 +57,9 @@
 
     .container { position: relative; z-index: 2; max-width: 1280px; margin: 0 auto; padding: 0 24px; }
 
+    /* ========================================= */
+    /* HEADER & SIDEBAR STYLES                   */
+    /* ========================================= */
     .header {
       width: 100%;
       background: rgba(15,15,20,.75);
@@ -90,7 +99,6 @@
       text-shadow: 0 0 12px rgba(26,215,111,.45); 
     }
     .alticon { font-size: 1.6rem; display: inline-block; }
-    
     .alttext { 
       font-size: 1.7rem; 
       font-weight: 800; 
@@ -210,8 +218,29 @@
       border-color: var(--kex-dark-green);
     }
 
-    .herobtn {
-      display: inline-flex; align-items: center; gap: 8px;
+    /* ========================================= */
+    /* HERO SECTION STYLES                       */
+    /* ========================================= */
+    .hero { 
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; 
+      padding: 100px 24px 80px; 
+      min-height: 50vh; 
+      position: relative; 
+      scroll-margin-top: 80px; 
+    }
+    .hero-title {
+      font-size: clamp(1.8rem,5vw,2.8rem);
+      font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
+      color: var(--kex-white); text-shadow: none;
+      margin-bottom: 20px; hyphens: auto;
+    }
+    .hero-description {
+      font-size: clamp(1.1rem,4vw,1.4rem);
+      color: var(--kex-gray); margin-bottom: 32px; hyphens: auto;
+    }
+    .hero-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
       background-color: var(--kex-green); 
       color: #fff;
       font-weight: 600; font-size: 1.1rem;
@@ -221,32 +250,15 @@
       box-shadow: 0 8px 20px -6px rgba(26,215,111,.5);
       margin-bottom: 24px;
     }
-    .herobtn i { font-size: 1.3rem; font-style: normal !important; }
-    .herobtn:hover { 
+    .hero-btn i { font-size: 1.3rem; font-style: normal !important; }
+    .hero-btn:hover { 
       background-color: var(--kex-dark-green); 
       transform: translateY(-2px); 
       box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); 
     }
-
-    .hero { 
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; 
-      padding: 100px 24px 80px; 
-      min-height: 50vh; 
-      position: relative; 
-      scroll-margin-top: 80px; 
+    .hero-footer { 
+      font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; 
     }
-    .primarytext {
-      font-size: clamp(1.8rem,5vw,2.8rem);
-      font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
-      color: var(--kex-white); text-shadow: none;
-      margin-bottom: 20px; hyphens: auto;
-    }
-    .secondarytext {
-      font-size: clamp(1.1rem,4vw,1.4rem);
-      color: var(--kex-gray); margin-bottom: 32px; hyphens: auto;
-    }
-    .footertext { font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; }
 
     /* ========================================= */
     /* CARDS SECTION STYLES                      */
@@ -262,14 +274,14 @@
       text-align: center;
       margin-bottom: 50px;
     }
-    .cards-section-title {
+    .cards-title {
       font-size: clamp(1.8rem, 4vw, 2.4rem);
       font-weight: 800;
       color: var(--kex-white);
       margin-bottom: 16px;
       letter-spacing: -0.02em;
     }
-    .cards-section-description {
+    .cards-description {
       font-size: clamp(1rem, 3vw, 1.15rem);
       color: var(--kex-gray);
       max-width: 650px;
@@ -282,6 +294,8 @@
       gap: 24px;
       width: 100%;
     }
+    
+    /* Individual Card Styles */
     .card-bg {
       background: rgba(20, 20, 30, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.05);
@@ -336,6 +350,17 @@
     }
     .card-bg:hover .card-title {
       color: var(--kex-green);
+    }
+
+    /* Cards Footer Button Area */
+    .cards-footer {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-top: 48px;
+    }
+    .cards-footer .hero-btn {
+      margin-bottom: 0; /* Reset margin for standard layout */
     }
   </style>
 </head>
@@ -410,19 +435,19 @@
   <section class="hero" id="home">
     <div class="container" style="padding: 0; width: 100%; max-width: 100%;">
       <% if (hero.primarytext) { %>
-        <h1 class="primarytext"><%- fmt(hero.primarytext) %></h1>
+        <h1 class="hero-title"><%- fmt(hero.primarytext) %></h1>
       <% } %>
       <% if (hero.secondarytext) { %>
-        <p class="secondarytext"><%- fmt(hero.secondarytext) %></p>
+        <p class="hero-description"><%- fmt(hero.secondarytext) %></p>
       <% } %>
       <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
-        <a href="<%= hero.buttonurl || '#' %>" class="herobtn">
+        <a href="<%= hero.buttonurl || '#' %>" class="hero-btn">
           <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %>
           <span><%= hero.buttontext || '' %></span>
         </a>
       <% } %>
       <% if (hero.footertext) { %>
-        <div class="footertext"><%- fmt(hero.footertext) %></div>
+        <div class="hero-footer"><%- fmt(hero.footertext) %></div>
       <% } %>
     </div>
   </section>
@@ -432,17 +457,18 @@
     <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %>
       <div class="cards-header">
         <% if (cards.data.title) { %>
-          <h2 class="cards-section-title"><%- fmt(cards.data.title) %></h2>
+          <h2 class="cards-title"><%- fmt(cards.data.title) %></h2>
         <% } %>
         <% if (cards.data.description) { %>
-          <p class="cards-section-description"><%- fmt(cards.data.description) %></p>
+          <p class="cards-description"><%- fmt(cards.data.description) %></p>
         <% } %>
       </div>
     <% } %>
 
     <div class="cards-grid">
       <% if (cards && cards.items && cards.items.length > 0) { %>
-        <% cards.items.forEach(card => { %>
+        <!-- Using .slice(0, 6) limits the loop to a maximum of 6 elements -->
+        <% cards.items.slice(0, 6).forEach(card => { %>
           <a href="<%= card.url || '#' %>" class="card-bg">
             <% if (card.icon) { %>
               <div class="card-icon">
@@ -455,6 +481,16 @@
         <% }) %>
       <% } %>
     </div>
+
+    <!-- MORE BUTTON CONTAINER -->
+    <% if (cards && cards.items && cards.items.length > 0) { %>
+      <div class="cards-footer">
+        <a href="https://kexcloud.qzz.io/services" class="hero-btn">
+          <span>More...</span>
+        </a>
+      </div>
+    <% } %>
+
   </section>
 
   <!-- TEXT FORMATTING UTILITY FUNCTION -->
@@ -471,6 +507,24 @@
 
   <!-- SCRIPTS -->
   <script>
+    /* ========================================= */
+    /* ANTI-COPY PROTECTION JS                   */
+    /* ========================================= */
+    // Disable Right-Click Context Menu
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    
+    // Disable typical developer keyboard shortcuts
+    document.onkeydown = function(e) {
+      if (e.keyCode == 123) return false; // Block F12
+      if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Block Ctrl+Shift+I
+      if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; // Block Ctrl+Shift+C
+      if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Block Ctrl+Shift+J
+      if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Block Ctrl+U
+    };
+
+    /* ========================================= */
+    /* SCROLL AND BEHAVIOR JS                    */
+    /* ========================================= */
     (function() {
       const navButtons = document.querySelectorAll('.navbutton');
       const sections = Array.from(document.querySelectorAll('section[id]'));
@@ -610,6 +664,9 @@
       });
     })();
 
+    /* ========================================= */
+    /* SNOW ANIMATION & SIDEBAR JS               */
+    /* ========================================= */
     (function() {
       const canvas = document.getElementById('snow-canvas');
       const ctx = canvas.getContext('2d');
