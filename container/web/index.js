@@ -56,8 +56,10 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // ===============================
-// 6. ROUTE: HOME PAGE
+// 6. ROUTES
 // ===============================
+
+// ROUTE: HOME PAGE
 app.get('/', async (req, res) => {
   try {
     const templateData = {};
@@ -82,6 +84,11 @@ app.get('/', async (req, res) => {
     console.error(error);
     res.status(500).send('Server error');
   }
+});
+
+// ROUTE: DISCORD REDIRECT
+app.get('/discord', (req, res) => {
+  res.redirect('https://discord.gg/aB8QAYhjpf');
 });
 
 // ===============================
