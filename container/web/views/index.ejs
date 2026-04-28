@@ -276,6 +276,22 @@
       overflow: hidden;
       outline: none;
     }
+    .card-status {
+      position: absolute;
+      top: 32px;
+      right: 28px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--kex-white);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
     .card-icon {
       display: flex;
       align-items: center;
@@ -301,6 +317,17 @@
       font-size: 0.95rem;
       color: var(--kex-gray);
       line-height: 1.6;
+      flex-grow: 1; /* Pushes rating to the bottom */
+    }
+    .card-rating {
+      margin-top: auto;
+      padding-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #FBBF24;
+      font-size: 0.95rem;
+      font-weight: 600;
     }
 
     .cards-footer {
@@ -322,6 +349,7 @@
       .hero-btn:hover { background-color: var(--kex-dark-green); transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); }
       .card-bg:hover { transform: translateY(-8px); border-color: rgba(26, 215, 111, 0.4); box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(26, 215, 111, 0.08); }
       .card-bg:hover .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
+      .card-bg:hover .card-status { border-color: rgba(26, 215, 111, 0.4); color: var(--kex-green); }
       .card-bg:hover .card-title { color: var(--kex-green); }
     }
 
@@ -437,6 +465,12 @@
       <% if (cards && cards.items && cards.items.length > 0) { %>
         <% cards.items.slice(0, 6).forEach(card => { %>
           <a href="<%= card.url || '#' %>" class="card-bg" target="_blank" rel="noopener">
+            
+            <!-- NEW: Dynamic Card Status -->
+            <% if (card.status && card.status.trim() !== '') { %>
+              <div class="card-status"><%= card.status %></div>
+            <% } %>
+
             <% if (card.icon) { %>
               <div class="card-icon">
                 <i class="<%= card.icon %>"></i>
@@ -444,6 +478,15 @@
             <% } %>
             <h3 class="card-title"><%- fmt(card.title || '') %></h3>
             <p class="card-description"><%- fmt(card.description || '') %></p>
+            
+            <!-- NEW: Dynamic Card Rating -->
+            <% if (card.rating && Number(card.rating) > 0) { %>
+              <div class="card-rating">
+                <i class="fa-solid fa-star"></i>
+                <span><%= card.rating %></span>
+              </div>
+            <% } %>
+
           </a>
         <% }) %>
       <% } %>
