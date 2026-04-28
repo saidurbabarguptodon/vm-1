@@ -42,6 +42,10 @@ const serverCache = {
     data: null,
     items: []
   },
+  faqs: {             // ← new
+    data: null,
+    items: []
+  },
   sidebar: {
     header: null,
     body: [],
@@ -50,7 +54,11 @@ const serverCache = {
 };
 
 function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
-  const isCollection = cacheKey === 'sidebar.body' || cacheKey === 'sidebar.footer' || cacheKey === 'cards.items';
+  const isCollection =
+    cacheKey === 'sidebar.body' ||
+    cacheKey === 'sidebar.footer' ||
+    cacheKey === 'cards.items' ||
+    cacheKey === 'faqs.items';   // ← new
 
   if (isCollection) {
     ref.onSnapshot(snapshot => {
@@ -60,6 +68,7 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
       if (cacheKey === 'sidebar.body') serverCache.sidebar.body = data;
       else if (cacheKey === 'sidebar.footer') serverCache.sidebar.footer = data;
       else if (cacheKey === 'cards.items') serverCache.cards.items = data;
+      else if (cacheKey === 'faqs.items') serverCache.faqs.items = data;   // ← new
     }, console.error);
 
     return ref.get().then(snap => {
@@ -70,6 +79,7 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
         if (cacheKey === 'sidebar.body') serverCache.sidebar.body = data;
         else if (cacheKey === 'sidebar.footer') serverCache.sidebar.footer = data;
         else if (cacheKey === 'cards.items') serverCache.cards.items = data;
+        else if (cacheKey === 'faqs.items') serverCache.faqs.items = data;  // ← new
       }
     }).catch(console.error);
 
@@ -83,6 +93,19 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
     return ref.get().then(snap => {
       if (snap.exists) {
         serverCache.cards.data = snap.data();
+      }
+    }).catch(console.error);
+
+  } else if (cacheKey === 'faqs.data') {   // ← new
+    ref.onSnapshot(doc => {
+      if (doc.exists) {
+        serverCache.faqs.data = doc.data();
+      }
+    }, console.error);
+
+    return ref.get().then(snap => {
+      if (snap.exists) {
+        serverCache.faqs.data = snap.data();
       }
     }).catch(console.error);
 
@@ -141,6 +164,10 @@ async function initializeCacheAndListeners() {
   const cardsRef = db.collection('web').doc('body').collection('cards');
   await attachListenerAndInit(cardsRef.doc('data'), 'cards.data');
   await attachListenerAndInit(cardsRef, 'cards.items');
+
+  const faqsRef = db.collection('web').doc('body').collection('faqs');  // ← new
+  await attachListenerAndInit(faqsRef.doc('data'), 'faqs.data');
+  await attachListenerAndInit(faqsRef, 'faqs.items');
 
   const sidebarMainRef = db.collection('web').doc('sidebar');
   await attachListenerAndInit(sidebarMainRef, 'sidebar.header', (doc) => doc.data().header);
@@ -251,7 +278,22 @@ const defaultCard = {
   icon: "",
   url: "",
   rating: 0,
-  status: ""        // ← new
+  status: ""
+};
+
+const defaultFaqsData = {       // ← new
+  title: "",
+  description: "",
+  buttonenabled: true,
+  buttonicon: "",
+  buttontext: "",
+  buttonurl: ""
+};
+serverCache.faqs.data = defaultFaqsData;
+
+const defaultFaq = {            // ← new
+  title: "",
+  description: ""
 };
 
 const bodyDoc = {
@@ -273,6 +315,7 @@ const bodyDoc = {
         }
       }
 
+      // --- CARDS ---
       const cardsRef = bodyDocRef.collection('cards');
 
       const cardsDataSnap = await cardsRef.doc('data').get();
@@ -294,6 +337,30 @@ const bodyDoc = {
           .map(d => ({ id: d.id, ...d.data() }));
         console.log(`Body cards already exist: ${JSON.stringify(existingCards)}`);
       }
+
+      // --- FAQS ---                                          // ← new
+      const faqsRef = bodyDocRef.collection('faqs');
+
+      const faqsDataSnap = await faqsRef.doc('data').get();
+      if (!faqsDataSnap.exists) {
+        await faqsRef.doc('data').set(defaultFaqsData);
+        console.log(`Successfully created body/faqs/data ${JSON.stringify(defaultFaqsData)}`);
+      } else {
+        console.log(`body/faqs/data already exists: ${JSON.stringify(faqsDataSnap.data())}`);
+      }
+
+      const faqsSnapshot = await faqsRef.get();
+      const hasFaqs = faqsSnapshot.docs.some(d => d.id.startsWith('faq-'));
+      if (!hasFaqs) {
+        await faqsRef.doc('faq-1').set(defaultFaq);
+        console.log(`Successfully created body/faqs/faq-1 ${JSON.stringify(defaultFaq)}`);
+      } else {
+        const existingFaqs = faqsSnapshot.docs
+          .filter(d => d.id.startsWith('faq-'))
+          .map(d => ({ id: d.id, ...d.data() }));
+        console.log(`Body faqs already exist: ${JSON.stringify(existingFaqs)}`);
+      }
+
     } catch (err) { console.error(err); }
   }
 };
@@ -311,6 +378,7 @@ async function initializeFirestore() {
 async function getHeader() { return serverCache.header; }
 async function getHero() { return serverCache.hero; }
 async function getCards() { return serverCache.cards; }
+async function getFaqs() { return serverCache.faqs; }   // ← new
 async function getSidebar() { return serverCache.sidebar; }
 
 module.exports = {
@@ -318,5 +386,6 @@ module.exports = {
   getHeader,
   getHero,
   getCards,
+  getFaqs,        // ← new
   getSidebar
 };
