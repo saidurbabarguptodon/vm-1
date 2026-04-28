@@ -10,6 +10,12 @@
     :root {
       --kex-green: #1ad76f;
       --kex-dark-green: #0E713B;
+      --kex-yellow: #FBBF24;
+      --kex-dark-yellow: #B45309;
+      --kex-red: #EF4444;
+      --kex-dark-red: #991B1B;
+      --kex-blue: #3B82F6;
+      --kex-dark-blue: #1E3A8A;
       --kex-white: #F1F5F9;
       --kex-gray: #94A3B8;
     }
@@ -26,10 +32,6 @@
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
       scroll-behavior: smooth;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
     }
     body.has-sidebar-open { overflow: hidden; touch-action: none; }
 
@@ -276,22 +278,60 @@
       overflow: hidden;
       outline: none;
     }
+    
+    /* Dynamic Status Badge Styles */
     .card-status {
       position: absolute;
-      top: 32px;
-      right: 28px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--kex-white);
-      padding: 4px 12px;
+      top: 24px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
       border-radius: 20px;
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       font-weight: 700;
       letter-spacing: 0.5px;
       text-transform: uppercase;
       pointer-events: none;
       transition: all 0.3s ease;
+      border: 1px solid;
     }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      position: relative;
+    }
+    .status-dot::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 var(--pulse-color); }
+      70% { transform: scale(1); box-shadow: 0 0 0 4px transparent; }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 transparent; }
+    }
+
+    /* Status Colors */
+    .status-online { color: var(--kex-green); border-color: rgba(26, 215, 111, 0.2); background: rgba(26, 215, 111, 0.05); }
+    .status-online .status-dot { background-color: var(--kex-green); --pulse-color: rgba(26, 215, 111, 0.7); }
+
+    .status-maintenance { color: var(--kex-yellow); border-color: rgba(251, 191, 36, 0.2); background: rgba(251, 191, 36, 0.05); }
+    .status-maintenance .status-dot { background-color: var(--kex-yellow); --pulse-color: rgba(251, 191, 36, 0.7); }
+
+    .status-offline { color: var(--kex-red); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); }
+    .status-offline .status-dot { background-color: var(--kex-red); --pulse-color: rgba(239, 68, 68, 0.7); }
+
+    .status-soon { color: var(--kex-blue); border-color: rgba(59, 130, 246, 0.2); background: rgba(59, 130, 246, 0.05); }
+    .status-soon .status-dot { background-color: var(--kex-blue); --pulse-color: rgba(59, 130, 246, 0.7); }
+
+    .status-default { color: var(--kex-white); border-color: rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); }
+    .status-default .status-dot { background-color: var(--kex-white); --pulse-color: rgba(255, 255, 255, 0.7); }
+
     .card-icon {
       display: flex;
       align-items: center;
@@ -317,17 +357,7 @@
       font-size: 0.95rem;
       color: var(--kex-gray);
       line-height: 1.6;
-      flex-grow: 1; /* Pushes rating to the bottom */
-    }
-    .card-rating {
-      margin-top: auto;
-      padding-top: 16px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #FBBF24;
-      font-size: 0.95rem;
-      font-weight: 600;
+      flex-grow: 1;
     }
 
     .cards-footer {
@@ -349,7 +379,6 @@
       .hero-btn:hover { background-color: var(--kex-dark-green); transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); }
       .card-bg:hover { transform: translateY(-8px); border-color: rgba(26, 215, 111, 0.4); box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(26, 215, 111, 0.08); }
       .card-bg:hover .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
-      .card-bg:hover .card-status { border-color: rgba(26, 215, 111, 0.4); color: var(--kex-green); }
       .card-bg:hover .card-title { color: var(--kex-green); }
     }
 
@@ -462,13 +491,30 @@
     <% } %>
 
     <div class="cards-grid">
-      <% if (cards && cards.items && cards.items.length > 0) { %>
-        <% cards.items.slice(0, 6).forEach(card => { %>
+      <% 
+        let sortedCards =[];
+        if (cards && cards.items && cards.items.length > 0) {
+          // Sort cards by rating (highest to lowest)
+          sortedCards = cards.items.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+        }
+      %>
+      <% if (sortedCards.length > 0) { %>
+        <% sortedCards.slice(0, 6).forEach(card => { %>
           <a href="<%= card.url || '#' %>" class="card-bg" target="_blank" rel="noopener">
             
-            <!-- NEW: Dynamic Card Status -->
-            <% if (card.status && card.status.trim() !== '') { %>
-              <div class="card-status"><%= card.status %></div>
+            <% if (card.status && card.status.trim() !== '') { 
+              let statusClass = 'status-default';
+              let statusText = card.status.trim().toLowerCase();
+              
+              if (statusText === 'online') statusClass = 'status-online';
+              else if (statusText === 'maintenance') statusClass = 'status-maintenance';
+              else if (statusText === 'offline') statusClass = 'status-offline';
+              else if (statusText === 'soon') statusClass = 'status-soon';
+            %>
+              <div class="card-status <%= statusClass %>">
+                <div class="status-dot"></div>
+                <span><%= card.status %></span>
+              </div>
             <% } %>
 
             <% if (card.icon) { %>
@@ -478,14 +524,6 @@
             <% } %>
             <h3 class="card-title"><%- fmt(card.title || '') %></h3>
             <p class="card-description"><%- fmt(card.description || '') %></p>
-            
-            <!-- NEW: Dynamic Card Rating -->
-            <% if (card.rating && Number(card.rating) > 0) { %>
-              <div class="card-rating">
-                <i class="fa-solid fa-star"></i>
-                <span><%= card.rating %></span>
-              </div>
-            <% } %>
 
           </a>
         <% }) %>
@@ -516,16 +554,6 @@
   } %>
 
   <script>
-    document.addEventListener('contextmenu', event => event.preventDefault());
-    
-    document.onkeydown = function(e) {
-      if (e.keyCode == 123) return false; 
-      if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; 
-      if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; 
-      if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; 
-      if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
-    };
-
     document.querySelectorAll('.hero-btn, .card-bg, .sociallink').forEach(el => {
       el.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
