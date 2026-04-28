@@ -230,9 +230,10 @@
       font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; 
     }
 
+    /* CARDS SECTION */
     .cards-section {
-      padding: 20px 24px 100px; /* Reduced top padding */
-      margin-top: 0; /* Removed top margin */
+      padding: 20px 24px 100px; 
+      margin-top: 0; 
       position: relative;
       z-index: 2;
       scroll-margin-top: 85px; 
@@ -370,6 +371,97 @@
       margin-bottom: 0;
     }
 
+    /* FAQS SECTION */
+    .faqs-section {
+      padding: 60px 24px 100px;
+      position: relative;
+      z-index: 2;
+      scroll-margin-top: 85px;
+    }
+    .faqs-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .faqs-title {
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      font-weight: 800;
+      color: var(--kex-white);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .faqs-description {
+      font-size: clamp(1rem, 3vw, 1.15rem);
+      color: var(--kex-gray);
+      max-width: 650px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .faqs-container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .faq-item {
+      background: rgba(20, 20, 30, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .faq-question {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--kex-white);
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      font-family: inherit;
+      outline: none;
+    }
+    .faq-icon {
+      color: var(--kex-green);
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+    .faq-item.is-active .faq-icon {
+      transform: rotate(45deg);
+    }
+    .faq-item.is-active {
+      border-color: rgba(26, 215, 111, 0.3);
+      background: rgba(20, 20, 30, 0.6);
+    }
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out, padding 0.3s ease;
+      padding: 0 24px;
+      color: var(--kex-gray);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .faqs-footer {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-top: 48px;
+    }
+    .faqs-footer .hero-btn {
+      margin-bottom: 0;
+    }
+
     @media (hover: hover) {
       .header__toggle:hover, .sidebar__close:hover { background: rgba(255,255,255,.06); color: #fff; }
       .brand:hover { opacity: 0.8; }
@@ -380,6 +472,7 @@
       .card-bg:hover { transform: translateY(-8px); border-color: rgba(26, 215, 111, 0.4); box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(26, 215, 111, 0.08); }
       .card-bg:hover .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
       .card-bg:hover .card-title { color: var(--kex-green); }
+      .faq-question:hover { color: var(--kex-green); }
     }
 
     .header__toggle:active i, .header__toggle.force-active i { transform: scale(0.85); }
@@ -539,7 +632,46 @@
         </a>
       </div>
     <% } %>
+  </section>
 
+  <!-- NEW FAQS SECTION -->
+  <section class="faqs-section container" id="faqs">
+    <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %>
+      <div class="faqs-header">
+        <% if (faqs.data.title) { %>
+          <h2 class="faqs-title"><%- fmt(faqs.data.title) %></h2>
+        <% } %>
+        <% if (faqs.data.description) { %>
+          <p class="faqs-description"><%- fmt(faqs.data.description) %></p>
+        <% } %>
+      </div>
+    <% } %>
+
+    <div class="faqs-container">
+      <% if (faqs && faqs.items && faqs.items.length > 0) { %>
+        <% faqs.items.forEach((faq, index) => { %>
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+              <span><%- fmt(faq.title || '') %></span>
+              <i class="fa-solid fa-plus faq-icon"></i>
+            </button>
+            <div class="faq-answer">
+              <%- fmt(faq.description || '') %>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <!-- DYNAMIC FAQS FOOTER BUTTON -->
+    <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
+      <div class="faqs-footer">
+        <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
+          <% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %>
+          <span><%= faqs.data.buttontext || '' %></span>
+        </a>
+      </div>
+    <% } %>
   </section>
 
   <% function fmt(t) {
@@ -580,6 +712,38 @@
           this.classList.remove('force-active');
           this.blur();
         }, 2500);
+      });
+    });
+
+    // FAQ Accordion Logic
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const faqItem = button.parentElement;
+        const answer = faqItem.querySelector('.faq-answer');
+        const isActive = faqItem.classList.contains('is-active');
+        
+        // Close all other open FAQs
+        document.querySelectorAll('.faq-item').forEach(item => {
+          if (item !== faqItem) {
+            item.classList.remove('is-active');
+            item.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+            item.querySelector('.faq-answer').style.maxHeight = null;
+            item.querySelector('.faq-answer').style.paddingBottom = '0';
+          }
+        });
+
+        // Toggle current FAQ
+        if (!isActive) {
+          faqItem.classList.add('is-active');
+          button.setAttribute('aria-expanded', 'true');
+          answer.style.maxHeight = answer.scrollHeight + 24 + "px"; // +24 for padding
+          answer.style.paddingBottom = "24px";
+        } else {
+          faqItem.classList.remove('is-active');
+          button.setAttribute('aria-expanded', 'false');
+          answer.style.maxHeight = null;
+          answer.style.paddingBottom = "0";
+        }
       });
     });
 
