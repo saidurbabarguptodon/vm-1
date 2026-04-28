@@ -131,26 +131,26 @@ function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
 
 async function initializeCacheAndListeners() {
   console.log("\n📡 Initializing Firestore cache and real-time listeners...");
-  
+
   const headerRef = db.collection('web').doc('header');
   await attachListenerAndInit(headerRef, 'header');
-  
+
   const bodyRef = db.collection('web').doc('body');
   await attachListenerAndInit(bodyRef, 'hero');
 
   const cardsRef = db.collection('web').doc('body').collection('cards');
   await attachListenerAndInit(cardsRef.doc('data'), 'cards.data');
   await attachListenerAndInit(cardsRef, 'cards.items');
-  
+
   const sidebarMainRef = db.collection('web').doc('sidebar');
   await attachListenerAndInit(sidebarMainRef, 'sidebar.header', (doc) => doc.data().header);
-  
+
   const sidebarBodyRef = sidebarMainRef.collection('body');
   await attachListenerAndInit(sidebarBodyRef, 'sidebar.body');
-  
+
   const sidebarFooterRef = sidebarMainRef.collection('footer');
   await attachListenerAndInit(sidebarFooterRef, 'sidebar.footer');
-  
+
   console.log("✅ Cache populated and listeners active.");
 }
 
@@ -176,14 +176,14 @@ const headerDoc = {
 };
 
 // ===============================
-// 6. SIDEBAR 
+// 6. SIDEBAR
 // ===============================
 const defaultSidebarHeader = { alticon: "", alttext: "", logourl: "" };
 serverCache.sidebar.header = defaultSidebarHeader;
 
-const defaultNavButton = { 
-  text: "Home", 
-  icon: "fa-solid fa-house", 
+const defaultNavButton = {
+  text: "Home",
+  icon: "fa-solid fa-house",
   url: "#home"
 };
 const defaultSocialLink = { icon: "fa-brands fa-discord", url: "#" };
@@ -193,7 +193,7 @@ const sidebarDoc = {
     try {
       const docRef = db.collection('web').doc('sidebar');
       const doc = await docRef.get();
-      
+
       if (!doc.exists) {
         await docRef.set({ header: defaultSidebarHeader });
         console.log(`Successfully create sidebar document ${JSON.stringify({ header: defaultSidebarHeader })}`);
@@ -249,7 +249,9 @@ const defaultCard = {
   title: "",
   description: "",
   icon: "",
-  url: ""
+  url: "",
+  rating: 0,
+  status: ""        // ← new
 };
 
 const bodyDoc = {
@@ -278,21 +280,11 @@ const bodyDoc = {
         await cardsRef.doc('data').set(defaultCardsData);
         console.log(`Successfully created body/cards/data ${JSON.stringify(defaultCardsData)}`);
       } else {
-        const existingData = cardsDataSnap.data();
-        const missingFields = {};
-        for (const [key, value] of Object.entries(defaultCardsData)) {
-          if (!(key in existingData)) missingFields[key] = value;
-        }
-        if (Object.keys(missingFields).length > 0) {
-          await cardsRef.doc('data').update(missingFields);
-          console.log(`Patched missing fields in body/cards/data: ${JSON.stringify(missingFields)}`);
-        } else {
-          console.log(`body/cards/data already exists: ${JSON.stringify(existingData)}`);
-        }
+        console.log(`body/cards/data already exists: ${JSON.stringify(cardsDataSnap.data())}`);
       }
 
       const cardsSnapshot = await cardsRef.get();
-      const hasCards = cardsSnapshot.docs.some(docSnap => docSnap.id.startsWith('card-'));
+      const hasCards = cardsSnapshot.docs.some(d => d.id.startsWith('card-'));
       if (!hasCards) {
         await cardsRef.doc('card-1').set(defaultCard);
         console.log(`Successfully created body/cards/card-1 ${JSON.stringify(defaultCard)}`);
