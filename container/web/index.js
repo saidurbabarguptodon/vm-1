@@ -99,7 +99,7 @@ async function getTemplateData() {
 // HOME — always serves the protected build
 app.get('/', async (req, res) => {
   try {
-    res.render('index.min', await getTemplateData());
+    res.render('index.min.ejs', await getTemplateData());
   } catch (err) {
     console.error('❌ Route error:', err);
     res.status(500).send('Server error');
