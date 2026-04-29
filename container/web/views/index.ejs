@@ -1,25 +1,3 @@
-<%
-// ─── TEMPLATE HELPER (hoisted, safe to use anywhere below) ───────────────────
-function fmt(t) {
-  if (!t) return '';
-  return t
-    .replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color:#$1;">$2</span>')
-    .replace(/\[b\](.*?)\[\/b\]/gi,  '<b>$1</b>')
-    .replace(/\[i\](.*?)\[\/i\]/gi,  '<i>$1</i>')
-    .replace(/\[u\](.*?)\[\/u\]/gi,  '<u>$1</u>')
-    .replace(/\[br\]/gi, '<br>')
-    .replace(/\n/g,      '<br>');
-}
-
-// Status values in Firestore map 1-to-1 with CSS class suffixes.
-// Valid DB values: online | maintenance | offline | soon  → status-{value}
-// Anything else falls back to status-default.
-const VALID_STATUSES = new Set(['online', 'maintenance', 'offline', 'soon']);
-function statusClass(raw) {
-  const s = (raw || '').trim().toLowerCase();
-  return VALID_STATUSES.has(s) ? `status-${s}` : 'status-default';
-}
-%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -110,9 +88,17 @@ function statusClass(raw) {
     .brand--sidebar { height: 32px; }
 
     .logoimg { height: 100%; width: auto; object-fit: contain; }
-    .alticon, .alttext { color: var(--kex-green); text-shadow: 0 0 12px rgba(26,215,111,.45); }
-    .alticon  { font-size: 1.6rem; display: inline-block; }
-    .alttext  { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; font-family: 'Playfair Display', serif; }
+    .alticon, .alttext { 
+      color: var(--kex-green); 
+      text-shadow: 0 0 12px rgba(26,215,111,.45); 
+    }
+    .alticon { font-size: 1.6rem; display: inline-block; }
+    .alttext { 
+      font-size: 1.7rem; 
+      font-weight: 800; 
+      letter-spacing: -0.5px; 
+      font-family: 'Playfair Display', serif; 
+    }
 
     .overlay {
       position: fixed; inset: 0;
@@ -144,9 +130,12 @@ function statusClass(raw) {
       opacity: 0; transform: translateY(15px);
       transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1);
     }
-    .sidebar.is-expanded .sidebar__header { opacity: 1; transform: translateY(0); transition-delay: 0.10s; }
-    .sidebar.is-expanded .sidebar__body   { opacity: 1; transform: translateY(0); transition-delay: 0.18s; }
-    .sidebar.is-expanded .sidebar__footer { opacity: 1; transform: translateY(0); transition-delay: 0.26s; }
+    .sidebar.is-expanded .sidebar__header,
+    .sidebar.is-expanded .sidebar__body,
+    .sidebar.is-expanded .sidebar__footer { opacity: 1; transform: translateY(0); }
+    .sidebar.is-expanded .sidebar__header { transition-delay: 0.1s; }
+    .sidebar.is-expanded .sidebar__body   { transition-delay: 0.18s; }
+    .sidebar.is-expanded .sidebar__footer { transition-delay: 0.26s; }
 
     .sidebar__header {
       display: flex; justify-content: space-between; align-items: center;
@@ -161,7 +150,7 @@ function statusClass(raw) {
       scrollbar-width: thin;
       scrollbar-color: rgba(255,255,255,.15) transparent;
     }
-    .sidebar__body::-webkit-scrollbar       { width: 5px; }
+    .sidebar__body::-webkit-scrollbar { width: 5px; }
     .sidebar__body::-webkit-scrollbar-track { background: transparent; }
     .sidebar__body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 10px; }
     .sidebar__footer {
@@ -182,8 +171,14 @@ function statusClass(raw) {
       transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
       position: relative; overflow: hidden;
     }
-    .navbutton i { font-size: 1.25rem; width: 28px; text-align: center; flex-shrink: 0; color: var(--kex-green); transition: color 0.2s ease; }
-    .navbutton.is-active { background: var(--kex-dark-green); color: #fff; }
+    .navbutton i { 
+      font-size: 1.25rem; width: 28px; text-align: center; flex-shrink: 0; 
+      color: var(--kex-green); transition: color 0.2s ease; 
+    }
+    .navbutton.is-active { 
+      background: var(--kex-dark-green); 
+      color: #fff; 
+    }
     .navbutton.is-active i { color: var(--kex-green); }
     .navbutton.is-active .navbutton__text { color: #fff; font-weight: 700; }
     .navbutton__content { display: flex; flex-direction: column; justify-content: center; line-height: 1.3; }
@@ -200,24 +195,27 @@ function statusClass(raw) {
       transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
     }
 
-    .hero {
+    .hero { 
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center;
-      padding: 100px 24px 80px;
-      min-height: 50vh;
-      position: relative;
-      scroll-margin-top: 80px;
+      text-align: center; 
+      padding: 100px 24px 80px; 
+      min-height: 50vh; 
+      position: relative; 
+      scroll-margin-top: 80px; 
     }
     .hero-title {
       font-size: clamp(1.8rem,5vw,2.8rem);
       font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
-      color: var(--kex-white);
+      color: var(--kex-white); text-shadow: none;
       margin-bottom: 20px; hyphens: auto;
     }
-    .hero-description { font-size: clamp(1.1rem,4vw,1.4rem); color: var(--kex-gray); margin-bottom: 32px; hyphens: auto; }
+    .hero-description {
+      font-size: clamp(1.1rem,4vw,1.4rem);
+      color: var(--kex-gray); margin-bottom: 32px; hyphens: auto;
+    }
     .hero-btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      background-color: var(--kex-green);
+      background-color: var(--kex-green); 
       color: #fff;
       font-weight: 600; font-size: 1.1rem;
       padding: 14px 24px; border-radius: 60px;
@@ -228,150 +226,277 @@ function statusClass(raw) {
       outline: none;
     }
     .hero-btn i { font-size: 1.3rem; font-style: normal !important; }
-    .hero-footer { font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; }
+    .hero-footer { 
+      font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; 
+    }
 
-    /* CARDS */
-    .cards-section { padding: 20px 24px 100px; margin-top: 0; position: relative; z-index: 2; scroll-margin-top: 85px; }
-    .cards-header  { text-align: center; margin-bottom: 50px; }
-    .cards-title   { font-size: clamp(1.8rem,4vw,2.4rem); font-weight: 800; color: var(--kex-white); margin-bottom: 16px; letter-spacing: -0.02em; }
-    .cards-description { font-size: clamp(1rem,3vw,1.15rem); color: var(--kex-gray); max-width: 650px; margin: 0 auto; line-height: 1.6; }
+    /* CARDS SECTION */
+    .cards-section {
+      padding: 20px 24px 100px; 
+      margin-top: 0; 
+      position: relative;
+      z-index: 2;
+      scroll-margin-top: 85px; 
+    }
+    .cards-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .cards-title {
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      font-weight: 800;
+      color: var(--kex-white);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .cards-description {
+      font-size: clamp(1rem, 3vw, 1.15rem);
+      color: var(--kex-gray);
+      max-width: 650px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 24px;
       width: 100%;
     }
-
+    
     .card-bg {
-      background: rgba(20,20,30,0.4);
-      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(20, 20, 30, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 20px;
       padding: 32px 28px;
       text-decoration: none;
-      display: flex; flex-direction: column; align-items: flex-start;
-      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      position: relative; overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
       outline: none;
     }
-
-    /* ── Status badge ──────────────────────────────────────────────────────────
-       Class naming mirrors Firestore `status` field values 1-to-1:
-         status-online | status-maintenance | status-offline | status-soon | status-default
-    */
+    
+    /* Dynamic Status Badge Styles */
     .card-status {
-      position: absolute; top: 24px; right: 24px;
-      display: flex; align-items: center; gap: 6px;
-      padding: 4px 10px; border-radius: 20px;
-      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
-      pointer-events: none; transition: all 0.3s ease; border: 1px solid;
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      border: 1px solid;
     }
     .status-dot {
-      width: 6px; height: 6px; border-radius: 50%; position: relative;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      position: relative;
     }
     .status-dot::after {
-      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      border-radius: 50%;
       animation: pulse 2s infinite;
     }
     @keyframes pulse {
-      0%   { transform: scale(0.95); box-shadow: 0 0 0 0   var(--pulse-color); }
-      70%  { transform: scale(1);    box-shadow: 0 0 0 4px transparent; }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0   transparent; }
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 var(--pulse-color); }
+      70% { transform: scale(1); box-shadow: 0 0 0 4px transparent; }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 transparent; }
     }
 
-    .status-online      { color: var(--kex-green);  border-color: rgba(26,215,111,0.2);  background: rgba(26,215,111,0.05); }
-    .status-online      .status-dot { background-color: var(--kex-green);  --pulse-color: rgba(26,215,111,0.7); }
-    .status-maintenance { color: var(--kex-yellow); border-color: rgba(251,191,36,0.2);  background: rgba(251,191,36,0.05); }
-    .status-maintenance .status-dot { background-color: var(--kex-yellow); --pulse-color: rgba(251,191,36,0.7); }
-    .status-offline     { color: var(--kex-red);    border-color: rgba(239,68,68,0.2);   background: rgba(239,68,68,0.05); }
-    .status-offline     .status-dot { background-color: var(--kex-red);    --pulse-color: rgba(239,68,68,0.7); }
-    .status-soon        { color: var(--kex-blue);   border-color: rgba(59,130,246,0.2);  background: rgba(59,130,246,0.05); }
-    .status-soon        .status-dot { background-color: var(--kex-blue);   --pulse-color: rgba(59,130,246,0.7); }
-    .status-default     { color: var(--kex-white);  border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); }
-    .status-default     .status-dot { background-color: var(--kex-white);  --pulse-color: rgba(255,255,255,0.7); }
+    /* Status Colors */
+    .status-online { color: var(--kex-green); border-color: rgba(26, 215, 111, 0.2); background: rgba(26, 215, 111, 0.05); }
+    .status-online .status-dot { background-color: var(--kex-green); --pulse-color: rgba(26, 215, 111, 0.7); }
+
+    .status-maintenance { color: var(--kex-yellow); border-color: rgba(251, 191, 36, 0.2); background: rgba(251, 191, 36, 0.05); }
+    .status-maintenance .status-dot { background-color: var(--kex-yellow); --pulse-color: rgba(251, 191, 36, 0.7); }
+
+    .status-offline { color: var(--kex-red); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); }
+    .status-offline .status-dot { background-color: var(--kex-red); --pulse-color: rgba(239, 68, 68, 0.7); }
+
+    .status-soon { color: var(--kex-blue); border-color: rgba(59, 130, 246, 0.2); background: rgba(59, 130, 246, 0.05); }
+    .status-soon .status-dot { background-color: var(--kex-blue); --pulse-color: rgba(59, 130, 246, 0.7); }
+
+    .status-default { color: var(--kex-white); border-color: rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); }
+    .status-default .status-dot { background-color: var(--kex-white); --pulse-color: rgba(255, 255, 255, 0.7); }
 
     .card-icon {
-      display: flex; align-items: center; justify-content: center;
-      width: 56px; height: 56px;
-      background: rgba(26,215,111,0.1); color: var(--kex-green);
-      border-radius: 14px; font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: rgba(26, 215, 111, 0.1);
+      color: var(--kex-green);
+      border-radius: 14px;
+      font-size: 1.6rem;
       margin-bottom: 24px;
       transition: all 0.3s ease;
     }
-    .card-title       { font-size: 1.3rem; font-weight: 700; color: var(--kex-white); margin-bottom: 12px; line-height: 1.3; transition: color 0.3s ease; }
-    .card-description { font-size: 0.95rem; color: var(--kex-gray); line-height: 1.6; flex-grow: 1; }
-    .cards-footer     { display: flex; justify-content: center; width: 100%; margin-top: 48px; }
-    .cards-footer .hero-btn { margin-bottom: 0; }
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--kex-white);
+      margin-bottom: 12px;
+      line-height: 1.3;
+      transition: color 0.3s ease;
+    }
+    .card-description {
+      font-size: 0.95rem;
+      color: var(--kex-gray);
+      line-height: 1.6;
+      flex-grow: 1;
+    }
 
-    /* FAQS */
-    .faqs-section      { padding: 60px 24px 100px; position: relative; z-index: 2; scroll-margin-top: 85px; }
-    .faqs-header       { text-align: center; margin-bottom: 50px; }
-    .faqs-title        { font-size: clamp(1.8rem,4vw,2.4rem); font-weight: 800; color: var(--kex-white); margin-bottom: 16px; letter-spacing: -0.02em; }
-    .faqs-description  { font-size: clamp(1rem,3vw,1.15rem); color: var(--kex-gray); max-width: 650px; margin: 0 auto; line-height: 1.6; }
-    .faqs-container    { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    .cards-footer {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-top: 48px;
+    }
+    .cards-footer .hero-btn {
+      margin-bottom: 0;
+    }
+
+    /* FAQS SECTION */
+    .faqs-section {
+      padding: 60px 24px 100px;
+      position: relative;
+      z-index: 2;
+      scroll-margin-top: 85px;
+    }
+    .faqs-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .faqs-title {
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      font-weight: 800;
+      color: var(--kex-white);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .faqs-description {
+      font-size: clamp(1rem, 3vw, 1.15rem);
+      color: var(--kex-gray);
+      max-width: 650px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .faqs-container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
     .faq-item {
-      background: rgba(20,20,30,0.4);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 16px; overflow: hidden;
+      background: rgba(20, 20, 30, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      overflow: hidden;
       transition: all 0.3s ease;
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
     .faq-question {
-      width: 100%; text-align: left;
-      background: transparent; border: none;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
       padding: 24px;
-      display: flex; justify-content: space-between; align-items: center;
-      color: var(--kex-white); font-size: 1.1rem; font-weight: 600;
-      cursor: pointer; transition: color 0.3s ease;
-      font-family: inherit; outline: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--kex-white);
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      font-family: inherit;
+      outline: none;
     }
-    .faq-icon { color: var(--kex-green); font-size: 1.2rem; transition: transform 0.3s ease; flex-shrink: 0; margin-left: 16px; }
-    .faq-item.is-active .faq-icon        { transform: rotate(45deg); }
-    .faq-item.is-active                  { border-color: rgba(26,215,111,0.3); background: rgba(20,20,30,0.6); }
+    .faq-icon {
+      color: var(--kex-green);
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+    .faq-item.is-active .faq-icon {
+      transform: rotate(45deg);
+    }
+    .faq-item.is-active {
+      border-color: rgba(26, 215, 111, 0.3);
+      background: rgba(20, 20, 30, 0.6);
+    }
     .faq-answer {
-      max-height: 0; overflow: hidden;
+      max-height: 0;
+      overflow: hidden;
       transition: max-height 0.3s ease-out, padding 0.3s ease;
       padding: 0 24px;
-      color: var(--kex-gray); font-size: 0.95rem; line-height: 1.6;
+      color: var(--kex-gray);
+      font-size: 0.95rem;
+      line-height: 1.6;
     }
-    .faqs-footer { display: flex; justify-content: center; width: 100%; margin-top: 48px; }
-    .faqs-footer .hero-btn { margin-bottom: 0; }
+    .faqs-footer {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-top: 48px;
+    }
+    .faqs-footer .hero-btn {
+      margin-bottom: 0;
+    }
 
     @media (hover: hover) {
       .header__toggle:hover, .sidebar__close:hover { background: rgba(255,255,255,.06); color: #fff; }
-      .brand:hover    { opacity: 0.8; }
+      .brand:hover { opacity: 0.8; }
       .navbutton:hover { background: var(--kex-dark-green); transform: translateX(4px); color: #fff; }
       .navbutton:hover i { color: var(--kex-green); }
-      .sociallink:hover  { background-color: var(--kex-dark-green); border-color: var(--kex-dark-green); color: #fff; transform: translateY(-4px) scale(1.05); box-shadow: 0 10px 20px -5px rgba(26,215,111,.5); }
-      .hero-btn:hover    { background-color: var(--kex-dark-green); transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); }
-      .card-bg:hover     { transform: translateY(-8px); border-color: rgba(26,215,111,0.4); box-shadow: 0 15px 35px -10px rgba(0,0,0,.6), 0 0 25px rgba(26,215,111,.08); }
-      .card-bg:hover .card-icon  { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26,215,111,.5); }
+      .sociallink:hover { background-color: var(--kex-dark-green); border-color: var(--kex-dark-green); color: #fff; transform: translateY(-4px) scale(1.05); box-shadow: 0 10px 20px -5px rgba(26,215,111,.5); }
+      .hero-btn:hover { background-color: var(--kex-dark-green); transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); }
+      .card-bg:hover { transform: translateY(-8px); border-color: rgba(26, 215, 111, 0.4); box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(26, 215, 111, 0.08); }
+      .card-bg:hover .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
       .card-bg:hover .card-title { color: var(--kex-green); }
       .faq-question:hover { color: var(--kex-green); }
     }
 
     .header__toggle:active i, .header__toggle.force-active i { transform: scale(0.85); }
     .sociallink:active, .sociallink.force-active { background-color: var(--kex-dark-green); border-color: var(--kex-dark-green); transform: scale(0.95); }
-    .hero-btn:active,   .hero-btn.force-active   { background-color: var(--kex-dark-green); transform: scale(0.98); }
-    .card-bg:active, .card-bg.force-active { transform: scale(0.98); border-color: rgba(26,215,111,0.4); }
-    .card-bg:active .card-icon,       .card-bg.force-active .card-icon  { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26,215,111,.5); }
-    .card-bg:active .card-title,      .card-bg.force-active .card-title { color: var(--kex-green); }
+    .hero-btn:active, .hero-btn.force-active { background-color: var(--kex-dark-green); transform: scale(0.98); }
+    
+    .card-bg:active, .card-bg.force-active { transform: scale(0.98); border-color: rgba(26, 215, 111, 0.4); }
+    .card-bg:active .card-icon, .card-bg.force-active .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
+    .card-bg:active .card-title, .card-bg.force-active .card-title { color: var(--kex-green); }
   </style>
 </head>
 <body>
   <canvas id="snow-canvas"></canvas>
   <div class="glow"></div>
 
-  <!-- ─── HEADER ─────────────────────────────────────────────────────────── -->
   <header class="header">
     <div class="container">
       <nav class="header__nav">
-        <a href="/" class="brand brand--header">
+        <a href="/" class="brand brand--header" id="brand-header">
           <% if (header.logourl) { %>
             <img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="logoimg">
           <% } else { %>
             <% if (header.alticon) { %><i class="<%= header.alticon %> alticon"></i><% } %>
-            <% if (header.alttext) { %><span class="alttext"><%= header.alttext %></span><% } %>
+            <% if (header.alttext) { %><span class="alttext"><span class="alttext"><%= header.alttext %></span><% } %>
           <% } %>
         </a>
         <button class="header__toggle" id="open-sidebar" aria-label="Open Menu">
@@ -383,10 +508,9 @@ function statusClass(raw) {
 
   <div class="overlay" id="overlay"></div>
 
-  <!-- ─── SIDEBAR ────────────────────────────────────────────────────────── -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar__header">
-      <a href="/" class="brand brand--sidebar">
+      <a href="/" class="brand brand--sidebar" id="brand-sidebar">
         <% if (sidebar.header && sidebar.header.logourl) { %>
           <img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="logoimg">
         <% } else { %>
@@ -401,80 +525,106 @@ function statusClass(raw) {
 
     <div class="sidebar__body">
       <nav class="navmenu" id="navmenu">
-        <% (sidebar.body || []).forEach(link => { %>
-          <a href="<%= link.url || '#' %>" class="navbutton">
-            <% if (link.icon) { %><i class="<%= link.icon %>"></i><% } %>
-            <div class="navbutton__content">
-              <span class="navbutton__text"><%= link.text || '' %></span>
-            </div>
-          </a>
-        <% }) %>
+        <% if (sidebar.body && sidebar.body.length > 0) { %>
+          <% sidebar.body.forEach(link => { %>
+            <a href="<%= link.url || '#' %>" class="navbutton">
+              <% if (link.icon) { %><i class="<%= link.icon %>"></i><% } %>
+              <div class="navbutton__content">
+                <span class="navbutton__text"><%= link.text || '' %></span>
+              </div>
+            </a>
+          <% }) %>
+        <% } %>
       </nav>
     </div>
 
     <div class="sidebar__footer">
       <div class="sociallinks" id="sociallinks">
-        <% (sidebar.footer || []).forEach(social => { %>
-          <a href="<%= social.url || '#' %>" target="_blank" class="sociallink" rel="noopener">
-            <% if (social.icon) { %><i class="<%= social.icon %>"></i><% } %>
-          </a>
-        <% }) %>
+        <% if (sidebar.footer && sidebar.footer.length > 0) { %>
+          <% sidebar.footer.forEach(social => { %>
+            <a href="<%= social.url || '#' %>" target="_blank" class="sociallink" rel="noopener">
+              <% if (social.icon) { %><i class="<%= social.icon %>"></i><% } %>
+            </a>
+          <% }) %>
+        <% } %>
       </div>
     </div>
   </aside>
 
-  <!-- ─── HERO ───────────────────────────────────────────────────────────── -->
   <section class="hero" id="home">
-    <div class="container" style="padding:0;width:100%;max-width:100%;">
-      <% if (hero.primarytext)  { %><h1 class="hero-title"><%- fmt(hero.primarytext) %></h1><% } %>
-      <% if (hero.secondarytext){ %><p  class="hero-description"><%- fmt(hero.secondarytext) %></p><% } %>
-      <% if (hero.buttonenabled == true || hero.buttonenabled === 'true') { %>
+    <div class="container" style="padding: 0; width: 100%; max-width: 100%;">
+      <% if (hero.primarytext) { %>
+        <h1 class="hero-title"><%- fmt(hero.primarytext) %></h1>
+      <% } %>
+      <% if (hero.secondarytext) { %>
+        <p class="hero-description"><%- fmt(hero.secondarytext) %></p>
+      <% } %>
+      <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
         <a href="<%= hero.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
           <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %>
           <span><%= hero.buttontext || '' %></span>
         </a>
       <% } %>
-      <% if (hero.footertext) { %><div class="hero-footer"><%- fmt(hero.footertext) %></div><% } %>
+      <% if (hero.footertext) { %>
+        <div class="hero-footer"><%- fmt(hero.footertext) %></div>
+      <% } %>
     </div>
   </section>
 
-  <!-- ─── CARDS ──────────────────────────────────────────────────────────── -->
   <section class="cards-section container" id="services">
-    <% if (cards?.data?.title || cards?.data?.description) { %>
+    <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %>
       <div class="cards-header">
-        <% if (cards.data.title)       { %><h2 class="cards-title"><%- fmt(cards.data.title) %></h2><% } %>
-        <% if (cards.data.description) { %><p class="cards-description"><%- fmt(cards.data.description) %></p><% } %>
+        <% if (cards.data.title) { %>
+          <h2 class="cards-title"><%- fmt(cards.data.title) %></h2>
+        <% } %>
+        <% if (cards.data.description) { %>
+          <p class="cards-description"><%- fmt(cards.data.description) %></p>
+        <% } %>
       </div>
     <% } %>
 
     <div class="cards-grid">
-      <%
-        const sortedCards = (cards?.items || [])
-          .slice()
-          .sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0))
-          .slice(0, 6);
+      <% 
+        let sortedCards =[];
+        if (cards && cards.items && cards.items.length > 0) {
+          // Sort cards by rating (highest to lowest)
+          sortedCards = cards.items.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+        }
       %>
-      <% sortedCards.forEach(card => { %>
-        <a href="<%= card.url || '#' %>" class="card-bg" target="_blank" rel="noopener">
+      <% if (sortedCards.length > 0) { %>
+        <% sortedCards.slice(0, 6).forEach(card => { %>
+          <a href="<%= card.url || '#' %>" class="card-bg" target="_blank" rel="noopener">
+            
+            <% if (card.status && card.status.trim() !== '') { 
+              let statusClass = 'status-default';
+              let statusText = card.status.trim().toLowerCase();
+              
+              if (statusText === 'online') statusClass = 'status-online';
+              else if (statusText === 'maintenance') statusClass = 'status-maintenance';
+              else if (statusText === 'offline') statusClass = 'status-offline';
+              else if (statusText === 'soon') statusClass = 'status-soon';
+            %>
+              <div class="card-status <%= statusClass %>">
+                <div class="status-dot"></div>
+                <span><%= card.status %></span>
+              </div>
+            <% } %>
 
-          <% if (card.status?.trim()) { %>
-            <div class="card-status <%= statusClass(card.status) %>">
-              <div class="status-dot"></div>
-              <span><%= card.status %></span>
-            </div>
-          <% } %>
+            <% if (card.icon) { %>
+              <div class="card-icon">
+                <i class="<%= card.icon %>"></i>
+              </div>
+            <% } %>
+            <h3 class="card-title"><%- fmt(card.title || '') %></h3>
+            <p class="card-description"><%- fmt(card.description || '') %></p>
 
-          <% if (card.icon) { %>
-            <div class="card-icon"><i class="<%= card.icon %>"></i></div>
-          <% } %>
-
-          <h3 class="card-title"><%- fmt(card.title || '') %></h3>
-          <p  class="card-description"><%- fmt(card.description || '') %></p>
-        </a>
-      <% }) %>
+          </a>
+        <% }) %>
+      <% } %>
     </div>
 
-    <% if (cards?.data?.buttonenabled == true || cards?.data?.buttonenabled === 'true') { %>
+    <!-- DYNAMIC CARDS FOOTER BUTTON -->
+    <% if (cards && cards.data && (cards.data.buttonenabled === true || cards.data.buttonenabled === 'true')) { %>
       <div class="cards-footer">
         <a href="<%= cards.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
           <% if (cards.data.buttonicon) { %><i class="<%= cards.data.buttonicon %>"></i><% } %>
@@ -484,28 +634,37 @@ function statusClass(raw) {
     <% } %>
   </section>
 
-  <!-- ─── FAQS ───────────────────────────────────────────────────────────── -->
+  <!-- NEW FAQS SECTION -->
   <section class="faqs-section container" id="faqs">
-    <% if (faqs?.data?.title || faqs?.data?.description) { %>
+    <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %>
       <div class="faqs-header">
-        <% if (faqs.data.title)       { %><h2 class="faqs-title"><%- fmt(faqs.data.title) %></h2><% } %>
-        <% if (faqs.data.description) { %><p  class="faqs-description"><%- fmt(faqs.data.description) %></p><% } %>
+        <% if (faqs.data.title) { %>
+          <h2 class="faqs-title"><%- fmt(faqs.data.title) %></h2>
+        <% } %>
+        <% if (faqs.data.description) { %>
+          <p class="faqs-description"><%- fmt(faqs.data.description) %></p>
+        <% } %>
       </div>
     <% } %>
 
     <div class="faqs-container">
-      <% (faqs?.items || []).forEach(faq => { %>
-        <div class="faq-item">
-          <button class="faq-question" aria-expanded="false">
-            <span><%- fmt(faq.title || '') %></span>
-            <i class="fa-solid fa-plus faq-icon"></i>
-          </button>
-          <div class="faq-answer"><%- fmt(faq.description || '') %></div>
-        </div>
-      <% }) %>
+      <% if (faqs && faqs.items && faqs.items.length > 0) { %>
+        <% faqs.items.forEach((faq, index) => { %>
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+              <span><%- fmt(faq.title || '') %></span>
+              <i class="fa-solid fa-plus faq-icon"></i>
+            </button>
+            <div class="faq-answer">
+              <%- fmt(faq.description || '') %>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
     </div>
 
-    <% if (faqs?.data?.buttonenabled == true || faqs?.data?.buttonenabled === 'true') { %>
+    <!-- DYNAMIC FAQS FOOTER BUTTON -->
+    <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
       <div class="faqs-footer">
         <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
           <% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %>
@@ -515,181 +674,325 @@ function statusClass(raw) {
     <% } %>
   </section>
 
+  <% function fmt(t) {
+    if (!t) return '';
+    t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1;">$2</span>');
+    t = t.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
+    t = t.replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>');
+    t = t.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
+    t = t.replace(/\[br\]/gi, '<br>');
+    t = t.replace(/\n/g, '<br>');
+    return t;
+  } %>
+
   <script>
     document.querySelectorAll('.hero-btn, .card-bg, .sociallink').forEach(el => {
       el.addEventListener('click', function(e) {
-        const href   = this.getAttribute('href');
+        const href = this.getAttribute('href');
         const target = this.getAttribute('target') || '_self';
-        const go     = href && href !== '#' && !href.startsWith('#');
+        const isActionable = href && href !== '#' && !href.startsWith('#');
 
-        if (go) e.preventDefault();
+        if (isActionable) {
+          e.preventDefault();
+        }
+
         this.classList.add('force-active');
 
-        if (go) setTimeout(() => target === '_blank' ? window.open(href, '_blank') : (window.location.href = href), 200);
-        setTimeout(() => { this.classList.remove('force-active'); this.blur(); }, 2500);
+        if (isActionable) {
+          setTimeout(() => {
+            if (target === '_blank') {
+              window.open(href, '_blank');
+            } else {
+              window.location.href = href;
+            }
+          }, 200);
+        }
+
+        setTimeout(() => {
+          this.classList.remove('force-active');
+          this.blur();
+        }, 2500);
       });
     });
 
-    // FAQ Accordion
-    document.querySelectorAll('.faq-question').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const item   = btn.parentElement;
-        const answer = item.querySelector('.faq-answer');
-        const active = item.classList.contains('is-active');
-
-        document.querySelectorAll('.faq-item').forEach(i => {
-          i.classList.remove('is-active');
-          i.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
-          i.querySelector('.faq-answer').style.maxHeight = null;
-          i.querySelector('.faq-answer').style.paddingBottom = '0';
+    // FAQ Accordion Logic
+    document.querySelectorAll('.faq-question').forEach(button => {
+      button.addEventListener('click', () => {
+        const faqItem = button.parentElement;
+        const answer = faqItem.querySelector('.faq-answer');
+        const isActive = faqItem.classList.contains('is-active');
+        
+        // Close all other open FAQs
+        document.querySelectorAll('.faq-item').forEach(item => {
+          if (item !== faqItem) {
+            item.classList.remove('is-active');
+            item.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+            item.querySelector('.faq-answer').style.maxHeight = null;
+            item.querySelector('.faq-answer').style.paddingBottom = '0';
+          }
         });
 
-        if (!active) {
-          item.classList.add('is-active');
-          btn.setAttribute('aria-expanded', 'true');
-          answer.style.maxHeight    = (answer.scrollHeight + 24) + 'px';
-          answer.style.paddingBottom = '24px';
+        // Toggle current FAQ
+        if (!isActive) {
+          faqItem.classList.add('is-active');
+          button.setAttribute('aria-expanded', 'true');
+          answer.style.maxHeight = answer.scrollHeight + 24 + "px"; // +24 for padding
+          answer.style.paddingBottom = "24px";
+        } else {
+          faqItem.classList.remove('is-active');
+          button.setAttribute('aria-expanded', 'false');
+          answer.style.maxHeight = null;
+          answer.style.paddingBottom = "0";
         }
       });
     });
 
-    // Scroll-spy & nav
-    (function () {
+    (function() {
       const navButtons = document.querySelectorAll('.navbutton');
-      const sections   = Array.from(document.querySelectorAll('section[id]'));
-      const HEADER_H   = 85;
-      let navigating   = false, navTimer = null, lastSection = '';
+      const sections = Array.from(document.querySelectorAll('section[id]'));
+      const headerHeight = 85; 
+      
+      let isNavigating = false;
+      let navTimeout = null;
+      let lastActiveSection = '';
 
-      function setActive(id) {
+      function setNavActive(sectionId) {
         navButtons.forEach(btn => {
           const href = btn.getAttribute('href');
-          btn.classList.toggle('is-active',
-            (id === 'home' && (href === '/' || href === '#home')) || href === `#${id}`
-          );
+          if ((sectionId === 'home' && (href === '/' || href === '#home')) || href === `#${sectionId}`) {
+            btn.classList.add('is-active');
+          } else {
+            btn.classList.remove('is-active');
+          }
         });
       }
 
-      function scrollHome() {
-        navigating = true;
+      function scrollToTop() {
+        isNavigating = true;
         window.scrollTo({ top: 0, behavior: 'smooth' });
         history.pushState(null, null, window.location.pathname);
-        setActive('home'); lastSection = 'home';
-        clearTimeout(navTimer); navTimer = setTimeout(() => navigating = false, 800);
+        setNavActive('home');
+        lastActiveSection = 'home';
+        
+        clearTimeout(navTimeout);
+        navTimeout = setTimeout(() => { isNavigating = false; }, 800); 
       }
 
-      document.querySelectorAll('.brand').forEach(b => b.addEventListener('click', e => {
-        e.preventDefault(); scrollHome(); window.dispatchEvent(new Event('hideSidebar'));
-      }));
-
-      navButtons.forEach(btn => btn.addEventListener('click', function (e) {
-        const href = this.getAttribute('href');
-        if (href === '/' || href === '#home') {
-          e.preventDefault(); scrollHome(); window.dispatchEvent(new Event('hideSidebar'));
-        } else if (href?.startsWith('#')) {
+      document.querySelectorAll('.brand').forEach(brand => {
+        brand.addEventListener('click', function(e) {
           e.preventDefault();
-          const target = document.getElementById(href.substring(1));
-          if (target) {
-            navigating = true;
-            target.scrollIntoView({ behavior: 'smooth' });
-            history.pushState(null, null, href);
-            setActive(href.substring(1)); lastSection = href.substring(1);
+          scrollToTop();
+          window.dispatchEvent(new Event('hideSidebar'));
+        });
+      });
+
+      navButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const href = this.getAttribute('href');
+          
+          if (href === '/' || href === '#home') {
+            e.preventDefault();
+            scrollToTop();
             window.dispatchEvent(new Event('hideSidebar'));
-            clearTimeout(navTimer); navTimer = setTimeout(() => navigating = false, 800);
+          } else if (href && href.startsWith('#')) {
+            e.preventDefault();
+            const targetId = href.substring(1);
+            const target = document.getElementById(targetId);
+            
+            if (target) {
+              isNavigating = true; 
+              target.scrollIntoView({ behavior: 'smooth' });
+              
+              history.pushState(null, null, href);
+              setNavActive(targetId);
+              lastActiveSection = targetId;
+              
+              window.dispatchEvent(new Event('hideSidebar'));
+              clearTimeout(navTimeout);
+              navTimeout = setTimeout(() => { isNavigating = false; }, 800); 
+            }
+          }
+        });
+      });
+
+      let isScrolling = false;
+
+      function updateScrollSpy() {
+        if (isNavigating) return; 
+        
+        const scrollPosition = window.scrollY || document.documentElement.scrollTop;
+        let currentSection = null;
+
+        const viewportMiddle = headerHeight + (window.innerHeight / 3);
+
+        if ((window.innerHeight + scrollPosition) >= document.body.offsetHeight - 10) {
+          currentSection = sections[sections.length - 1].id;
+        } 
+        else if (scrollPosition < 50) {
+          currentSection = 'home';
+        } 
+        else {
+          sections.forEach(sec => {
+            const rect = sec.getBoundingClientRect();
+            if (rect.top <= viewportMiddle && rect.bottom >= viewportMiddle) {
+              currentSection = sec.id;
+            }
+          });
+        }
+
+        if (!currentSection && sections.length) {
+          currentSection = sections[0].id;
+        }
+
+        if (currentSection !== lastActiveSection) {
+          lastActiveSection = currentSection;
+          setNavActive(currentSection);
+          
+          const basePath = window.location.pathname;
+          const newUrl = currentSection === 'home' ? basePath : basePath + '#' + currentSection;
+          
+          if (window.location.pathname + window.location.hash !== newUrl) {
+            history.replaceState(null, null, newUrl);
           }
         }
-      }));
-
-      function spyUpdate() {
-        if (navigating) return;
-        const scrollY  = window.scrollY;
-        const midY     = HEADER_H + window.innerHeight / 3;
-        const atBottom = (window.innerHeight + scrollY) >= document.body.offsetHeight - 10;
-
-        let cur = scrollY < 50 ? 'home'
-          : atBottom ? sections[sections.length - 1].id
-          : (sections.find(s => { const r = s.getBoundingClientRect(); return r.top <= midY && r.bottom >= midY; }) || sections[0])?.id;
-
-        if (cur && cur !== lastSection) {
-          lastSection = cur;
-          setActive(cur);
-          const base = window.location.pathname;
-          history.replaceState(null, null, cur === 'home' ? base : `${base}#${cur}`);
-        }
       }
 
-      let ticking = false;
-      window.addEventListener('scroll', () => { if (!ticking) { requestAnimationFrame(() => { spyUpdate(); ticking = false; }); ticking = true; } }, { passive: true });
+      window.addEventListener('scroll', () => {
+        if (!isScrolling) {
+          window.requestAnimationFrame(() => {
+            updateScrollSpy();
+            isScrolling = false;
+          });
+          isScrolling = true;
+        }
+      }, { passive: true });
 
       window.addEventListener('load', () => {
         const hash = window.location.hash;
+        
         if (!hash || hash === '#home') {
           if (hash === '#home') history.replaceState(null, null, window.location.pathname);
-          setActive('home'); lastSection = 'home';
+          setNavActive('home');
+          lastActiveSection = 'home';
         } else {
-          const id = hash.substring(1);
-          setActive(id); lastSection = id;
-          setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 50);
+          const targetId = hash.substring(1);
+          setNavActive(targetId);
+          lastActiveSection = targetId;
+          const target = document.getElementById(targetId);
+          if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 50);
         }
-        spyUpdate();
+        
+        updateScrollSpy(); 
       });
     })();
 
-    // Snow + Sidebar
-    (function () {
+    (function() {
       const canvas = document.getElementById('snow-canvas');
-      const ctx    = canvas.getContext('2d');
-      let W = canvas.width  = window.innerWidth;
-      let H = canvas.height = window.innerHeight;
+      const ctx = canvas.getContext('2d');
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+      
+      const maxFlakes = width < 768 ? 12 : 30; 
+      const flakes =[];
+      const heroSection = document.getElementById('home');
+      
+      const heroHeightAbsolute = heroSection ? heroSection.offsetTop + heroSection.offsetHeight : height;
 
-      const hero    = document.getElementById('home');
-      const MAX     = W < 768 ? 12 : 30;
-      const flakes  = Array.from({ length: MAX }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * (hero ? hero.offsetTop + hero.offsetHeight : H),
-        r: Math.random() * 1.5 + 0.5,
-        d: Math.random() * 0.4 + 0.15,
-        a: Math.random() * Math.PI * 2,
-        aStep: Math.random() * 0.01 + 0.005,
-        opacity: Math.random() * 0.4 + 0.15,
-      }));
-
-      function draw() {
-        const heroBottom = hero ? hero.getBoundingClientRect().bottom : H;
-        ctx.clearRect(0, 0, W, H);
-
-        if (heroBottom > 0) {
-          const fadeStart = heroBottom - 120;
-          flakes.forEach(f => {
-            const alpha = f.y > fadeStart ? f.opacity * Math.max(0, (heroBottom - f.y) / 120) : f.opacity;
-            if (alpha > 0) { ctx.beginPath(); ctx.fillStyle = `rgba(255,255,255,${alpha})`; ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill(); }
-          });
-          const maxY = Math.min(H, heroBottom);
-          flakes.forEach(f => {
-            f.y += f.d; f.a += f.aStep; f.x += Math.sin(f.a) * 0.25;
-            if (f.y > maxY) { f.y = -10; f.x = Math.random() * W; }
-            if (f.x > W + 10) f.x = -10;
-            if (f.x < -10)    f.x = W + 10;
-          });
-        }
-        requestAnimationFrame(draw);
+      for (let i = 0; i < maxFlakes; i++) {
+        flakes.push({
+          x: Math.random() * width,
+          y: Math.random() * heroHeightAbsolute,
+          r: Math.random() * 1.5 + 0.5,
+          d: Math.random() * 0.4 + 0.15, 
+          a: Math.random() * Math.PI * 2,
+          aStep: Math.random() * 0.01 + 0.005,
+          opacity: Math.random() * 0.4 + 0.15
+        });
       }
 
-      window.addEventListener('resize', () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
-      draw();
+      function drawSnow() {
+        const heroBottomRect = heroSection ? heroSection.getBoundingClientRect().bottom : height;
+        
+        if (heroBottomRect <= 0) {
+          ctx.clearRect(0, 0, width, height);
+          requestAnimationFrame(drawSnow);
+          return;
+        }
 
-      // Sidebar
-      const openBtn  = document.getElementById('open-sidebar');
-      const closeBtn = document.getElementById('close-sidebar');
-      const sidebar  = document.getElementById('sidebar');
-      const overlay  = document.getElementById('overlay');
+        ctx.clearRect(0, 0, width, height);
+        const fadeDistance = 120; 
+        const fadeStart = heroBottomRect - fadeDistance;
 
-      const show = () => { sidebar.classList.add('is-expanded');    overlay.classList.add('is-visible');    document.body.classList.add('has-sidebar-open'); };
-      const hide = () => { sidebar.classList.remove('is-expanded'); overlay.classList.remove('is-visible'); document.body.classList.remove('has-sidebar-open'); };
+        for (let i = 0; i < maxFlakes; i++) {
+          let f = flakes[i];
+          let currentOpacity = f.opacity;
 
-      openBtn.addEventListener('click', show);
-      closeBtn.addEventListener('click', hide);
-      overlay.addEventListener('click', hide);
-      window.addEventListener('hideSidebar', hide);
+          if (f.y > fadeStart) {
+            let ratio = (heroBottomRect - f.y) / fadeDistance;
+            currentOpacity = f.opacity * Math.max(0, Math.min(1, ratio));
+          }
+
+          if (currentOpacity > 0) {
+            ctx.beginPath();
+            ctx.fillStyle = `rgba(255, 255, 255, ${currentOpacity})`;
+            ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
+            ctx.fill();
+          }
+        }
+        
+        moveSnow(heroBottomRect);
+        requestAnimationFrame(drawSnow);
+      }
+
+      function moveSnow(heroBottom) {
+        const maxY = Math.min(height, heroBottom);
+        
+        for (let i = 0; i < maxFlakes; i++) {
+          let f = flakes[i];
+          f.y += f.d;
+          f.a += f.aStep;
+          f.x += Math.sin(f.a) * 0.25; 
+
+          if (f.y > maxY) { 
+            f.y = -10; 
+            f.x = Math.random() * width; 
+          }
+          if (f.x > width + 10) f.x = -10;
+          if (f.x < -10) f.x = width + 10;
+        }
+      }
+
+      window.addEventListener('resize', () => {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+      });
+      
+      drawSnow();
+
+      const openBtn   = document.getElementById('open-sidebar');
+      const closeBtn  = document.getElementById('close-sidebar');
+      const sidebarEl = document.getElementById('sidebar');
+      const overlay   = document.getElementById('overlay');
+
+      function showSidebar() {
+        sidebarEl.classList.add('is-expanded');
+        overlay.classList.add('is-visible');
+        document.body.classList.add('has-sidebar-open');
+      }
+      function hideSidebar() {
+        sidebarEl.classList.remove('is-expanded');
+        overlay.classList.remove('is-visible');
+        document.body.classList.remove('has-sidebar-open');
+      }
+
+      openBtn.addEventListener('click', showSidebar);
+      closeBtn.addEventListener('click', hideSidebar);
+      overlay.addEventListener('click', hideSidebar);
+      window.addEventListener('hideSidebar', hideSidebar);
     })();
   </script>
 </body>
