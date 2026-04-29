@@ -676,6 +676,12 @@
 
   <% function fmt(t) {
     if (!t) return '';
+    
+    // Links and Icons (Newly Added)
+    t = t.replace(/\[a url=([^\]]+)\](.*?)\[\/a\]/gi, '<a href="$1" target="_blank" rel="noopener" style="color: var(--kex-green); text-decoration: none;">$2</a>');
+    t = t.replace(/\[icon\](.*?)\[\/icon\]/gi, '<i class="$1"></i>');
+    
+    // Standard Formatting
     t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1;">$2</span>');
     t = t.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
     t = t.replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>');
