@@ -1,31 +1,21 @@
 // ===============================
-// 1. IMPORTS
+// 1. IMPORTS & ENV
 // ===============================
 const admin = require('firebase-admin');
 require('dotenv').config();
 
-// ===============================
-// 2. LOAD ENVIRONMENT VARIABLES
-// ===============================
-const {
-  FIREBASE_PROJECT_ID,
-  FIREBASE_PRIVATE_KEY,
-  FIREBASE_CLIENT_EMAIL,
-  FIREBASE_DATABASE_URL
-} = process.env;
+const { FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL, FIREBASE_DATABASE_URL } = process.env;
 
 // ===============================
-// 3. INITIALIZE FIREBASE ADMIN SDK
+// 2. INITIALIZE FIREBASE
 // ===============================
-const serviceAccount = {
-  projectId: FIREBASE_PROJECT_ID,
-  privateKey: FIREBASE_PRIVATE_KEY ? FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
-  clientEmail: FIREBASE_CLIENT_EMAIL,
-};
-
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert({
+      projectId: FIREBASE_PROJECT_ID,
+      privateKey: FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      clientEmail: FIREBASE_CLIENT_EMAIL,
+    }),
     databaseURL: FIREBASE_DATABASE_URL,
   });
 }
@@ -33,359 +23,136 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 // ===============================
-// 4. IN-MEMORY CACHE WITH REAL-TIME LISTENERS
+// 3. IN-MEMORY CACHE
 // ===============================
 const serverCache = {
-  header: null,
-  hero: null,
-  cards: {
-    data: null,
-    items: []
-  },
-  faqs: {             // ← new
-    data: null,
-    items: []
-  },
-  sidebar: {
-    header: null,
-    body: [],
-    footer: []
-  }
+  header: { alticon: '', alttext: '', logourl: '' },
+  hero:   { primarytext: '', secondarytext: '', footertext: '', buttonenabled: true, buttontext: '', buttonicon: '', buttonurl: '' },
+  cards:  { data: { title: '', description: '', buttonenabled: true, buttonicon: '', buttontext: '', buttonurl: '' }, items: [] },
+  faqs:   { data: { title: '', description: '', buttonenabled: true, buttonicon: '', buttontext: '', buttonurl: '' }, items: [] },
+  sidebar:{ header: { alticon: '', alttext: '', logourl: '' }, body: [], footer: [] },
 };
 
-function attachListenerAndInit(ref, cacheKey, transform = (doc) => doc.data()) {
-  const isCollection =
-    cacheKey === 'sidebar.body' ||
-    cacheKey === 'sidebar.footer' ||
-    cacheKey === 'cards.items' ||
-    cacheKey === 'faqs.items';   // ← new
+// ===============================
+// 4. CACHE HELPERS
+// ===============================
+function setCache(key, value) {
+  const [root, sub] = key.split('.');
+  sub ? (serverCache[root][sub] = value) : (serverCache[root] = value);
+}
 
-  if (isCollection) {
-    ref.onSnapshot(snapshot => {
-      const data = snapshot.docs
-        .filter(doc => doc.id !== 'data')
-        .map(doc => ({ id: doc.id, ...doc.data() }));
-      if (cacheKey === 'sidebar.body') serverCache.sidebar.body = data;
-      else if (cacheKey === 'sidebar.footer') serverCache.sidebar.footer = data;
-      else if (cacheKey === 'cards.items') serverCache.cards.items = data;
-      else if (cacheKey === 'faqs.items') serverCache.faqs.items = data;   // ← new
-    }, console.error);
+function getCache(key) {
+  const [root, sub] = key.split('.');
+  return sub ? serverCache[root][sub] : serverCache[root];
+}
 
-    return ref.get().then(snap => {
-      if (!snap.empty) {
-        const data = snap.docs
-          .filter(doc => doc.id !== 'data')
-          .map(doc => ({ id: doc.id, ...doc.data() }));
-        if (cacheKey === 'sidebar.body') serverCache.sidebar.body = data;
-        else if (cacheKey === 'sidebar.footer') serverCache.sidebar.footer = data;
-        else if (cacheKey === 'cards.items') serverCache.cards.items = data;
-        else if (cacheKey === 'faqs.items') serverCache.faqs.items = data;  // ← new
-      }
-    }).catch(console.error);
+// ===============================
+// 5. LISTENER CONFIG
+// ===============================
+const refs = () => {
+  const web     = db.collection('web');
+  const body    = web.doc('body');
+  const cards   = body.collection('cards');
+  const faqs    = body.collection('faqs');
+  const sidebar = web.doc('sidebar');
 
-  } else if (cacheKey === 'cards.data') {
-    ref.onSnapshot(doc => {
-      if (doc.exists) {
-        serverCache.cards.data = doc.data();
-      }
-    }, console.error);
+  return [
+    { ref: web.doc('header'),         key: 'header',         type: 'doc' },
+    { ref: body,                       key: 'hero',           type: 'doc', pick: d => d.hero || null },
+    { ref: cards.doc('data'),          key: 'cards.data',     type: 'doc' },
+    { ref: cards,                      key: 'cards.items',    type: 'col' },
+    { ref: faqs.doc('data'),           key: 'faqs.data',      type: 'doc' },
+    { ref: faqs,                       key: 'faqs.items',     type: 'col' },
+    { ref: sidebar,                    key: 'sidebar.header', type: 'doc', pick: d => d.header },
+    { ref: sidebar.collection('body'), key: 'sidebar.body',   type: 'col' },
+    { ref: sidebar.collection('footer'),key:'sidebar.footer', type: 'col' },
+  ];
+};
 
-    return ref.get().then(snap => {
-      if (snap.exists) {
-        serverCache.cards.data = snap.data();
-      }
-    }).catch(console.error);
+// ===============================
+// 6. ATTACH LISTENERS
+// ===============================
+function colDocs(snapshot) {
+  return snapshot.docs.filter(d => d.id !== 'data').map(d => ({ id: d.id, ...d.data() }));
+}
 
-  } else if (cacheKey === 'faqs.data') {   // ← new
-    ref.onSnapshot(doc => {
-      if (doc.exists) {
-        serverCache.faqs.data = doc.data();
-      }
-    }, console.error);
-
-    return ref.get().then(snap => {
-      if (snap.exists) {
-        serverCache.faqs.data = snap.data();
-      }
-    }).catch(console.error);
-
-  } else if (cacheKey === 'sidebar.header') {
-    ref.onSnapshot(doc => {
-      if (doc.exists) {
-        serverCache.sidebar.header = doc.data().header;
-      }
-    }, console.error);
-
-    return ref.get().then(snap => {
-      if (snap.exists) {
-        serverCache.sidebar.header = transform(snap);
-      }
-    }).catch(console.error);
-
-  } else if (cacheKey === 'hero') {
-    ref.onSnapshot(doc => {
-      if (doc.exists) {
-        const data = doc.data();
-        serverCache.hero = data.hero || null;
-      }
-    }, console.error);
-
-    return ref.get().then(snap => {
-      if (snap.exists) {
-        const data = snap.data();
-        serverCache.hero = data.hero || null;
-      }
-    }).catch(console.error);
-
-  } else {
-    ref.onSnapshot(doc => {
-      if (doc.exists) {
-        serverCache[cacheKey] = doc.data();
-      }
-    }, console.error);
-
-    return ref.get().then(snap => {
-      if (snap.exists) {
-        serverCache[cacheKey] = transform(snap);
-      }
-    }).catch(console.error);
+function attach({ ref, key, type, pick }) {
+  if (type === 'col') {
+    ref.onSnapshot(snap => setCache(key, colDocs(snap)), console.error);
+    return ref.get().then(snap => setCache(key, colDocs(snap))).catch(console.error);
   }
+  // doc
+  const extract = pick ? (d => d.exists ? pick(d.data()) : null) : (d => d.exists ? d.data() : null);
+  ref.onSnapshot(doc => { const v = extract(doc); if (v !== null) setCache(key, v); }, console.error);
+  return ref.get().then(snap => { const v = extract(snap); if (v !== null) setCache(key, v); }).catch(console.error);
 }
 
 async function initializeCacheAndListeners() {
-  console.log("\n📡 Initializing Firestore cache and real-time listeners...");
-
-  const headerRef = db.collection('web').doc('header');
-  await attachListenerAndInit(headerRef, 'header');
-
-  const bodyRef = db.collection('web').doc('body');
-  await attachListenerAndInit(bodyRef, 'hero');
-
-  const cardsRef = db.collection('web').doc('body').collection('cards');
-  await attachListenerAndInit(cardsRef.doc('data'), 'cards.data');
-  await attachListenerAndInit(cardsRef, 'cards.items');
-
-  const faqsRef = db.collection('web').doc('body').collection('faqs');  // ← new
-  await attachListenerAndInit(faqsRef.doc('data'), 'faqs.data');
-  await attachListenerAndInit(faqsRef, 'faqs.items');
-
-  const sidebarMainRef = db.collection('web').doc('sidebar');
-  await attachListenerAndInit(sidebarMainRef, 'sidebar.header', (doc) => doc.data().header);
-
-  const sidebarBodyRef = sidebarMainRef.collection('body');
-  await attachListenerAndInit(sidebarBodyRef, 'sidebar.body');
-
-  const sidebarFooterRef = sidebarMainRef.collection('footer');
-  await attachListenerAndInit(sidebarFooterRef, 'sidebar.footer');
-
-  console.log("✅ Cache populated and listeners active.");
+  console.log('\n📡 Initializing Firestore cache and real-time listeners...');
+  await Promise.all(refs().map(attach));
+  console.log('✅ Cache populated and listeners active.');
 }
 
 // ===============================
-// 5. HEADER
+// 7. SEED DEFAULTS (create if missing)
 // ===============================
-const defaultHeader = { alticon: "", alttext: "", logourl: "" };
-serverCache.header = defaultHeader;
+async function seedDoc(ref, defaults) {
+  const snap = await ref.get();
+  if (!snap.exists) { await ref.set(defaults); console.log(`Created ${ref.path}`); }
+}
 
-const headerDoc = {
-  async create() {
-    try {
-      const docRef = db.collection('web').doc('header');
-      const doc = await docRef.get();
-      if (!doc.exists) {
-        await docRef.set(defaultHeader);
-        console.log(`Successfully create header ${JSON.stringify(defaultHeader)}`);
-      } else {
-        console.log(`Header already exists ${JSON.stringify(doc.data())}`);
-      }
-    } catch (err) { console.error(err); }
-  }
-};
+async function seedSubcollection(colRef, docId, defaults, prefix) {
+  const snap = await colRef.get();
+  const exists = snap.docs.some(d => d.id.startsWith(prefix));
+  if (!exists) { await colRef.doc(docId).set(defaults); console.log(`Created ${colRef.path}/${docId}`); }
+}
 
-// ===============================
-// 6. SIDEBAR
-// ===============================
-const defaultSidebarHeader = { alticon: "", alttext: "", logourl: "" };
-serverCache.sidebar.header = defaultSidebarHeader;
-
-const defaultNavButton = {
-  text: "Home",
-  icon: "fa-solid fa-house",
-  url: "#home"
-};
-const defaultSocialLink = { icon: "fa-brands fa-discord", url: "#" };
-
-const sidebarDoc = {
-  async create() {
-    try {
-      const docRef = db.collection('web').doc('sidebar');
-      const doc = await docRef.get();
-
-      if (!doc.exists) {
-        await docRef.set({ header: defaultSidebarHeader });
-        console.log(`Successfully create sidebar document ${JSON.stringify({ header: defaultSidebarHeader })}`);
-      } else {
-        console.log(`Sidebar document already exists ${JSON.stringify(doc.data())}`);
-      }
-
-      const bodySnapshot = await docRef.collection('body').get();
-      const hasNavButton = bodySnapshot.docs.some(docSnap => docSnap.id.startsWith('navbutton-'));
-      if (!hasNavButton) {
-        await docRef.collection('body').doc('navbutton-1').set(defaultNavButton);
-        console.log(`Successfully create sidebar body navbutton-1 ${JSON.stringify(defaultNavButton)}`);
-      } else {
-        const existingNavButtons = bodySnapshot.docs
-          .filter(d => d.id.startsWith('navbutton-'))
-          .map(d => ({ id: d.id, ...d.data() }));
-        console.log(`Sidebar body navbuttons already exist: ${JSON.stringify(existingNavButtons)}`);
-      }
-
-      const footerSnapshot = await docRef.collection('footer').get();
-      if (footerSnapshot.empty) {
-        await docRef.collection('footer').doc('social-1').set(defaultSocialLink);
-        console.log(`Successfully create sidebar footer social-1 ${JSON.stringify(defaultSocialLink)}`);
-      } else {
-        const existingFooter = footerSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        console.log(`Sidebar footer already exists: ${JSON.stringify(existingFooter)}`);
-      }
-    } catch (err) { console.error(err); }
-  }
-};
-
-// ===============================
-// 7. BODY
-// ===============================
-const defaultHero = {
-  primarytext: "", secondarytext: "", footertext: "",
-  buttonenabled: true,
-  buttontext: "", buttonicon: "", buttonurl: ""
-};
-serverCache.hero = defaultHero;
-
-const defaultCardsData = {
-  title: "",
-  description: "",
-  buttonenabled: true,
-  buttonicon: "",
-  buttontext: "",
-  buttonurl: ""
-};
-serverCache.cards.data = defaultCardsData;
-
-const defaultCard = {
-  title: "",
-  description: "",
-  icon: "",
-  url: "",
-  rating: 0,
-  status: ""
-};
-
-const defaultFaqsData = {       // ← new
-  title: "",
-  description: "",
-  buttonenabled: true,
-  buttonicon: "",
-  buttontext: "",
-  buttonurl: ""
-};
-serverCache.faqs.data = defaultFaqsData;
-
-const defaultFaq = {            // ← new
-  title: "",
-  description: ""
-};
-
-const bodyDoc = {
-  async create() {
-    try {
-      const bodyDocRef = db.collection('web').doc('body');
-      const bodyDocSnap = await bodyDocRef.get();
-
-      if (!bodyDocSnap.exists) {
-        await bodyDocRef.set({ hero: defaultHero });
-        console.log(`Successfully created body document with hero ${JSON.stringify({ hero: defaultHero })}`);
-      } else {
-        const data = bodyDocSnap.data();
-        if (!data.hero) {
-          await bodyDocRef.update({ hero: defaultHero });
-          console.log(`Hero field missing; added successfully ${JSON.stringify(defaultHero)}`);
-        } else {
-          console.log(`Hero already exists in body document: ${JSON.stringify(data.hero)}`);
-        }
-      }
-
-      // --- CARDS ---
-      const cardsRef = bodyDocRef.collection('cards');
-
-      const cardsDataSnap = await cardsRef.doc('data').get();
-      if (!cardsDataSnap.exists) {
-        await cardsRef.doc('data').set(defaultCardsData);
-        console.log(`Successfully created body/cards/data ${JSON.stringify(defaultCardsData)}`);
-      } else {
-        console.log(`body/cards/data already exists: ${JSON.stringify(cardsDataSnap.data())}`);
-      }
-
-      const cardsSnapshot = await cardsRef.get();
-      const hasCards = cardsSnapshot.docs.some(d => d.id.startsWith('card-'));
-      if (!hasCards) {
-        await cardsRef.doc('card-1').set(defaultCard);
-        console.log(`Successfully created body/cards/card-1 ${JSON.stringify(defaultCard)}`);
-      } else {
-        const existingCards = cardsSnapshot.docs
-          .filter(d => d.id.startsWith('card-'))
-          .map(d => ({ id: d.id, ...d.data() }));
-        console.log(`Body cards already exist: ${JSON.stringify(existingCards)}`);
-      }
-
-      // --- FAQS ---                                          // ← new
-      const faqsRef = bodyDocRef.collection('faqs');
-
-      const faqsDataSnap = await faqsRef.doc('data').get();
-      if (!faqsDataSnap.exists) {
-        await faqsRef.doc('data').set(defaultFaqsData);
-        console.log(`Successfully created body/faqs/data ${JSON.stringify(defaultFaqsData)}`);
-      } else {
-        console.log(`body/faqs/data already exists: ${JSON.stringify(faqsDataSnap.data())}`);
-      }
-
-      const faqsSnapshot = await faqsRef.get();
-      const hasFaqs = faqsSnapshot.docs.some(d => d.id.startsWith('faq-'));
-      if (!hasFaqs) {
-        await faqsRef.doc('faq-1').set(defaultFaq);
-        console.log(`Successfully created body/faqs/faq-1 ${JSON.stringify(defaultFaq)}`);
-      } else {
-        const existingFaqs = faqsSnapshot.docs
-          .filter(d => d.id.startsWith('faq-'))
-          .map(d => ({ id: d.id, ...d.data() }));
-        console.log(`Body faqs already exist: ${JSON.stringify(existingFaqs)}`);
-      }
-
-    } catch (err) { console.error(err); }
-  }
-};
-
-// ===============================
-// 8. WRAPPER FUNCTIONS & EXPORTS
-// ===============================
 async function initializeFirestore() {
-  await headerDoc.create();
-  await bodyDoc.create();
-  await sidebarDoc.create();
+  const web     = db.collection('web');
+  const body    = web.doc('body');
+  const cards   = body.collection('cards');
+  const faqs    = body.collection('faqs');
+  const sidebar = web.doc('sidebar');
+
+  // Header
+  await seedDoc(web.doc('header'), serverCache.header);
+
+  // Body / Hero
+  const bodySnap = await body.get();
+  if (!bodySnap.exists) {
+    await body.set({ hero: serverCache.hero });
+    console.log(`Created web/body`);
+  } else if (!bodySnap.data().hero) {
+    await body.update({ hero: serverCache.hero });
+    console.log(`Added missing hero to web/body`);
+  }
+
+  // Cards
+  await seedDoc(cards.doc('data'), serverCache.cards.data);
+  await seedSubcollection(cards, 'card-1', { title: '', description: '', icon: '', url: '', rating: 0, status: '' }, 'card-');
+
+  // FAQs
+  await seedDoc(faqs.doc('data'), serverCache.faqs.data);
+  await seedSubcollection(faqs, 'faq-1', { title: '', description: '' }, 'faq-');
+
+  // Sidebar
+  const sidebarSnap = await sidebar.get();
+  if (!sidebarSnap.exists) { await sidebar.set({ header: serverCache.sidebar.header }); console.log(`Created web/sidebar`); }
+
+  await seedSubcollection(sidebar.collection('body'),   'navbutton-1', { text: 'Home', icon: 'fa-solid fa-house', url: '#home' }, 'navbutton-');
+  await seedSubcollection(sidebar.collection('footer'), 'social-1',    { icon: 'fa-brands fa-discord', url: '#' }, 'social-');
+
   await initializeCacheAndListeners();
 }
 
-async function getHeader() { return serverCache.header; }
-async function getHero() { return serverCache.hero; }
-async function getCards() { return serverCache.cards; }
-async function getFaqs() { return serverCache.faqs; }   // ← new
-async function getSidebar() { return serverCache.sidebar; }
-
+// ===============================
+// 8. EXPORTS
+// ===============================
 module.exports = {
   initializeFirestore,
-  getHeader,
-  getHero,
-  getCards,
-  getFaqs,        // ← new
-  getSidebar
+  getHeader:  () => serverCache.header,
+  getHero:    () => serverCache.hero,
+  getCards:   () => serverCache.cards,
+  getFaqs:    () => serverCache.faqs,
+  getSidebar: () => serverCache.sidebar,
 };
