@@ -269,8 +269,6 @@
       line-height: 1.6;
     }
     
-    /* Smart Grid: Automatically places elements horizontally on larger screens, 
-       and stacks them vertically on mobile. Width 100% ensures it perfectly spans to the 20px edge. */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
@@ -414,13 +412,14 @@
       line-height: 1.6;
     }
     
-    /* Removed tight width restriction so FAQs stretch out matching the identical edge gaps as the cards! */
+    /* UPDATED: Changed to a Grid exactly like the Services cards so they sit side-by-side! */
     .faqs-container {
       width: 100%;
       margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+      gap: 24px; /* Matches the 24px gap of Services cards perfectly */
+      align-items: start; /* VERY IMPORTANT: stops un-opened FAQs from stretching vertically to match an opened one in the same row */
     }
     
     .faq-item {
@@ -571,7 +570,6 @@
     </div>
   </aside>
 
-  <!-- Removed the inline styling restriction here so the `.container` forces perfectly matching gap logic. -->
   <section class="hero" id="home">
     <div class="container">
       <% if (hero.primarytext) { %>
