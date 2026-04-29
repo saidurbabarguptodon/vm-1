@@ -43,19 +43,22 @@
       z-index: 1;
     }
 
+    /* LAMP GLOW EFFECT: Narrow at top, wide at bottom, fades smoothly */
     .glow {
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 380px;
-      background: 
-        radial-gradient(ellipse 50% 70% at 50% 0%, rgba(26,215,111, 0.45) 0%, rgba(26,215,111, 0.2) 30%, rgba(26,215,111, 0.05) 65%, transparent 100%),
-        radial-gradient(ellipse 30% 50% at 50% 0%, rgba(255,255,255,0.15) 0%, transparent 60%);
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; 
+      max-width: 800px;
+      height: 480px;
+      background: linear-gradient(180deg, rgba(26,215,111, 0.25) 0%, rgba(26,215,111, 0.08) 45%, transparent 100%);
+      clip-path: polygon(30% 0, 70% 0, 100% 100%, 0% 100%);
+      filter: blur(50px);
       z-index: 0;
       pointer-events: none;
-      filter: blur(2px);
+      opacity: 0.9;
     }
 
-    /* GLOBAL CONTAINER - Guarantees exactly 20px gap left & right for ALL elements */
     .container { 
       position: relative; 
       z-index: 2; 
@@ -206,7 +209,6 @@
     .hero { 
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       text-align: center; 
-      /* Strictly uses container's padding for left & right gaps now */
       padding-top: 100px;
       padding-bottom: 80px; 
       min-height: 50vh; 
@@ -240,9 +242,7 @@
       font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; 
     }
 
-    /* CARDS SECTION */
     .cards-section {
-      /* Vertical padding only, let the container handle the exact 20px sides gap */
       padding-top: 40px; 
       padding-bottom: 100px; 
       margin-top: 0; 
@@ -268,14 +268,12 @@
       margin: 0 auto;
       line-height: 1.6;
     }
-    
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
       gap: 24px;
       width: 100%;
     }
-    
     .card-bg {
       background: rgba(20, 20, 30, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.05);
@@ -292,8 +290,6 @@
       overflow: hidden;
       outline: none;
     }
-    
-    /* Dynamic Status Badge Styles */
     .card-status {
       position: absolute;
       top: 24px;
@@ -329,29 +325,20 @@
       70% { transform: scale(1); box-shadow: 0 0 0 4px transparent; }
       100% { transform: scale(0.95); box-shadow: 0 0 0 0 transparent; }
     }
-
-    /* Status Colors */
     .status-online { color: var(--kex-green); border-color: rgba(26, 215, 111, 0.2); background: rgba(26, 215, 111, 0.05); }
     .status-online .status-dot { background-color: var(--kex-green); --pulse-color: rgba(26, 215, 111, 0.7); }
-
     .status-maintenance { color: var(--kex-yellow); border-color: rgba(251, 191, 36, 0.2); background: rgba(251, 191, 36, 0.05); }
     .status-maintenance .status-dot { background-color: var(--kex-yellow); --pulse-color: rgba(251, 191, 36, 0.7); }
-
     .status-offline { color: var(--kex-red); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); }
     .status-offline .status-dot { background-color: var(--kex-red); --pulse-color: rgba(239, 68, 68, 0.7); }
-
     .status-soon { color: var(--kex-blue); border-color: rgba(59, 130, 246, 0.2); background: rgba(59, 130, 246, 0.05); }
     .status-soon .status-dot { background-color: var(--kex-blue); --pulse-color: rgba(59, 130, 246, 0.7); }
-
     .status-default { color: var(--kex-white); border-color: rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); }
     .status-default .status-dot { background-color: var(--kex-white); --pulse-color: rgba(255, 255, 255, 0.7); }
 
     .card-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 56px;
-      height: 56px;
+      display: flex; align-items: center; justify-content: center;
+      width: 56px; height: 56px;
       background: rgba(26, 215, 111, 0.1);
       color: var(--kex-green);
       border-radius: 14px;
@@ -360,126 +347,56 @@
       transition: all 0.3s ease;
     }
     .card-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--kex-white);
-      margin-bottom: 12px;
-      line-height: 1.3;
-      transition: color 0.3s ease;
+      font-size: 1.3rem; font-weight: 700; color: var(--kex-white);
+      margin-bottom: 12px; line-height: 1.3; transition: color 0.3s ease;
     }
-    .card-description {
-      font-size: 0.95rem;
-      color: var(--kex-gray);
-      line-height: 1.6;
-      flex-grow: 1;
-    }
+    .card-description { font-size: 0.95rem; color: var(--kex-gray); line-height: 1.6; flex-grow: 1; }
+    .cards-footer { display: flex; justify-content: center; width: 100%; margin-top: 48px; }
+    .cards-footer .hero-btn { margin-bottom: 0; }
 
-    .cards-footer {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      margin-top: 48px;
-    }
-    .cards-footer .hero-btn {
-      margin-bottom: 0;
-    }
-
-    /* FAQS SECTION */
     .faqs-section {
-      /* Vertical padding only */
-      padding-top: 60px;
-      padding-bottom: 100px;
-      position: relative;
-      z-index: 2;
-      scroll-margin-top: 85px;
+      padding-top: 60px; padding-bottom: 100px;
+      position: relative; z-index: 2; scroll-margin-top: 85px;
     }
-    .faqs-header {
-      text-align: center;
-      margin-bottom: 50px;
-    }
+    .faqs-header { text-align: center; margin-bottom: 50px; }
     .faqs-title {
-      font-size: clamp(1.8rem, 4vw, 2.4rem);
-      font-weight: 800;
-      color: var(--kex-white);
-      margin-bottom: 16px;
-      letter-spacing: -0.02em;
+      font-size: clamp(1.8rem, 4vw, 2.4rem); font-weight: 800;
+      color: var(--kex-white); margin-bottom: 16px; letter-spacing: -0.02em;
     }
     .faqs-description {
-      font-size: clamp(1rem, 3vw, 1.15rem);
-      color: var(--kex-gray);
-      max-width: 650px;
-      margin: 0 auto;
-      line-height: 1.6;
+      font-size: clamp(1rem, 3vw, 1.15rem); color: var(--kex-gray);
+      max-width: 650px; margin: 0 auto; line-height: 1.6;
     }
-    
-    /* UPDATED: Changed to a Grid exactly like the Services cards so they sit side-by-side! */
     .faqs-container {
-      width: 100%;
-      margin: 0 auto;
+      width: 100%; margin: 0 auto;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-      gap: 24px; /* Matches the 24px gap of Services cards perfectly */
-      align-items: start; /* VERY IMPORTANT: stops un-opened FAQs from stretching vertically to match an opened one in the same row */
+      gap: 24px; align-items: start;
     }
-    
     .faq-item {
       background: rgba(20, 20, 30, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 16px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      border-radius: 16px; overflow: hidden; transition: all 0.3s ease;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
     .faq-question {
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      border: none;
-      padding: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: var(--kex-white);
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: color 0.3s ease;
-      font-family: inherit;
-      outline: none;
+      width: 100%; text-align: left; background: transparent; border: none;
+      padding: 24px; display: flex; justify-content: space-between; align-items: center;
+      color: var(--kex-white); font-size: 1.1rem; font-weight: 600; cursor: pointer;
+      transition: color 0.3s ease; font-family: inherit; outline: none;
     }
     .faq-icon {
-      color: var(--kex-green);
-      font-size: 1.2rem;
-      transition: transform 0.3s ease;
-      flex-shrink: 0;
-      margin-left: 16px;
+      color: var(--kex-green); font-size: 1.2rem; transition: transform 0.3s ease;
+      flex-shrink: 0; margin-left: 16px;
     }
-    .faq-item.is-active .faq-icon {
-      transform: rotate(45deg);
-    }
-    .faq-item.is-active {
-      border-color: rgba(26, 215, 111, 0.3);
-      background: rgba(20, 20, 30, 0.6);
-    }
+    .faq-item.is-active .faq-icon { transform: rotate(45deg); }
+    .faq-item.is-active { border-color: rgba(26, 215, 111, 0.3); background: rgba(20, 20, 30, 0.6); }
     .faq-answer {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease-out, padding 0.3s ease;
-      padding: 0 24px;
-      color: var(--kex-gray);
-      font-size: 0.95rem;
-      line-height: 1.6;
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease;
+      padding: 0 24px; color: var(--kex-gray); font-size: 0.95rem; line-height: 1.6;
     }
-    .faqs-footer {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      margin-top: 48px;
-    }
-    .faqs-footer .hero-btn {
-      margin-bottom: 0;
-    }
+    .faqs-footer { display: flex; justify-content: center; width: 100%; margin-top: 48px; }
+    .faqs-footer .hero-btn { margin-bottom: 0; }
 
     @media (hover: hover) {
       .header__toggle:hover, .sidebar__close:hover { background: rgba(255,255,255,.06); color: #fff; }
@@ -497,7 +414,6 @@
     .header__toggle:active i, .header__toggle.force-active i { transform: scale(0.85); }
     .sociallink:active, .sociallink.force-active { background-color: var(--kex-dark-green); border-color: var(--kex-dark-green); transform: scale(0.95); }
     .hero-btn:active, .hero-btn.force-active { background-color: var(--kex-dark-green); transform: scale(0.98); }
-    
     .card-bg:active, .card-bg.force-active { transform: scale(0.98); border-color: rgba(26, 215, 111, 0.4); }
     .card-bg:active .card-icon, .card-bg.force-active .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
     .card-bg:active .card-title, .card-bg.force-active .card-title { color: var(--kex-green); }
@@ -606,18 +522,15 @@
       <% 
         let sortedCards =[];
         if (cards && cards.items && cards.items.length > 0) {
-          // Sort cards by rating (highest to lowest)
           sortedCards = cards.items.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
         }
       %>
       <% if (sortedCards.length > 0) { %>
         <% sortedCards.slice(0, 6).forEach(card => { %>
           <a href="<%= card.url || '#' %>" class="card-bg" target="_blank" rel="noopener">
-            
             <% if (card.status && card.status.trim() !== '') { 
               let statusClass = 'status-default';
               let statusText = card.status.trim().toLowerCase();
-              
               if (statusText === 'online') statusClass = 'status-online';
               else if (statusText === 'maintenance') statusClass = 'status-maintenance';
               else if (statusText === 'offline') statusClass = 'status-offline';
@@ -628,21 +541,16 @@
                 <span><%= card.status %></span>
               </div>
             <% } %>
-
             <% if (card.icon) { %>
-              <div class="card-icon">
-                <i class="<%= card.icon %>"></i>
-              </div>
+              <div class="card-icon"><i class="<%= card.icon %>"></i></div>
             <% } %>
             <h3 class="card-title"><%- fmt(card.title || '') %></h3>
             <p class="card-description"><%- fmt(card.description || '') %></p>
-
           </a>
         <% }) %>
       <% } %>
     </div>
 
-    <!-- DYNAMIC CARDS FOOTER BUTTON -->
     <% if (cards && cards.data && (cards.data.buttonenabled === true || cards.data.buttonenabled === 'true')) { %>
       <div class="cards-footer">
         <a href="<%= cards.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
@@ -653,7 +561,6 @@
     <% } %>
   </section>
 
-  <!-- NEW FAQS SECTION -->
   <section class="faqs-section container" id="faqs">
     <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %>
       <div class="faqs-header">
@@ -682,7 +589,6 @@
       <% } %>
     </div>
 
-    <!-- DYNAMIC FAQS FOOTER BUTTON -->
     <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
       <div class="faqs-footer">
         <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
@@ -695,12 +601,8 @@
 
   <% function fmt(t) {
     if (!t) return '';
-    
-    // Links and Icons (Newly Added)
     t = t.replace(/\[a url=([^\]]+)\](.*?)\[\/a\]/gi, '<a href="$1" target="_blank" rel="noopener" style="color: var(--kex-green); text-decoration: none;">$2</a>');
     t = t.replace(/\[icon\](.*?)\[\/icon\]/gi, '<i class="$1"></i>');
-    
-    // Standard Formatting
     t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1;">$2</span>');
     t = t.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
     t = t.replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>');
@@ -717,37 +619,25 @@
         const target = this.getAttribute('target') || '_self';
         const isActionable = href && href !== '#' && !href.startsWith('#');
 
-        if (isActionable) {
-          e.preventDefault();
-        }
-
+        if (isActionable) { e.preventDefault(); }
         this.classList.add('force-active');
 
         if (isActionable) {
           setTimeout(() => {
-            if (target === '_blank') {
-              window.open(href, '_blank');
-            } else {
-              window.location.href = href;
-            }
+            if (target === '_blank') { window.open(href, '_blank'); } 
+            else { window.location.href = href; }
           }, 200);
         }
-
-        setTimeout(() => {
-          this.classList.remove('force-active');
-          this.blur();
-        }, 2500);
+        setTimeout(() => { this.classList.remove('force-active'); this.blur(); }, 2500);
       });
     });
 
-    // FAQ Accordion Logic
     document.querySelectorAll('.faq-question').forEach(button => {
       button.addEventListener('click', () => {
         const faqItem = button.parentElement;
         const answer = faqItem.querySelector('.faq-answer');
         const isActive = faqItem.classList.contains('is-active');
         
-        // Close all other open FAQs
         document.querySelectorAll('.faq-item').forEach(item => {
           if (item !== faqItem) {
             item.classList.remove('is-active');
@@ -757,11 +647,10 @@
           }
         });
 
-        // Toggle current FAQ
         if (!isActive) {
           faqItem.classList.add('is-active');
           button.setAttribute('aria-expanded', 'true');
-          answer.style.maxHeight = answer.scrollHeight + 24 + "px"; // +24 for padding
+          answer.style.maxHeight = answer.scrollHeight + 24 + "px"; 
           answer.style.paddingBottom = "24px";
         } else {
           faqItem.classList.remove('is-active');
@@ -776,7 +665,6 @@
       const navButtons = document.querySelectorAll('.navbutton');
       const sections = Array.from(document.querySelectorAll('section[id]'));
       const headerHeight = 85; 
-      
       let isNavigating = false;
       let navTimeout = null;
       let lastActiveSection = '';
@@ -798,15 +686,13 @@
         history.pushState(null, null, window.location.pathname);
         setNavActive('home');
         lastActiveSection = 'home';
-        
         clearTimeout(navTimeout);
         navTimeout = setTimeout(() => { isNavigating = false; }, 800); 
       }
 
       document.querySelectorAll('.brand').forEach(brand => {
         brand.addEventListener('click', function(e) {
-          e.preventDefault();
-          scrollToTop();
+          e.preventDefault(); scrollToTop();
           window.dispatchEvent(new Event('hideSidebar'));
         });
       });
@@ -814,24 +700,19 @@
       navButtons.forEach(btn => {
         btn.addEventListener('click', function(e) {
           const href = this.getAttribute('href');
-          
           if (href === '/' || href === '#home') {
-            e.preventDefault();
-            scrollToTop();
+            e.preventDefault(); scrollToTop();
             window.dispatchEvent(new Event('hideSidebar'));
           } else if (href && href.startsWith('#')) {
             e.preventDefault();
             const targetId = href.substring(1);
             const target = document.getElementById(targetId);
-            
             if (target) {
               isNavigating = true; 
               target.scrollIntoView({ behavior: 'smooth' });
-              
               history.pushState(null, null, href);
               setNavActive(targetId);
               lastActiveSection = targetId;
-              
               window.dispatchEvent(new Event('hideSidebar'));
               clearTimeout(navTimeout);
               navTimeout = setTimeout(() => { isNavigating = false; }, 800); 
@@ -844,18 +725,14 @@
 
       function updateScrollSpy() {
         if (isNavigating) return; 
-        
         const scrollPosition = window.scrollY || document.documentElement.scrollTop;
         let currentSection = null;
-
         const viewportMiddle = headerHeight + (window.innerHeight / 3);
 
         if ((window.innerHeight + scrollPosition) >= document.body.offsetHeight - 10) {
           currentSection = sections[sections.length - 1].id;
         } 
-        else if (scrollPosition < 50) {
-          currentSection = 'home';
-        } 
+        else if (scrollPosition < 50) { currentSection = 'home'; } 
         else {
           sections.forEach(sec => {
             const rect = sec.getBoundingClientRect();
@@ -865,17 +742,13 @@
           });
         }
 
-        if (!currentSection && sections.length) {
-          currentSection = sections[0].id;
-        }
+        if (!currentSection && sections.length) { currentSection = sections[0].id; }
 
         if (currentSection !== lastActiveSection) {
           lastActiveSection = currentSection;
           setNavActive(currentSection);
-          
           const basePath = window.location.pathname;
           const newUrl = currentSection === 'home' ? basePath : basePath + '#' + currentSection;
-          
           if (window.location.pathname + window.location.hash !== newUrl) {
             history.replaceState(null, null, newUrl);
           }
@@ -894,7 +767,6 @@
 
       window.addEventListener('load', () => {
         const hash = window.location.hash;
-        
         if (!hash || hash === '#home') {
           if (hash === '#home') history.replaceState(null, null, window.location.pathname);
           setNavActive('home');
@@ -906,11 +778,11 @@
           const target = document.getElementById(targetId);
           if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 50);
         }
-        
         updateScrollSpy(); 
       });
     })();
 
+    /* UPDATED: SMOOTH & EVENLY DISTRIBUTED SNOWFALL */
     (function() {
       const canvas = document.getElementById('snow-canvas');
       const ctx = canvas.getContext('2d');
@@ -919,18 +791,20 @@
       canvas.width = width;
       canvas.height = height;
       
-      const maxFlakes = width < 768 ? 12 : 30; 
+      const maxFlakes = width < 768 ? 20 : 50; 
       const flakes =[];
       const heroSection = document.getElementById('home');
-      
       const heroHeightAbsolute = heroSection ? heroSection.offsetTop + heroSection.offsetHeight : height;
 
+      // Assign each flake to an exact "Column Grid" so it NEVER gets empty on left or right sides.
+      const columnWidth = width / maxFlakes;
       for (let i = 0; i < maxFlakes; i++) {
         flakes.push({
-          x: Math.random() * width,
+          baseX: i * columnWidth, // Permanent column slot for this snowflake
+          x: (i * columnWidth) + (Math.random() * columnWidth), 
           y: Math.random() * heroHeightAbsolute,
-          r: Math.random() * 1.5 + 0.5,
-          d: Math.random() * 0.4 + 0.15, 
+          r: Math.random() * 1.5 + 0.6, // Slightly clearer size
+          d: Math.random() * 0.5 + 0.25, // Smooth, graceful drop speed
           a: Math.random() * Math.PI * 2,
           aStep: Math.random() * 0.01 + 0.005,
           opacity: Math.random() * 0.4 + 0.15
@@ -939,7 +813,6 @@
 
       function drawSnow() {
         const heroBottomRect = heroSection ? heroSection.getBoundingClientRect().bottom : height;
-        
         if (heroBottomRect <= 0) {
           ctx.clearRect(0, 0, width, height);
           requestAnimationFrame(drawSnow);
@@ -947,7 +820,7 @@
         }
 
         ctx.clearRect(0, 0, width, height);
-        const fadeDistance = 120; 
+        const fadeDistance = 150; 
         const fadeStart = heroBottomRect - fadeDistance;
 
         for (let i = 0; i < maxFlakes; i++) {
@@ -973,19 +846,19 @@
 
       function moveSnow(heroBottom) {
         const maxY = Math.min(height, heroBottom);
+        const colWidth = width / maxFlakes;
         
         for (let i = 0; i < maxFlakes; i++) {
           let f = flakes[i];
           f.y += f.d;
           f.a += f.aStep;
-          f.x += Math.sin(f.a) * 0.25; 
+          f.x += Math.sin(f.a) * 0.3; // Local horizontal sway
 
           if (f.y > maxY) { 
-            f.y = -10; 
-            f.x = Math.random() * width; 
+            f.y = -10; // Drop from very top beautifully
+            // Reset horizontally inside its DEDICATED column so screen coverage remains totally equal
+            f.x = f.baseX + (Math.random() * colWidth); 
           }
-          if (f.x > width + 10) f.x = -10;
-          if (f.x < -10) f.x = width + 10;
         }
       }
 
@@ -994,6 +867,11 @@
         height = window.innerHeight;
         canvas.width = width;
         canvas.height = height;
+        // Re-calculate the grid if screen resizes to keep it evenly distributed
+        const newColWidth = width / maxFlakes;
+        for (let i = 0; i < maxFlakes; i++) {
+          flakes[i].baseX = i * newColWidth;
+        }
       });
       
       drawSnow();
