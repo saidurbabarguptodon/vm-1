@@ -64,6 +64,16 @@
       padding: 0 20px; 
     }
 
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     .header {
       width: calc(100% - 32px);
       max-width: 1240px;
@@ -74,10 +84,10 @@
       position: sticky; 
       top: 16px; 
       z-index: 100;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(26, 215, 111, 0.5);
       border-radius: 16px;
       box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5), 
-                  inset 0 1px 0 rgba(255, 255, 255, 0.05);
+                  0 0 20px rgba(26, 215, 111, 0.15);
     }
     
     .header .container {
@@ -578,26 +588,26 @@
   <section class="hero" id="home">
     <div class="container">
       <% if (hero.primarytext) { %>
-        <h1 class="hero-title"><%- fmt(hero.primarytext) %></h1>
+        <h1 class="hero-title reveal"><%- fmt(hero.primarytext) %></h1>
       <% } %>
       <% if (hero.secondarytext) { %>
-        <p class="hero-description"><%- fmt(hero.secondarytext) %></p>
+        <p class="hero-description reveal"><%- fmt(hero.secondarytext) %></p>
       <% } %>
       <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
-        <a href="<%= hero.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
+        <a href="<%= hero.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener">
           <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %>
           <span><%= hero.buttontext || '' %></span>
         </a>
       <% } %>
       <% if (hero.footertext) { %>
-        <div class="hero-footer"><%- fmt(hero.footertext) %></div>
+        <div class="hero-footer reveal"><%- fmt(hero.footertext) %></div>
       <% } %>
     </div>
   </section>
 
   <section class="cards-section container" id="services">
     <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %>
-      <div class="cards-header">
+      <div class="cards-header reveal">
         <% if (cards.data.title) { %>
           <h2 class="cards-title"><%- fmt(cards.data.title) %></h2>
         <% } %>
@@ -616,7 +626,7 @@
       %>
       <% if (sortedCards.length > 0) { %>
         <% sortedCards.slice(0, 6).forEach(card => { %>
-          <a href="<%= card.url || '#' %>" class="card-bg" target="_blank" rel="noopener">
+          <a href="<%= card.url || '#' %>" class="card-bg reveal" target="_blank" rel="noopener">
             
             <% if (card.status && card.status.trim() !== '') { 
               let statusClass = 'status-default';
@@ -647,7 +657,7 @@
     </div>
 
     <% if (cards && cards.data && (cards.data.buttonenabled === true || cards.data.buttonenabled === 'true')) { %>
-      <div class="cards-footer">
+      <div class="cards-footer reveal">
         <a href="<%= cards.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
           <% if (cards.data.buttonicon) { %><i class="<%= cards.data.buttonicon %>"></i><% } %>
           <span><%= cards.data.buttontext || '' %></span>
@@ -658,7 +668,7 @@
 
   <section class="faqs-section container" id="faqs">
     <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %>
-      <div class="faqs-header">
+      <div class="faqs-header reveal">
         <% if (faqs.data.title) { %>
           <h2 class="faqs-title"><%- fmt(faqs.data.title) %></h2>
         <% } %>
@@ -671,7 +681,7 @@
     <div class="faqs-container">
       <% if (faqs && faqs.items && faqs.items.length > 0) { %>
         <% faqs.items.forEach((faq, index) => { %>
-          <div class="faq-item">
+          <div class="faq-item reveal">
             <button class="faq-question" aria-expanded="false">
               <span><%- fmt(faq.title || '') %></span>
               <i class="fa-solid fa-plus faq-icon"></i>
@@ -685,7 +695,7 @@
     </div>
 
     <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
-      <div class="faqs-footer">
+      <div class="faqs-footer reveal">
         <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
           <% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %>
           <span><%= faqs.data.buttontext || '' %></span>
@@ -710,6 +720,23 @@
   } %>
 
   <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+      };
+      const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    });
+
     document.querySelectorAll('.hero-btn, .card-bg, .sociallink').forEach(el => {
       el.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
@@ -744,15 +771,6 @@
         const faqItem = button.parentElement;
         const answer = faqItem.querySelector('.faq-answer');
         const isActive = faqItem.classList.contains('is-active');
-        
-        document.querySelectorAll('.faq-item').forEach(item => {
-          if (item !== faqItem) {
-            item.classList.remove('is-active');
-            item.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
-            item.querySelector('.faq-answer').style.maxHeight = null;
-            item.querySelector('.faq-answer').style.paddingBottom = '0';
-          }
-        });
 
         if (!isActive) {
           faqItem.classList.add('is-active');
