@@ -65,34 +65,43 @@
     }
 
     .header {
-      width: 100%;
-      background: rgba(15, 15, 20, 0.55);
+      width: calc(100% - 32px);
+      max-width: 1240px;
+      margin: 16px auto 0;
+      background: rgba(18, 18, 24, 0.65);
       backdrop-filter: blur(24px) saturate(180%);
       -webkit-backdrop-filter: blur(24px) saturate(180%);
-      position: sticky; top: 0; z-index: 100;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.6), 
-                  inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+      position: sticky; 
+      top: 16px; 
+      z-index: 100;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
-    .header__nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+    
+    .header .container {
+      padding: 0 16px;
+    }
+
+    .header__nav { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
 
     .header__toggle, .sidebar__close {
       background: transparent;
       border: none;
-      color: var(--kex-gray);
+      color: var(--kex-white);
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       border-radius: 8px;
       transition: all 0.15s ease;
-      margin-right: -8px;
     }
-    .header__toggle { font-size: 1.6rem; width: 44px; height: 44px; }
+    .header__toggle { font-size: 1.6rem; width: 40px; height: 40px; margin-right: 0; }
     .header__toggle i { transition: transform 0.2s ease; }
-    .sidebar__close { font-size: 1.5rem; width: 36px; height: 36px; }
+    .sidebar__close { font-size: 1.5rem; width: 36px; height: 36px; margin-right: -8px; }
     .sidebar.is-expanded .sidebar__close i { transform: rotate(90deg); }
 
     .brand { display: flex; align-items: center; gap: 10px; transition: opacity 0.2s ease; text-decoration: none; }
-    .brand--header { height: 40px; margin-left: -12px; }
+    .brand--header { height: 36px; margin-left: 0; }
     .brand--sidebar { height: 32px; }
 
     .logoimg { height: 100%; width: auto; object-fit: contain; }
@@ -102,10 +111,12 @@
     }
     .alticon { font-size: 1.6rem; display: inline-block; }
     .alttext { 
-      font-size: 1.7rem; 
+      font-size: 1.5rem; 
       font-weight: 800; 
       letter-spacing: -0.5px; 
       font-family: 'Playfair Display', serif; 
+      color: #fff;
+      text-shadow: none;
     }
 
     .overlay {
