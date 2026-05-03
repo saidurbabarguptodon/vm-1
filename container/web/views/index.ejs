@@ -47,8 +47,7 @@
       position: fixed;
       top: -150px; 
       left: -150px;
-      width: 500px; 
-      height: 500px;
+      width: 500px;       height: 500px;
       background: rgba(26, 215, 111, 0.25);
       border-radius: 50%;
       z-index: 0;
@@ -97,8 +96,7 @@
 
     .header__nav { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
 
-    .header__toggle, .sidebar__close {
-      background: transparent;
+    .header__toggle, .sidebar__close {      background: transparent;
       border: none;
       color: var(--kex-white);
       cursor: pointer;
@@ -147,8 +145,7 @@
       background: rgba(15, 15, 20, 0.65);
       backdrop-filter: blur(28px) saturate(180%);
       -webkit-backdrop-filter: blur(28px) saturate(180%);
-      z-index: 999;
-      display: flex; flex-direction: column;
+      z-index: 999;      display: flex; flex-direction: column;
       border-radius: 0 24px 24px 0;
       border-right: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5), 
@@ -197,8 +194,7 @@
     .navmenu { display: flex; flex-direction: column; gap: 6px; }
     .navbutton {
       display: flex; align-items: center; gap: 12px;
-      padding: 14px 15px; min-height: 56px;
-      color: #fff; text-decoration: none;
+      padding: 14px 15px; min-height: 56px;      color: #fff; text-decoration: none;
       border-radius: 12px;
       transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
       position: relative; overflow: hidden;
@@ -247,8 +243,7 @@
       color: var(--kex-gray); margin-bottom: 32px; hyphens: auto;
     }
     .hero-btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      background-color: var(--kex-green); 
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;      background-color: var(--kex-green); 
       color: #fff;
       font-weight: 600; font-size: 1.1rem;
       padding: 14px 24px; border-radius: 60px;
@@ -297,8 +292,7 @@
       gap: 24px;
       width: 100%;
     }
-    
-    .card-bg {
+        .card-bg {
       background: rgba(20, 20, 30, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 20px;
@@ -347,8 +341,7 @@
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
       border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
+      animation: pulse 2s infinite;    }
     @keyframes pulse {
       0% { transform: scale(0.95); box-shadow: 0 0 0 0 var(--pulse-color); }
       70% { transform: scale(1); box-shadow: 0 0 0 4px transparent; }
@@ -397,7 +390,6 @@
       line-height: 1.6;
       flex-grow: 1;
     }
-
     .cards-footer {
       display: flex;
       justify-content: center;
@@ -447,8 +439,7 @@
       background: rgba(20, 20, 30, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 16px;
-      overflow: hidden;
-      transition: all 0.3s ease;
+      overflow: hidden;      transition: all 0.3s ease;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       flex: 1 1 320px;
@@ -497,8 +488,7 @@
       line-height: 1.6;
     }
     .faqs-footer {
-      display: flex;
-      justify-content: center;
+      display: flex;      justify-content: center;
       width: 100%;
       margin-top: 48px;
     }
@@ -526,6 +516,85 @@
     .card-bg:active, .card-bg.force-active { transform: scale(0.98); border-color: rgba(26, 215, 111, 0.4); }
     .card-bg:active .card-icon, .card-bg.force-active .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
     .card-bg:active .card-title, .card-bg.force-active .card-title { color: var(--kex-green); }
+
+    /* ===== NEW: RESPONSIVE MEDIA QUERIES (Mobile-First) ===== */
+
+    /* Prevent horizontal overflow on all viewports */
+    img, video, iframe, canvas, svg { max-width: 100%; height: auto; display: block; }
+
+    /* Small mobile: 320px - 479px */
+    @media (max-width: 479px) {
+      .container { padding: 0 16px; }
+      
+      .header { width: 100%; margin: 8px auto 0; border-radius: 14px; }
+      .header .container { padding: 0 12px; }
+      .header__nav { padding: 10px 0; }
+      .header__toggle { width: 36px; height: 36px; }
+      
+      .hero { padding-top: 50px; padding-bottom: 40px; }
+      .hero-title { font-size: clamp(1.6rem, 6.5vw, 2.8rem); }
+      .hero-description { font-size: clamp(1rem, 4.5vw, 1.4rem); margin-bottom: 24px; }
+      .hero-btn { padding: 12px 20px; font-size: 1rem; min-height: 48px; }
+      
+      .cards-section, .faqs-section { padding-top: 30px; padding-bottom: 60px; }
+      .cards-title, .faqs-title { font-size: clamp(1.6rem, 5.5vw, 2.4rem); }      .cards-description, .faqs-description { font-size: clamp(0.95rem, 4vw, 1.15rem); }
+      
+      .cards-grid, .faqs-container { gap: 16px; }
+      
+      .card-bg, .faq-item { 
+        flex: 1 1 100%; 
+        max-width: 100%; 
+        min-width: 100%;
+        padding: 24px 20px;
+      }
+      
+      .card-status { top: 16px; right: 16px; padding: 3px 8px; font-size: 0.6rem; }
+      .card-icon { width: 48px; height: 48px; font-size: 1.4rem; margin-bottom: 20px; }
+      .card-title { font-size: 1.2rem; margin-bottom: 10px; }
+      .card-description { font-size: 0.9rem; }
+      
+      .faq-question { padding: 20px; font-size: 1rem; min-height: 56px; }
+      .faq-answer { padding: 0 20px 20px; font-size: 0.9rem; }
+      
+      .sociallink { width: 38px; height: 38px; font-size: 17px; }
+      
+      .bg-ambient-glow {
+        width: 300px;
+        height: 300px;
+        top: -100px;
+        left: -100px;
+        filter: blur(80px);
+      }
+      
+      .sidebar { width: 260px; }
+      .sidebar__header { padding: 0 20px; height: 68px; }
+      .sidebar__body { padding: 12px 8px 16px; }
+      .sidebar__footer { 
+        padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); 
+        min-height: calc(68px + env(safe-area-inset-bottom)); 
+      }
+      
+      .navbutton { padding: 12px 14px; min-height: 52px; }
+      .navbutton i { font-size: 1.2rem; width: 26px; }
+      .navbutton__text { font-size: 1rem; }
+    }
+
+    /* Tablet: 768px - 1023px */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .container { padding: 0 24px; }
+      .hero { padding-top: 70px; padding-bottom: 60px; }
+      .cards-grid, .faqs-container { gap: 20px; }
+      .card-bg, .faq-item { flex: 1 1 calc(50% - 20px); }
+    }
+    /* Desktop: 1024px+ (maintain original 3-column layout) */
+    @media (min-width: 1024px) {
+      .card-bg, .faq-item { flex: 1 1 calc(33.333% - 24px); }
+    }
+
+    /* Large screens: 1440px+ */
+    @media (min-width: 1440px) {
+      .container { max-width: 1300px; }
+    }
   </style>
 </head>
 <body>
@@ -566,7 +635,6 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-
     <div class="sidebar__body">
       <nav class="navmenu" id="navmenu">
         <% if (sidebar.body && sidebar.body.length > 0) { %>
@@ -616,8 +684,7 @@
   </section>
 
   <section class="cards-section container" id="services">
-    <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %>
-      <div class="cards-header reveal">
+    <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %>      <div class="cards-header reveal">
         <% if (cards.data.title) { %>
           <h2 class="cards-title"><%- fmt(cards.data.title) %></h2>
         <% } %>
@@ -666,8 +733,7 @@
       <% } %>
     </div>
 
-    <% if (cards && cards.data && (cards.data.buttonenabled === true || cards.data.buttonenabled === 'true')) { %>
-      <div class="cards-footer reveal">
+    <% if (cards && cards.data && (cards.data.buttonenabled === true || cards.data.buttonenabled === 'true')) { %>      <div class="cards-footer reveal">
         <a href="<%= cards.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
           <% if (cards.data.buttonicon) { %><i class="<%= cards.data.buttonicon %>"></i><% } %>
           <span><%= cards.data.buttontext || '' %></span>
@@ -716,8 +782,7 @@
 
   <% function fmt(t) {
     if (!t) return '';
-    
-    t = t.replace(/\[a url=([^\]]+)\](.*?)\[\/a\]/gi, '<a href="$1" target="_blank" rel="noopener" style="color: var(--kex-green); text-decoration: none;">$2</a>');
+        t = t.replace(/\[a url=([^\]]+)\](.*?)\[\/a\]/gi, '<a href="$1" target="_blank" rel="noopener" style="color: var(--kex-green); text-decoration: none;">$2</a>');
     t = t.replace(/\[icon\](.*?)\[\/icon\]/gi, '<i class="$1"></i>');
     
     t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1;">$2</span>');
@@ -766,8 +831,7 @@
             } else {
               window.location.href = href;
             }
-          }, 200);
-        }
+          }, 200);        }
 
         setTimeout(() => {
           this.classList.remove('force-active');
@@ -816,8 +880,7 @@
         });
       }
 
-      function scrollToTop() {
-        isNavigating = true;
+      function scrollToTop() {        isNavigating = true;
         window.scrollTo({ top: 0, behavior: 'smooth' });
         history.pushState(null, null, window.location.pathname);
         setNavActive('home');
@@ -866,8 +929,7 @@
 
       let isScrolling = false;
 
-      function updateScrollSpy() {
-        if (isNavigating) return; 
+      function updateScrollSpy() {        if (isNavigating) return; 
         
         const scrollPosition = window.scrollY || document.documentElement.scrollTop;
         let currentSection = null;
@@ -916,8 +978,7 @@
         }
       }, { passive: true });
 
-      if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'manual';
+      if ('scrollRestoration' in history) {        history.scrollRestoration = 'manual';
       }
 
       window.addEventListener('load', () => {
@@ -966,8 +1027,7 @@
             ctx.fillStyle = `rgba(255, 255, 255, ${f.opacity})`;
             ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
             ctx.fill();
-          }
-        }
+          }        }
         
         moveSnow();
         requestAnimationFrame(drawSnow);
@@ -1016,8 +1076,7 @@
 
       openBtn.addEventListener('click', showSidebar);
       closeBtn.addEventListener('click', hideSidebar);
-      overlay.addEventListener('click', hideSidebar);
-      window.addEventListener('hideSidebar', hideSidebar);
+      overlay.addEventListener('click', hideSidebar);      window.addEventListener('hideSidebar', hideSidebar);
     })();
   </script>
 </body>
