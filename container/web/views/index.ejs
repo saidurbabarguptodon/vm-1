@@ -28,9 +28,9 @@
     body.has-sidebar-open{overflow:hidden;touch-action:none}
     #snow-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
     .bg-ambient-glow{position:fixed;top:-150px;left:-150px;width:500px;height:500px;background:rgba(26,215,111,.25);border-radius:50%;z-index:0;pointer-events:none;filter:blur(100px)}
-    .container{position:relative;z-index:2;width:100%;max-width:1400px;margin:0 auto;padding:0 20px}
+    .container{position:relative;z-index:2;width:100%;max-width:100%;margin:0;padding:0 20px}
     .reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s cubic-bezier(.16,1,.3,1)}.reveal.active{opacity:1;transform:translateY(0)}
-    .header{width:95%;max-width:1200px;margin:10px auto 0;background:rgba(18,18,24,.7);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);position:sticky;top:10px;z-index:100;border:1px solid rgba(26,215,111,.5);border-radius:16px;box-shadow:0 10px 40px -10px rgba(0,0,0,.5),0 0 20px rgba(26,215,111,.15)}
+    .header{width:calc(100% - 24px);margin:12px 12px 0;background:rgba(18,18,24,.7);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);position:sticky;top:12px;z-index:100;border:1px solid rgba(26,215,111,.5);border-radius:16px;box-shadow:0 10px 40px -10px rgba(0,0,0,.5),0 0 20px rgba(26,215,111,.15)}
     .header .container{padding:0 16px;max-width:100%}
     .header__nav{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
     .header__toggle,.sidebar__close{background:transparent;border:none;color:var(--kex-white);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all .15s ease}
@@ -61,18 +61,18 @@
     .navbutton__text{font-size:1.05rem;font-weight:500;color:inherit;transition:color .2s ease}
     .sociallinks{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%}
     .sociallink{display:flex;align-items:center;justify-content:center;width:42px;height:42px;background:var(--kex-green);border:1px solid var(--kex-green);color:#fff;border-radius:50%;text-decoration:none;font-size:19px;transition:all .3s cubic-bezier(.4,0,.2,1)}
-    .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 20px 80px;min-height:50vh;position:relative;scroll-margin-top:80px}
-    .hero-title{font-size:clamp(1.8rem,5vw,3.5rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--kex-white);margin-bottom:20px;hyphens:auto;max-width:900px}
-    .hero-description{font-size:clamp(1rem,2vw,1.4rem);color:var(--kex-gray);margin-bottom:32px;hyphens:auto;max-width:700px;line-height:1.7}
+    .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 20px 80px;min-height:50vh;position:relative;scroll-margin-top:80px;width:100%}
+    .hero-title{font-size:clamp(1.8rem,5vw,3.5rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--kex-white);margin-bottom:20px;hyphens:auto;max-width:800px;width:100%}
+    .hero-description{font-size:clamp(1rem,2vw,1.4rem);color:var(--kex-gray);margin-bottom:32px;hyphens:auto;max-width:700px;width:100%;line-height:1.7}
     .hero-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--kex-green);color:#fff;font-weight:600;font-size:1.1rem;padding:14px 32px;border-radius:60px;text-decoration:none;transition:background .3s ease,transform .3s ease,box-shadow .3s ease;box-shadow:0 8px 20px -6px rgba(26,215,111,.5);margin-bottom:24px;outline:none}
     .hero-btn i{font-size:1.3rem;font-style:normal!important}
     .hero-footer{font-size:.95rem;color:var(--kex-gray);opacity:.8}
-    .cards-section,.faqs-section{padding:60px 20px 100px;position:relative;z-index:2;scroll-margin-top:85px}
+    .cards-section,.faqs-section{padding:60px 20px 100px;position:relative;z-index:2;scroll-margin-top:85px;width:100%}
     .cards-header,.faqs-header{text-align:center;margin-bottom:50px}
     .cards-title,.faqs-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:var(--kex-white);margin-bottom:16px;letter-spacing:-.02em}
     .cards-description,.faqs-description{font-size:clamp(1rem,2vw,1.25rem);color:var(--kex-gray);max-width:700px;margin:0 auto;line-height:1.7}
-    .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:1000px;margin:0 auto}
-    .faqs-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;max-width:900px;margin:0 auto}
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;width:100%;max-width:1000px;margin:0 auto}
+    .faqs-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;width:100%;max-width:900px;margin:0 auto}
     .card-bg{background:rgba(20,20,30,.4);border:1px solid rgba(255,255,255,.05);border-radius:20px;padding:32px 28px;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;transition:all .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:relative;overflow:hidden;outline:none;min-height:280px}
     .faq-item{background:rgba(20,20,30,.4);border:1px solid rgba(255,255,255,.05);border-radius:16px;overflow:hidden;transition:all .3s ease;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
     .card-status{position:absolute;top:24px;right:24px;display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;pointer-events:none;transition:all .3s ease;border:1px solid}
@@ -102,23 +102,20 @@
     .card-bg:active .card-title,.card-bg.force-active .card-title{color:var(--kex-green)}
     img,video,iframe,canvas,svg{max-width:100%;height:auto;display:block}
     
-    /* Large screens - 2 columns for cards */
     @media(min-width:900px){
       .cards-grid{grid-template-columns:repeat(2,1fr);gap:28px}
       .faqs-container{grid-template-columns:repeat(2,1fr);gap:24px}
     }
     
-    /* Extra large screens */
     @media(min-width:1200px){
       html{font-size:18px}
       .cards-grid{gap:32px}
       .card-bg{min-height:300px;padding:36px 32px}
     }
     
-    /* Mobile */
     @media(max-width:479px){
       .container{padding:0 16px}
-      .header{margin:8px auto 0;border-radius:14px}
+      .header{margin:8px 8px 0;border-radius:14px}
       .header .container{padding:0 12px}
       .header__nav{padding:10px 0}
       .header__toggle{width:36px;height:36px}
@@ -145,10 +142,10 @@
 
   <header class="header">
     <div class="container">
-      <nav class="header__nav">        <a href="/" class="brand brand--header" id="brand-header">
+      <nav class="header__nav">
+        <a href="/" class="brand brand--header" id="brand-header">
           <% if (header.logourl) { %><img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="logoimg"><% } else { %>
-            <% if (header.alticon) { %><i class="<%= header.alticon %> alticon"></i><% } %>
-            <% if (header.alttext) { %><span class="alttext"><span class="alttext"><%= header.alttext %></span><% } %>
+            <% if (header.alticon) { %><i class="<%= header.alticon %> alticon"></i><% } %>            <% if (header.alttext) { %><span class="alttext"><span class="alttext"><%= header.alttext %></span><% } %>
           <% } %>
         </a>
         <button class="header__toggle" id="open-sidebar" aria-label="Open Menu"><i class="fa-solid fa-bars"></i></button>
@@ -194,10 +191,10 @@
   <section class="hero" id="home">
     <div class="container">
       <% if (hero.primarytext) { %><h1 class="hero-title reveal"><%- fmt(hero.primarytext) %></h1><% } %>
-      <% if (hero.secondarytext) { %><p class="hero-description reveal"><%- fmt(hero.secondarytext) %></p><% } %>      <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
+      <% if (hero.secondarytext) { %><p class="hero-description reveal"><%- fmt(hero.secondarytext) %></p><% } %>
+      <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
         <a href="<%= hero.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener">
-          <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %><span><%= hero.buttontext || '' %></span>
-        </a>
+          <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %><span><%= hero.buttontext || '' %></span>        </a>
       <% } %>
       <% if (hero.footertext) { %><div class="hero-footer reveal"><%- fmt(hero.footertext) %></div><% } %>
     </div>
@@ -244,9 +241,9 @@
       <% } %>
     </div>
   </section>
+
   <section class="faqs-section" id="faqs">
-    <div class="container">
-      <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %>
+    <div class="container">      <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %>
         <div class="faqs-header reveal">
           <% if (faqs.data.title) { %><h2 class="faqs-title"><%- fmt(faqs.data.title) %></h2><% } %>
           <% if (faqs.data.description) { %><p class="faqs-description"><%- fmt(faqs.data.description) %></p><% } %>
@@ -292,10 +289,10 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const obs = new IntersectionObserver((e, o) => {        e.forEach(n => { if (n.isIntersecting) { n.target.classList.add('active'); o.unobserve(n.target); } });
+      const obs = new IntersectionObserver((e, o) => {
+        e.forEach(n => { if (n.isIntersecting) { n.target.classList.add('active'); o.unobserve(n.target); } });
       }, { threshold: 0.1 });
-      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
-    });
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));    });
 
     document.addEventListener('click', e => {
       const btn = e.target.closest('.hero-btn, .card-bg, .sociallink');
@@ -341,10 +338,10 @@
         } else {
           item.classList.remove('is-active');
           this.setAttribute('aria-expanded', 'false');
-          icon.className = 'fa-solid fa-plus';          answer.style.maxHeight = null;
+          icon.className = 'fa-solid fa-plus';
+          answer.style.maxHeight = null;
           answer.style.paddingBottom = '0';
-          setTimeout(() => {
-            if (!item.classList.contains('is-active')) {
+          setTimeout(() => {            if (!item.classList.contains('is-active')) {
               answer.style.display = '';
               answer.style.visibility = '';
             }
@@ -390,10 +387,10 @@
           if (location.pathname + location.hash !== newUrl) history.replaceState(null, null, newUrl);
         }
       };
-      window.addEventListener('scroll', () => { if (!scrollLock) { requestAnimationFrame(() => { updateSpy(); scrollLock = false; }); scrollLock = true; } }, { passive: true });      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      window.addEventListener('scroll', () => { if (!scrollLock) { requestAnimationFrame(() => { updateSpy(); scrollLock = false; }); scrollLock = true; } }, { passive: true });
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       window.addEventListener('load', () => { if (location.hash) history.replaceState(null, null, location.pathname); window.scrollTo(0, 0); setNav('home'); lastSec = 'home'; updateSpy(); });
     })();
-
     (() => {
       const c = document.getElementById('snow-canvas'), ctx = c.getContext('2d');
       let w = innerWidth, h = innerHeight; c.width = w; c.height = h;
