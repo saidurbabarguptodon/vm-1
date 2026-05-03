@@ -291,8 +291,9 @@
     }
     
     .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 24px;
       width: 100%;
     }
@@ -312,6 +313,10 @@
       position: relative;
       overflow: hidden;
       outline: none;
+      flex: 1 1 320px;
+      max-width: 400px;
+      width: 100%;
+      min-width: min(100%, 280px);
     }
     
     .card-status {
@@ -431,11 +436,11 @@
     
     .faqs-container {
       width: 100%;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: 24px; 
-      align-items: start; 
+      align-items: flex-start; 
     }
     
     .faq-item {
@@ -446,6 +451,10 @@
       transition: all 0.3s ease;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
+      flex: 1 1 320px;
+      max-width: 400px;
+      width: 100%;
+      min-width: min(100%, 280px);
     }
     .faq-question {
       width: 100%;
