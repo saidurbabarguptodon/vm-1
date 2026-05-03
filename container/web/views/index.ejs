@@ -47,8 +47,7 @@
     .overlay.is-visible{opacity:1;visibility:visible}
     .sidebar{position:fixed;top:0;bottom:0;left:0;height:100vh;height:100dvh;width:280px;max-width:80vw;background:rgba(15,15,20,.65);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);z-index:999;display:flex;flex-direction:column;border-radius:0 24px 24px 0;border-right:1px solid rgba(255,255,255,.08);box-shadow:10px 0 30px rgba(0,0,0,.5),inset -1px 0 0 rgba(255,255,255,.03);transform:translateX(-100%);transition:transform .4s cubic-bezier(.16,1,.3,1)}
     .sidebar.is-expanded{transform:translateX(0)}
-    .sidebar__header,.sidebar__body,.sidebar__footer{opacity:0;transform:translateY(15px);transition:opacity .4s ease,transform .4s cubic-bezier(.16,1,.3,1)}    .sidebar.is-expanded .sidebar__header,.sidebar.is-expanded .sidebar__body,.sidebar.is-expanded .sidebar__footer{opacity:1;transform:translateY(0)}
-    .sidebar.is-expanded .sidebar__header{transition-delay:.1s}.sidebar.is-expanded .sidebar__body{transition-delay:.18s}.sidebar.is-expanded .sidebar__footer{transition-delay:.26s}
+    .sidebar__header,.sidebar__body,.sidebar__footer{opacity:0;transform:translateY(15px);transition:opacity .4s ease,transform .4s cubic-bezier(.16,1,.3,1)}.sidebar.is-expanded .sidebar__header,.sidebar.is-expanded .sidebar__body,.sidebar.is-expanded .sidebar__footer{opacity:1;transform:translateY(0)}    .sidebar.is-expanded .sidebar__header{transition-delay:.1s}.sidebar.is-expanded .sidebar__body{transition-delay:.18s}.sidebar.is-expanded .sidebar__footer{transition-delay:.26s}
     .sidebar__header{display:flex;justify-content:space-between;align-items:center;padding:0 24px;border-bottom:1px solid rgba(255,255,255,.08);height:73px;flex-shrink:0}
     .sidebar__body{flex:1;padding:16px 12px 20px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
     .sidebar__body::-webkit-scrollbar{width:5px}.sidebar__body::-webkit-scrollbar-track{background:transparent}.sidebar__body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:10px}
@@ -61,12 +60,16 @@
     .navbutton__text{font-size:1.05rem;font-weight:500;color:inherit;transition:color .2s ease}
     .sociallinks{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%}
     .sociallink{display:flex;align-items:center;justify-content:center;width:42px;height:42px;background:var(--kex-green);border:1px solid var(--kex-green);color:#fff;border-radius:50%;text-decoration:none;font-size:19px;transition:all .3s cubic-bezier(.4,0,.2,1)}
+    
+    /* 🔧 FIX 1: Hero centering improvements */
     .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 20px 80px;min-height:50vh;position:relative;scroll-margin-top:80px;width:100%}
-    .hero-title{font-size:clamp(1.8rem,5vw,3.5rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--kex-white);margin-bottom:20px;hyphens:auto;max-width:800px;width:100%}
-    .hero-description{font-size:clamp(1rem,2vw,1.4rem);color:var(--kex-gray);margin-bottom:32px;hyphens:auto;max-width:700px;width:100%;line-height:1.7}
+    .hero .container{display:flex;flex-direction:column;align-items:center;width:100%}
+    .hero-title{font-size:clamp(1.8rem,5vw,3.5rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--kex-white);margin:0 auto 20px;text-align:center;hyphens:auto;max-width:800px;width:100%}
+    .hero-description{font-size:clamp(1rem,2vw,1.4rem);color:var(--kex-gray);margin:0 auto 32px;text-align:center;hyphens:auto;max-width:700px;width:100%;line-height:1.7}
     .hero-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--kex-green);color:#fff;font-weight:600;font-size:1.1rem;padding:14px 32px;border-radius:60px;text-decoration:none;transition:background .3s ease,transform .3s ease,box-shadow .3s ease;box-shadow:0 8px 20px -6px rgba(26,215,111,.5);margin-bottom:24px;outline:none}
     .hero-btn i{font-size:1.3rem;font-style:normal!important}
     .hero-footer{font-size:.95rem;color:var(--kex-gray);opacity:.8}
+    
     .cards-section,.faqs-section{padding:60px 20px 100px;position:relative;z-index:2;scroll-margin-top:85px;width:100%}
     .cards-header,.faqs-header{text-align:center;margin-bottom:50px}
     .cards-title,.faqs-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:var(--kex-white);margin-bottom:16px;letter-spacing:-.02em}
@@ -93,10 +96,9 @@
     .faq-toggle-icon{display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(26,215,111,.1);border-radius:10px;color:var(--kex-green);font-size:1.1rem;transition:all .3s ease;flex-shrink:0}
     .faq-item.is-active .faq-toggle-icon{background:rgba(26,215,111,.15);color:var(--kex-green)}
     .faq-item.is-active{border-color:rgba(26,215,111,.3);background:rgba(20,20,30,.6)}
-    .faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease-out,padding .35s ease,opacity .3s ease;padding:0 24px;color:var(--kex-gray);font-size:.95rem;line-height:1.6;opacity:0}
-    .faq-item.is-active .faq-answer{opacity:1;padding-bottom:24px}
+    .faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease-out,padding .35s ease,opacity .3s ease;padding:0 24px;color:var(--kex-gray);font-size:.95rem;line-height:1.6;opacity:0}    .faq-item.is-active .faq-answer{opacity:1;padding-bottom:24px}
     @media(hover:hover){.header__toggle:hover,.sidebar__close:hover{background:rgba(255,255,255,.06);color:#fff}.brand:hover{opacity:.8}.navbutton:hover{background:var(--kex-dark-green);transform:translateX(4px);color:#fff}.navbutton:hover i{color:var(--kex-green)}.sociallink:hover{background:var(--kex-dark-green);border-color:var(--kex-dark-green);color:#fff;transform:translateY(-4px) scale(1.05);box-shadow:0 10px 20px -5px rgba(26,215,111,.5)}.hero-btn:hover{background:var(--kex-dark-green);transform:translateY(-2px);box-shadow:0 12px 24px -8px rgba(26,215,111,.6)}.card-bg:hover{transform:translateY(-8px);border-color:rgba(26,215,111,.4);box-shadow:0 15px 35px -10px rgba(0,0,0,.6),0 0 25px rgba(26,215,111,.08)}.card-bg:hover .card-icon{transform:scale(1.1) rotate(-5deg);background:var(--kex-green);color:#fff;box-shadow:0 8px 20px -6px rgba(26,215,111,.5)}.card-bg:hover .card-title{color:var(--kex-green)}.faq-question:hover{color:var(--kex-green)}}
-    .header__toggle:active i,.header__toggle.force-active i{transform:scale(.85)}    .sociallink:active,.sociallink.force-active,.hero-btn:active,.hero-btn.force-active{background:var(--kex-dark-green);transform:scale(.95)}
+    .header__toggle:active i,.header__toggle.force-active i{transform:scale(.85)}.sociallink:active,.sociallink.force-active,.hero-btn:active,.hero-btn.force-active{background:var(--kex-dark-green);transform:scale(.95)}
     .card-bg:active,.card-bg.force-active{transform:scale(.98);border-color:rgba(26,215,111,.4)}
     .card-bg:active .card-icon,.card-bg.force-active .card-icon{transform:scale(1.1) rotate(-5deg);background:var(--kex-green);color:#fff;box-shadow:0 8px 20px -6px rgba(26,215,111,.5)}
     .card-bg:active .card-title,.card-bg.force-active .card-title{color:var(--kex-green)}
@@ -143,8 +145,7 @@
   <header class="header">
     <div class="container">
       <nav class="header__nav">
-        <a href="/" class="brand brand--header" id="brand-header">
-          <% if (header.logourl) { %><img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="logoimg"><% } else { %>
+        <a href="/" class="brand brand--header" id="brand-header">          <% if (header.logourl) { %><img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="logoimg"><% } else { %>
             <% if (header.alticon) { %><i class="<%= header.alticon %> alticon"></i><% } %>            <% if (header.alttext) { %><span class="alttext"><span class="alttext"><%= header.alttext %></span><% } %>
           <% } %>
         </a>
@@ -193,8 +194,7 @@
       <% if (hero.primarytext) { %><h1 class="hero-title reveal"><%- fmt(hero.primarytext) %></h1><% } %>
       <% if (hero.secondarytext) { %><p class="hero-description reveal"><%- fmt(hero.secondarytext) %></p><% } %>
       <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
-        <a href="<%= hero.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener">
-          <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %><span><%= hero.buttontext || '' %></span>        </a>
+        <a href="<%= hero.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener">          <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %><span><%= hero.buttontext || '' %></span>        </a>
       <% } %>
       <% if (hero.footertext) { %><div class="hero-footer reveal"><%- fmt(hero.footertext) %></div><% } %>
     </div>
@@ -243,8 +243,7 @@
   </section>
 
   <section class="faqs-section" id="faqs">
-    <div class="container">      <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %>
-        <div class="faqs-header reveal">
+    <div class="container">      <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %>        <div class="faqs-header reveal">
           <% if (faqs.data.title) { %><h2 class="faqs-title"><%- fmt(faqs.data.title) %></h2><% } %>
           <% if (faqs.data.description) { %><p class="faqs-description"><%- fmt(faqs.data.description) %></p><% } %>
         </div>
@@ -293,7 +292,6 @@
         e.forEach(n => { if (n.isIntersecting) { n.target.classList.add('active'); o.unobserve(n.target); } });
       }, { threshold: 0.1 });
       document.querySelectorAll('.reveal').forEach(el => obs.observe(el));    });
-
     document.addEventListener('click', e => {
       const btn = e.target.closest('.hero-btn, .card-bg, .sociallink');
       if (!btn) return;
@@ -306,6 +304,7 @@
       setTimeout(() => { btn.classList.remove('force-active'); btn.blur(); }, 2500);
     });
 
+    // 🔧 FIX 2: Corrected FAQ toggle logic - prevents "open one opens all" bug
     document.querySelectorAll('.faq-question').forEach(btn => {
       btn.addEventListener('click', function() {
         const item = this.closest('.faq-item');
@@ -313,39 +312,62 @@
         const icon = item.querySelector('.faq-toggle-icon i');
         const isActive = item.classList.contains('is-active');
 
-        document.querySelectorAll('.faq-item.is-active').forEach(activeItem => {
-          if (activeItem !== item) {
-            activeItem.classList.remove('is-active');
-            activeItem.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
-            activeItem.querySelector('.faq-toggle-icon i').className = 'fa-solid fa-plus';
-            const activeAnswer = activeItem.querySelector('.faq-answer');
-            activeAnswer.style.maxHeight = null;
-            activeAnswer.style.paddingBottom = '0';
+        // Close ALL other FAQs first (critical fix)
+        document.querySelectorAll('.faq-item').forEach(otherItem => {
+          if (otherItem !== item) {
+            const otherBtn = otherItem.querySelector('.faq-question');
+            const otherIcon = otherItem.querySelector('.faq-toggle-icon i');
+            const otherAnswer = otherItem.querySelector('.faq-answer');
+            
+            otherItem.classList.remove('is-active');
+            otherBtn.setAttribute('aria-expanded', 'false');
+            otherIcon.className = 'fa-solid fa-plus';
+            otherAnswer.style.maxHeight = null;
+            otherAnswer.style.paddingBottom = '0';
+            otherAnswer.style.opacity = '';
+            
+            // Reset visibility after transition
+            setTimeout(() => {
+              if (!otherItem.classList.contains('is-active')) {
+                otherAnswer.style.display = '';
+                otherAnswer.style.visibility = '';
+              }
+            }, 350);
           }
         });
 
+        // Toggle current FAQ
         if (!isActive) {
+          // Open this FAQ
           item.classList.add('is-active');
           this.setAttribute('aria-expanded', 'true');
-          icon.className = 'fa-solid fa-minus';
+          icon.className = 'fa-solid fa-minus';          
           answer.style.display = 'block';
           answer.style.visibility = 'visible';
+          answer.style.opacity = '1';
+          
+          // Force reflow for accurate scrollHeight calculation
+          void answer.offsetHeight;
+          
           requestAnimationFrame(() => {
-            const contentHeight = answer.scrollHeight;
-            answer.style.maxHeight = contentHeight + 'px';
+            answer.style.maxHeight = answer.scrollHeight + 'px';
             answer.style.paddingBottom = '24px';
           });
         } else {
+          // Close this FAQ
           item.classList.remove('is-active');
           this.setAttribute('aria-expanded', 'false');
           icon.className = 'fa-solid fa-plus';
           answer.style.maxHeight = null;
           answer.style.paddingBottom = '0';
-          setTimeout(() => {            if (!item.classList.contains('is-active')) {
+          
+          setTimeout(() => {
+            if (!item.classList.contains('is-active')) {
               answer.style.display = '';
               answer.style.visibility = '';
+              answer.style.opacity = '';
             }
-          }, 500);
+          }, 350);
         }
       });
     });
@@ -368,8 +390,7 @@
         if (h === '/' || h === '#home') { e.preventDefault(); scrollTop(); window.dispatchEvent(new Event('hideSidebar')); }
         else if (h?.startsWith('#')) {
           e.preventDefault(); const t = document.getElementById(h.slice(1));
-          if (t) { navigating = true; t.scrollIntoView({ behavior: 'smooth' }); history.pushState(null, null, h); setNav(h.slice(1)); lastSec = h.slice(1); window.dispatchEvent(new Event('hideSidebar')); setTimeout(() => navigating = false, 800); }
-        }
+          if (t) { navigating = true; t.scrollIntoView({ behavior: 'smooth' }); history.pushState(null, null, h); setNav(h.slice(1)); lastSec = h.slice(1); window.dispatchEvent(new Event('hideSidebar')); setTimeout(() => navigating = false, 800); }        }
       }));
       const updateSpy = () => {
         if (navigating) return;
