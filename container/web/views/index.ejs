@@ -6,575 +6,139 @@
   <title>KexCloud</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root {
-      --kex-green: #1ad76f;
-      --kex-dark-green: #0E713B;
-      --kex-yellow: #FBBF24;
-      --kex-dark-yellow: #B45309;
-      --kex-red: #EF4444;
-      --kex-dark-red: #991B1B;
-      --kex-blue: #3B82F6;
-      --kex-dark-blue: #1E3A8A;
-      --kex-white: #F1F5F9;
-      --kex-gray: #94A3B8;
+  
+  <!-- Tailwind CSS Integration -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            kex: {
+              green: '#1ad76f',
+              darkGreen: '#0E713B',
+              yellow: '#FBBF24',
+              darkYellow: '#B45309',
+              red: '#EF4444',
+              darkRed: '#991B1B',
+              blue: '#3B82F6',
+              darkBlue: '#1E3A8A',
+              white: '#F1F5F9',
+              gray: '#94A3B8',
+              bg: '#0A0A0F'
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+            playfair:['Playfair Display', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer utilities {
+      /* Dynamic classes handled by JS to prevent bloated HTML */
+      .force-active { @apply scale-95 border-kex-green/40; }
+      .navbutton.is-active { @apply bg-kex-darkGreen text-white font-bold; }
+      .navbutton.is-active i { @apply text-kex-green; }
+      .faq-item.is-active { @apply border-kex-green/30 bg-[#14141E]/60; }
+      .faq-item.is-active .faq-icon { @apply rotate-45; }
+      
+      .reveal { @apply opacity-0 translate-y-[30px] transition-all duration-700 ease-out; }
+      .reveal.active { @apply opacity-100 translate-y-0; }
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body.has-sidebar-open { @apply overflow-hidden touch-none; }
 
-    body {
-      width: 100%;
-      overflow-x: hidden;
-      font-family: 'Inter', sans-serif;
-      background-color: #0A0A0F;
-      color: var(--kex-white);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      scroll-behavior: smooth;
-    }
-    body.has-sidebar-open { overflow: hidden; touch-action: none; }
-
-    #snow-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .bg-ambient-glow {
-      position: fixed;
-      top: -150px; 
-      left: -150px;
-      width: 500px; 
-      height: 500px;
-      background: rgba(26, 215, 111, 0.25);
-      border-radius: 50%;
-      z-index: 0;
-      pointer-events: none;
-      filter: blur(100px);
-    }
-
-    .container { 
-      position: relative; 
-      z-index: 2; 
-      width: 100%; 
-      max-width: 1280px; 
-      margin: 0 auto; 
-      padding: 0 20px; 
-    }
-
-    .reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .reveal.active {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .header {
-      width: calc(100% - 16px);
-      max-width: 1240px;
-      margin: 10px auto 0;
-      background: rgba(18, 18, 24, 0.65);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      position: sticky; 
-      top: 10px; 
-      z-index: 100;
-      border: 1px solid rgba(26, 215, 111, 0.5);
-      border-radius: 16px;
-      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5), 
-                  0 0 20px rgba(26, 215, 111, 0.15);
-    }
-    
-    .header .container {
-      padding: 0 16px;
-    }
-
-    .header__nav { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
-
-    .header__toggle, .sidebar__close {
-      background: transparent;
-      border: none;
-      color: var(--kex-white);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 8px;
-      transition: all 0.15s ease;
-    }
-    .header__toggle { font-size: 1.6rem; width: 40px; height: 40px; margin-right: 0; }
-    .header__toggle i { transition: transform 0.2s ease; }
-    .sidebar__close { font-size: 1.5rem; width: 36px; height: 36px; margin-right: -8px; }
-    .sidebar.is-expanded .sidebar__close i { transform: rotate(90deg); }
-
-    .brand { display: flex; align-items: center; gap: 10px; transition: opacity 0.2s ease; text-decoration: none; }
-    .brand--header { height: 36px; margin-left: 0; }
-    .brand--sidebar { height: 32px; }
-
-    .logoimg { height: 100%; width: auto; object-fit: contain; }
-    .alticon, .alttext { 
-      color: var(--kex-green); 
-      text-shadow: 0 0 12px rgba(26,215,111,.45); 
-    }
-    .alticon { font-size: 1.6rem; display: inline-block; }
-    .alttext { 
-      font-size: 1.5rem; 
-      font-weight: 800; 
-      letter-spacing: -0.5px; 
-      font-family: 'Playfair Display', serif; 
-      color: #fff;
-      text-shadow: none;
-    }
-
-    .overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.6);
-      backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
-      opacity: 0; visibility: hidden;
-      transition: all 0.3s ease;
-      z-index: 998; cursor: pointer;
-    }
-    .overlay.is-visible { opacity: 1; visibility: visible; }
-
-    .sidebar {
-      position: fixed; top: 0; bottom: 0; left: 0;
-      height: 100vh; height: 100dvh;
-      width: 280px; max-width: 80vw;
-      background: rgba(15, 15, 20, 0.65);
-      backdrop-filter: blur(28px) saturate(180%);
-      -webkit-backdrop-filter: blur(28px) saturate(180%);
-      z-index: 999;
-      display: flex; flex-direction: column;
-      border-radius: 0 24px 24px 0;
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5), 
-                  inset -1px 0 0 rgba(255, 255, 255, 0.03);
-      transform: translateX(-100%);
-      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
-    }
-    .sidebar.is-expanded { transform: translateX(0); }
-
-    .sidebar__header, .sidebar__body, .sidebar__footer {
-      opacity: 0; transform: translateY(15px);
-      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1);
-    }
-    .sidebar.is-expanded .sidebar__header,
-    .sidebar.is-expanded .sidebar__body,
-    .sidebar.is-expanded .sidebar__footer { opacity: 1; transform: translateY(0); }
-    .sidebar.is-expanded .sidebar__header { transition-delay: 0.1s; }
-    .sidebar.is-expanded .sidebar__body   { transition-delay: 0.18s; }
-    .sidebar.is-expanded .sidebar__footer { transition-delay: 0.26s; }
-
-    .sidebar__header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0 24px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      height: 73px; flex-shrink: 0;
-    }
-    .sidebar__body {
-      flex: 1;
-      padding: 16px 12px 20px;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,.15) transparent;
-    }
-    .sidebar__body::-webkit-scrollbar { width: 5px; }
-    .sidebar__body::-webkit-scrollbar-track { background: transparent; }
-    .sidebar__body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 10px; }
-    .sidebar__footer {
-      border-top: 1px solid rgba(255,255,255,.08);
-      flex-shrink: 0; margin-top: auto;
-      min-height: calc(73px + env(safe-area-inset-bottom));
-      padding: 15px 24px calc(15px + env(safe-area-inset-bottom));
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(0,0,0,.15);
-    }
-
-    .navmenu { display: flex; flex-direction: column; gap: 6px; }
-    .navbutton {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 15px; min-height: 56px;
-      color: #fff; text-decoration: none;
-      border-radius: 12px;
-      transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
-      position: relative; overflow: hidden;
-    }
-    .navbutton i { 
-      font-size: 1.25rem; width: 28px; text-align: center; flex-shrink: 0; 
-      color: var(--kex-green); transition: color 0.2s ease; 
-    }
-    .navbutton.is-active { 
-      background: var(--kex-dark-green); 
-      color: #fff; 
-    }
-    .navbutton.is-active i { color: var(--kex-green); }
-    .navbutton.is-active .navbutton__text { color: #fff; font-weight: 700; }
-    .navbutton__content { display: flex; flex-direction: column; justify-content: center; line-height: 1.3; }
-    .navbutton__text { font-size: 1.05rem; font-weight: 500; color: inherit; transition: color 0.2s ease; }
-
-    .sociallinks { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 100%; }
-    .sociallink {
-      display: flex; align-items: center; justify-content: center;
-      width: 42px; height: 42px;
-      background-color: var(--kex-green);
-      border: 1px solid var(--kex-green);
-      color: #fff; border-radius: 50%;
-      text-decoration: none; font-size: 19px;
-      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-    }
-
-    .hero { 
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; 
-      padding-top: 100px;
-      padding-bottom: 80px; 
-      min-height: 50vh; 
-      position: relative; 
-      scroll-margin-top: 80px; 
-    }
-    .hero-title {
-      font-size: clamp(1.8rem,5vw,2.8rem);
-      font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
-      color: var(--kex-white); text-shadow: none;
-      margin-bottom: 20px; hyphens: auto;
-    }
-    .hero-description {
-      font-size: clamp(1.1rem,4vw,1.4rem);
-      color: var(--kex-gray); margin-bottom: 32px; hyphens: auto;
-    }
-    .hero-btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      background-color: var(--kex-green); 
-      color: #fff;
-      font-weight: 600; font-size: 1.1rem;
-      padding: 14px 24px; border-radius: 60px;
-      text-decoration: none;
-      transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 8px 20px -6px rgba(26,215,111,.5);
-      margin-bottom: 24px;
-      outline: none;
-    }
-    .hero-btn i { font-size: 1.3rem; font-style: normal !important; }
-    .hero-footer { 
-      font-size: 0.95rem; color: var(--kex-gray); opacity: 0.8; 
-    }
-
-    .cards-section {
-      padding-top: 40px; 
-      padding-bottom: 100px; 
-      margin-top: 0; 
-      position: relative;
-      z-index: 2;
-      scroll-margin-top: 85px; 
-    }
-    .cards-header {
-      text-align: center;
-      margin-bottom: 50px;
-    }
-    .cards-title {
-      font-size: clamp(1.8rem, 4vw, 2.4rem);
-      font-weight: 800;
-      color: var(--kex-white);
-      margin-bottom: 16px;
-      letter-spacing: -0.02em;
-    }
-    .cards-description {
-      font-size: clamp(1rem, 3vw, 1.15rem);
-      color: var(--kex-gray);
-      max-width: 650px;
-      margin: 0 auto;
-      line-height: 1.6;
-    }
-    
-    .cards-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 24px;
-      width: 100%;
-    }
-    
-    .card-bg {
-      background: rgba(20, 20, 30, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 20px;
-      padding: 32px 28px;
-      text-decoration: none;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      position: relative;
-      overflow: hidden;
-      outline: none;
-      flex: 1 1 320px;
-      max-width: 400px;
-      width: 100%;
-      min-width: min(100%, 280px);
-    }
-    
-    .card-status {
-      position: absolute;
-      top: 24px;
-      right: 24px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      pointer-events: none;
-      transition: all 0.3s ease;
-      border: 1px solid;
-    }
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      position: relative;
-    }
-    .status-dot::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
+    /* Custom Pulse Animation */
+    @keyframes pulse-ring {
       0% { transform: scale(0.95); box-shadow: 0 0 0 0 var(--pulse-color); }
       70% { transform: scale(1); box-shadow: 0 0 0 4px transparent; }
       100% { transform: scale(0.95); box-shadow: 0 0 0 0 transparent; }
     }
-
-    .status-online { color: var(--kex-green); border-color: rgba(26, 215, 111, 0.2); background: rgba(26, 215, 111, 0.05); }
-    .status-online .status-dot { background-color: var(--kex-green); --pulse-color: rgba(26, 215, 111, 0.7); }
-
-    .status-maintenance { color: var(--kex-yellow); border-color: rgba(251, 191, 36, 0.2); background: rgba(251, 191, 36, 0.05); }
-    .status-maintenance .status-dot { background-color: var(--kex-yellow); --pulse-color: rgba(251, 191, 36, 0.7); }
-
-    .status-offline { color: var(--kex-red); border-color: rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); }
-    .status-offline .status-dot { background-color: var(--kex-red); --pulse-color: rgba(239, 68, 68, 0.7); }
-
-    .status-soon { color: var(--kex-blue); border-color: rgba(59, 130, 246, 0.2); background: rgba(59, 130, 246, 0.05); }
-    .status-soon .status-dot { background-color: var(--kex-blue); --pulse-color: rgba(59, 130, 246, 0.7); }
-
-    .status-default { color: var(--kex-white); border-color: rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05); }
-    .status-default .status-dot { background-color: var(--kex-white); --pulse-color: rgba(255, 255, 255, 0.7); }
-
-    .card-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 56px;
-      height: 56px;
-      background: rgba(26, 215, 111, 0.1);
-      color: var(--kex-green);
-      border-radius: 14px;
-      font-size: 1.6rem;
-      margin-bottom: 24px;
-      transition: all 0.3s ease;
-    }
-    .card-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--kex-white);
-      margin-bottom: 12px;
-      line-height: 1.3;
-      transition: color 0.3s ease;
-    }
-    .card-description {
-      font-size: 0.95rem;
-      color: var(--kex-gray);
-      line-height: 1.6;
-      flex-grow: 1;
+    .status-dot-anim::after {
+      content: '';
+      @apply absolute inset-0 rounded-full;
+      animation: pulse-ring 2s infinite;
     }
 
-    .cards-footer {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      margin-top: 48px;
+    /* Sidebar Smooth Component Logic */
+    .sidebar-panel {
+      @apply fixed top-0 bottom-0 left-0 h-[100dvh] w-[80vw] max-w-[280px] bg-[#0F0F14]/65 backdrop-blur-2xl backdrop-saturate-150 z-[999] flex flex-col rounded-r-[24px] border-r border-white/5 shadow-[10px_0_30px_rgba(0,0,0,0.5),inset_-1px_0_0_rgba(255,255,255,0.03)] -translate-x-full transition-transform duration-500 ease-out;
     }
-    .cards-footer .hero-btn {
-      margin-bottom: 0;
-    }
-
-    .faqs-section {
-      padding-top: 60px;
-      padding-bottom: 100px;
-      position: relative;
-      z-index: 2;
-      scroll-margin-top: 85px;
-    }
-    .faqs-header {
-      text-align: center;
-      margin-bottom: 50px;
-    }
-    .faqs-title {
-      font-size: clamp(1.8rem, 4vw, 2.4rem);
-      font-weight: 800;
-      color: var(--kex-white);
-      margin-bottom: 16px;
-      letter-spacing: -0.02em;
-    }
-    .faqs-description {
-      font-size: clamp(1rem, 3vw, 1.15rem);
-      color: var(--kex-gray);
-      max-width: 650px;
-      margin: 0 auto;
-      line-height: 1.6;
-    }
+    .sidebar-panel.is-expanded { @apply translate-x-0; }
     
-    .faqs-container {
-      width: 100%;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 24px; 
-      align-items: flex-start; 
-    }
+    .sidebar-panel > div { @apply opacity-0 translate-y-[15px] transition-all duration-500; }
+    .sidebar-panel.is-expanded > div { @apply opacity-100 translate-y-0; }
+    .sidebar-panel.is-expanded .sidebar__header { transition-delay: 100ms; }
+    .sidebar-panel.is-expanded .sidebar__body   { transition-delay: 180ms; }
+    .sidebar-panel.is-expanded .sidebar__footer { transition-delay: 260ms; }
     
-    .faq-item {
-      background: rgba(20, 20, 30, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 16px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      flex: 1 1 320px;
-      max-width: 400px;
-      width: 100%;
-      min-width: min(100%, 280px);
-    }
-    .faq-question {
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      border: none;
-      padding: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: var(--kex-white);
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: color 0.3s ease;
-      font-family: inherit;
-      outline: none;
-    }
-    .faq-icon {
-      color: var(--kex-green);
-      font-size: 1.2rem;
-      transition: transform 0.3s ease;
-      flex-shrink: 0;
-      margin-left: 16px;
-    }
-    .faq-item.is-active .faq-icon {
-      transform: rotate(45deg);
-    }
-    .faq-item.is-active {
-      border-color: rgba(26, 215, 111, 0.3);
-      background: rgba(20, 20, 30, 0.6);
-    }
+    .sidebar-panel.is-expanded #close-sidebar i { @apply rotate-90; }
+
+    /* Custom Scrollbar for sidebar */
+    .sidebar__body::-webkit-scrollbar { width: 5px; }
+    .sidebar__body::-webkit-scrollbar-track { background: transparent; }
+    .sidebar__body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+
+    /* Faq structural JS targets */
     .faq-answer {
       max-height: 0;
       overflow: hidden;
       transition: max-height 0.3s ease-out, padding 0.3s ease;
-      padding: 0 24px;
-      color: var(--kex-gray);
-      font-size: 0.95rem;
-      line-height: 1.6;
     }
-    .faqs-footer {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      margin-top: 48px;
-    }
-    .faqs-footer .hero-btn {
-      margin-bottom: 0;
-    }
-
-    @media (hover: hover) {
-      .header__toggle:hover, .sidebar__close:hover { background: rgba(255,255,255,.06); color: #fff; }
-      .brand:hover { opacity: 0.8; }
-      .navbutton:hover { background: var(--kex-dark-green); transform: translateX(4px); color: #fff; }
-      .navbutton:hover i { color: var(--kex-green); }
-      .sociallink:hover { background-color: var(--kex-dark-green); border-color: var(--kex-dark-green); color: #fff; transform: translateY(-4px) scale(1.05); box-shadow: 0 10px 20px -5px rgba(26,215,111,.5); }
-      .hero-btn:hover { background-color: var(--kex-dark-green); transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(26,215,111,.6); }
-      .card-bg:hover { transform: translateY(-8px); border-color: rgba(26, 215, 111, 0.4); box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(26, 215, 111, 0.08); }
-      .card-bg:hover .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
-      .card-bg:hover .card-title { color: var(--kex-green); }
-      .faq-question:hover { color: var(--kex-green); }
-    }
-
-    .header__toggle:active i, .header__toggle.force-active i { transform: scale(0.85); }
-    .sociallink:active, .sociallink.force-active { background-color: var(--kex-dark-green); border-color: var(--kex-dark-green); transform: scale(0.95); }
-    .hero-btn:active, .hero-btn.force-active { background-color: var(--kex-dark-green); transform: scale(0.98); }
-    
-    .card-bg:active, .card-bg.force-active { transform: scale(0.98); border-color: rgba(26, 215, 111, 0.4); }
-    .card-bg:active .card-icon, .card-bg.force-active .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
-    .card-bg:active .card-title, .card-bg.force-active .card-title { color: var(--kex-green); }
   </style>
 </head>
-<body>
-  <canvas id="snow-canvas"></canvas>
-  <div class="bg-ambient-glow"></div>
+<body class="bg-kex-bg text-kex-white font-inter overflow-x-hidden antialiased break-words scroll-smooth">
+  
+  <canvas id="snow-canvas" class="fixed inset-0 w-full h-full pointer-events-none z-[1]"></canvas>
+  <div class="fixed top-[-150px] left-[-150px] w-[500px] h-[500px] bg-kex-green/25 rounded-full z-0 pointer-events-none blur-[100px]"></div>
 
-  <header class="header">
-    <div class="container">
-      <nav class="header__nav">
-        <a href="/" class="brand brand--header" id="brand-header">
+  <header class="w-[calc(100%-6vw)] sm:w-[calc(100%-16px)] max-w-[1240px] mx-auto mt-[2vw] sm:mt-[10px] bg-[#121218]/65 backdrop-blur-xl backdrop-saturate-150 sticky top-[2vw] sm:top-[10px] z-[100] border border-kex-green/50 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5),0_0_20px_rgba(26,215,111,0.15)]">
+    <div class="relative w-full max-w-[1280px] mx-auto px-[4vw] sm:px-4">
+      <nav class="flex justify-between items-center py-[2.5vw] sm:py-3">
+        <a href="/" class="brand brand-link flex items-center gap-2.5 h-[8vw] sm:h-[36px] transition-opacity duration-200 no-underline hover:opacity-80" id="brand-header">
           <% if (header.logourl) { %>
-            <img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="logoimg">
+            <img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="h-full w-auto object-contain">
           <% } else { %>
-            <% if (header.alticon) { %><i class="<%= header.alticon %> alticon"></i><% } %>
-            <% if (header.alttext) { %><span class="alttext"><span class="alttext"><%= header.alttext %></span><% } %>
+            <% if (header.alticon) { %><i class="<%= header.alticon %> text-[clamp(1.4rem,5vw,1.6rem)] inline-block text-kex-green drop-shadow-[0_0_12px_rgba(26,215,111,0.45)]"></i><% } %>
+            <% if (header.alttext) { %><span class="text-[clamp(1.3rem,4.5vw,1.5rem)] font-extrabold tracking-tight font-playfair text-white"><%= header.alttext %></span><% } %>
           <% } %>
         </a>
-        <button class="header__toggle" id="open-sidebar" aria-label="Open Menu">
-          <i class="fa-solid fa-bars"></i>
+        <button class="flex items-center justify-center w-[10vw] h-[10vw] sm:w-10 sm:h-10 bg-transparent border-none text-kex-white cursor-pointer rounded-lg transition-all duration-150 hover:bg-white/5 active:scale-90 outline-none" id="open-sidebar" aria-label="Open Menu">
+          <i class="fa-solid fa-bars text-[clamp(1.4rem,5vw,1.6rem)] transition-transform duration-200"></i>
         </button>
       </nav>
     </div>
   </header>
 
-  <div class="overlay" id="overlay"></div>
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm opacity-0 invisible transition-all duration-300 z-[998] cursor-pointer" id="overlay"></div>
 
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar__header">
-      <a href="/" class="brand brand--sidebar" id="brand-sidebar">
+  <aside class="sidebar-panel" id="sidebar">
+    <div class="sidebar__header flex justify-between items-center px-[6vw] sm:px-6 border-b border-white/5 h-[73px] shrink-0">
+      <a href="/" class="brand brand-link flex items-center gap-2 h-[32px] transition-opacity duration-200 no-underline hover:opacity-80" id="brand-sidebar">
         <% if (sidebar.header && sidebar.header.logourl) { %>
-          <img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="logoimg">
+          <img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="h-full w-auto object-contain">
         <% } else { %>
-          <% if (sidebar.header && sidebar.header.alticon) { %><i class="<%= sidebar.header.alticon %> alticon"></i><% } %>
-          <% if (sidebar.header && sidebar.header.alttext) { %><span class="alttext"><%= sidebar.header.alttext %></span><% } %>
+          <% if (sidebar.header && sidebar.header.alticon) { %><i class="<%= sidebar.header.alticon %> text-[1.4rem] inline-block text-kex-green drop-shadow-[0_0_12px_rgba(26,215,111,0.45)]"></i><% } %>
+          <% if (sidebar.header && sidebar.header.alttext) { %><span class="text-[1.3rem] font-extrabold tracking-tight font-playfair text-white"><%= sidebar.header.alttext %></span><% } %>
         <% } %>
       </a>
-      <button class="sidebar__close" id="close-sidebar" aria-label="Close Menu">
-        <i class="fa-solid fa-xmark"></i>
+      <button class="flex items-center justify-center w-9 h-9 bg-transparent border-none text-kex-white cursor-pointer rounded-lg transition-all duration-150 hover:bg-white/5 active:scale-90 -mr-2" id="close-sidebar" aria-label="Close Menu">
+        <i class="fa-solid fa-xmark text-[1.5rem] transition-transform duration-200"></i>
       </button>
     </div>
 
-    <div class="sidebar__body">
-      <nav class="navmenu" id="navmenu">
+    <div class="sidebar__body flex-1 p-[4vw] sm:p-4 pb-5 overflow-y-auto">
+      <nav class="flex flex-col gap-1.5" id="navmenu">
         <% if (sidebar.body && sidebar.body.length > 0) { %>
           <% sidebar.body.forEach(link => { %>
-            <a href="<%= link.url || '#' %>" class="navbutton">
-              <% if (link.icon) { %><i class="<%= link.icon %>"></i><% } %>
-              <div class="navbutton__content">
-                <span class="navbutton__text"><%= link.text || '' %></span>
+            <a href="<%= link.url || '#' %>" class="navbutton flex items-center gap-3 p-3.5 min-h-[56px] text-white no-underline rounded-xl transition-all duration-300 overflow-hidden hover:bg-kex-darkGreen hover:translate-x-1 hover:text-white group">
+              <% if (link.icon) { %><i class="<%= link.icon %> text-[1.25rem] w-7 text-center shrink-0 text-kex-green group-hover:text-kex-green transition-colors"></i><% } %>
+              <div class="flex flex-col justify-center leading-snug">
+                <span class="text-[clamp(1rem,4vw,1.05rem)] font-medium text-inherit transition-colors"><%= link.text || '' %></span>
               </div>
             </a>
           <% }) %>
@@ -582,11 +146,11 @@
       </nav>
     </div>
 
-    <div class="sidebar__footer">
-      <div class="sociallinks" id="sociallinks">
+    <div class="sidebar__footer border-t border-white/5 shrink-0 mt-auto min-h-[calc(73px+env(safe-area-inset-bottom))] px-[6vw] sm:px-6 py-[4vw] sm:py-[15px] pb-[calc(4vw+env(safe-area-inset-bottom))] sm:pb-[calc(15px+env(safe-area-inset-bottom))] flex items-center justify-center bg-black/15">
+      <div class="flex flex-wrap justify-center gap-[3vw] sm:gap-3 w-full" id="sociallinks">
         <% if (sidebar.footer && sidebar.footer.length > 0) { %>
           <% sidebar.footer.forEach(social => { %>
-            <a href="<%= social.url || '#' %>" target="_blank" class="sociallink" rel="noopener">
+            <a href="<%= social.url || '#' %>" target="_blank" class="sociallink flex items-center justify-center w-[11vw] h-[11vw] sm:w-[42px] sm:h-[42px] bg-kex-green border border-kex-green text-white rounded-full no-underline text-[5vw] sm:text-[19px] transition-all duration-300 hover:bg-kex-darkGreen hover:border-kex-darkGreen hover:-translate-y-1 hover:scale-105 hover:shadow-[0_10px_20px_-5px_rgba(26,215,111,0.5)] active:bg-kex-darkGreen active:scale-95" rel="noopener">
               <% if (social.icon) { %><i class="<%= social.icon %>"></i><% } %>
             </a>
           <% }) %>
@@ -595,39 +159,37 @@
     </div>
   </aside>
 
-  <section class="hero" id="home">
-    <div class="container">
-      <% if (hero.primarytext) { %>
-        <h1 class="hero-title reveal"><%- fmt(hero.primarytext) %></h1>
-      <% } %>
-      <% if (hero.secondarytext) { %>
-        <p class="hero-description reveal"><%- fmt(hero.secondarytext) %></p>
-      <% } %>
-      <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
-        <a href="<%= hero.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener">
-          <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %>
-          <span><%= hero.buttontext || '' %></span>
-        </a>
-      <% } %>
-      <% if (hero.footertext) { %>
-        <div class="hero-footer reveal"><%- fmt(hero.footertext) %></div>
-      <% } %>
-    </div>
+  <section class="relative z-10 w-full max-w-[1280px] mx-auto px-[5vw] sm:px-[20px] pt-[20vw] sm:pt-[100px] pb-[15vw] sm:pb-[80px] flex flex-col items-center justify-center text-center min-h-[50vh] scroll-mt-[80px]" id="home">
+    <% if (hero.primarytext) { %>
+      <h1 class="text-[clamp(1.8rem,7vw,2.8rem)] font-extrabold leading-[1.15] tracking-tight text-kex-white mb-[4vw] sm:mb-5 reveal"><%- fmt(hero.primarytext) %></h1>
+    <% } %>
+    <% if (hero.secondarytext) { %>
+      <p class="text-[clamp(1.05rem,4.5vw,1.4rem)] text-kex-gray mb-[8vw] sm:mb-8 max-w-[800px] reveal"><%- fmt(hero.secondarytext) %></p>
+    <% } %>
+    <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
+      <a href="<%= hero.buttonurl || '#' %>" class="hero-btn reveal inline-flex items-center justify-center gap-2 bg-kex-green text-white font-semibold text-[clamp(1rem,4vw,1.1rem)] py-[3.5vw] px-[7vw] sm:py-3.5 sm:px-6 rounded-full no-underline transition-all duration-300 shadow-[0_8px_20px_-6px_rgba(26,215,111,0.5)] mb-[6vw] sm:mb-6 hover:bg-kex-darkGreen hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-8px_rgba(26,215,111,0.6)] active:bg-kex-darkGreen active:scale-95 outline-none" target="_blank" rel="noopener">
+        <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %> text-[1.3rem] not-italic"></i><% } %>
+        <span><%= hero.buttontext || '' %></span>
+      </a>
+    <% } %>
+    <% if (hero.footertext) { %>
+      <div class="text-[clamp(0.85rem,3.5vw,0.95rem)] text-kex-gray opacity-80 reveal"><%- fmt(hero.footertext) %></div>
+    <% } %>
   </section>
 
-  <section class="cards-section container" id="services">
+  <section class="relative z-10 w-full max-w-[1280px] mx-auto px-[5vw] sm:px-[20px] pt-[10vw] pb-[20vw] sm:pt-[40px] sm:pb-[100px] scroll-mt-[85px]" id="services">
     <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %>
-      <div class="cards-header reveal">
+      <div class="text-center mb-[10vw] sm:mb-[50px] reveal">
         <% if (cards.data.title) { %>
-          <h2 class="cards-title"><%- fmt(cards.data.title) %></h2>
+          <h2 class="text-[clamp(1.8rem,6vw,2.4rem)] font-extrabold text-kex-white mb-4 tracking-tight"><%- fmt(cards.data.title) %></h2>
         <% } %>
         <% if (cards.data.description) { %>
-          <p class="cards-description"><%- fmt(cards.data.description) %></p>
+          <p class="text-[clamp(1rem,4vw,1.15rem)] text-kex-gray max-w-[650px] mx-auto leading-relaxed"><%- fmt(cards.data.description) %></p>
         <% } %>
       </div>
     <% } %>
 
-    <div class="cards-grid">
+    <div class="flex flex-wrap justify-center gap-[5vw] sm:gap-6 w-full">
       <% 
         let sortedCards =[];
         if (cards && cards.items && cards.items.length > 0) {
@@ -636,39 +198,47 @@
       %>
       <% if (sortedCards.length > 0) { %>
         <% sortedCards.slice(0, 6).forEach(card => { %>
-          <a href="<%= card.url || '#' %>" class="card-bg reveal" target="_blank" rel="noopener">
+          <a href="<%= card.url || '#' %>" class="card-bg reveal group flex-1 basis-[100%] sm:basis-[320px] max-w-full sm:max-w-[400px] min-w-[min(100%,280px)] bg-[#14141E]/40 border border-white/5 rounded-[5vw] sm:rounded-2xl p-[6vw] sm:p-7 flex flex-col items-start transition-all duration-300 backdrop-blur-md relative overflow-hidden outline-none hover:-translate-y-2 hover:border-kex-green/40 hover:shadow-[0_15px_35px_-10px_rgba(0,0,0,0.6),0_0_25px_rgba(26,215,111,0.08)] active:scale-[0.98] active:border-kex-green/40" target="_blank" rel="noopener">
             
             <% if (card.status && card.status.trim() !== '') { 
-              let statusClass = 'status-default';
-              let statusText = card.status.trim().toLowerCase();
+              let statusColorText = 'text-kex-white';
+              let statusBorder = 'border-kex-white/10';
+              let statusBg = 'bg-kex-white/5';
+              let dotBg = 'bg-kex-white';
+              let pulseColor = 'rgba(255,255,255,0.7)';
               
-              if (statusText === 'online') statusClass = 'status-online';
-              else if (statusText === 'maintenance') statusClass = 'status-maintenance';
-              else if (statusText === 'offline') statusClass = 'status-offline';
-              else if (statusText === 'soon') statusClass = 'status-soon';
+              let statusText = card.status.trim().toLowerCase();
+              if (statusText === 'online') { 
+                statusColorText = 'text-kex-green'; statusBorder = 'border-kex-green/20'; statusBg = 'bg-kex-green/5'; dotBg = 'bg-kex-green'; pulseColor = 'rgba(26,215,111,0.7)';
+              } else if (statusText === 'maintenance') { 
+                statusColorText = 'text-kex-yellow'; statusBorder = 'border-kex-yellow/20'; statusBg = 'bg-kex-yellow/5'; dotBg = 'bg-kex-yellow'; pulseColor = 'rgba(251,191,36,0.7)';
+              } else if (statusText === 'offline') { 
+                statusColorText = 'text-kex-red'; statusBorder = 'border-kex-red/20'; statusBg = 'bg-kex-red/5'; dotBg = 'bg-kex-red'; pulseColor = 'rgba(239,68,68,0.7)';
+              } else if (statusText === 'soon') { 
+                statusColorText = 'text-kex-blue'; statusBorder = 'border-kex-blue/20'; statusBg = 'bg-kex-blue/5'; dotBg = 'bg-kex-blue'; pulseColor = 'rgba(59,130,246,0.7)';
+              }
             %>
-              <div class="card-status <%= statusClass %>">
-                <div class="status-dot"></div>
+              <div class="absolute top-[4vw] sm:top-6 right-[4vw] sm:right-6 flex items-center gap-1.5 py-1 px-2.5 rounded-full text-[0.65rem] font-bold tracking-wider uppercase border pointer-events-none transition-all duration-300 <%= statusColorText %> <%= statusBorder %> <%= statusBg %>">
+                <div class="w-1.5 h-1.5 rounded-full relative status-dot-anim <%= dotBg %>" style="--pulse-color: <%= pulseColor %>"></div>
                 <span><%= card.status %></span>
               </div>
             <% } %>
 
             <% if (card.icon) { %>
-              <div class="card-icon">
+              <div class="card-icon flex items-center justify-center w-[12vw] h-[12vw] sm:w-14 sm:h-14 bg-kex-green/10 text-kex-green rounded-2xl text-[1.6rem] mb-[5vw] sm:mb-6 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-kex-green group-hover:text-white group-hover:shadow-[0_8px_20px_-6px_rgba(26,215,111,0.5)] group-active:scale-110 group-active:-rotate-3 group-active:bg-kex-green group-active:text-white group-active:shadow-[0_8px_20px_-6px_rgba(26,215,111,0.5)]">
                 <i class="<%= card.icon %>"></i>
               </div>
             <% } %>
-            <h3 class="card-title"><%- fmt(card.title || '') %></h3>
-            <p class="card-description"><%- fmt(card.description || '') %></p>
-
+            <h3 class="text-[clamp(1.2rem,4.5vw,1.3rem)] font-bold text-kex-white mb-3 leading-snug transition-colors duration-300 group-hover:text-kex-green group-active:text-kex-green"><%- fmt(card.title || '') %></h3>
+            <p class="text-[clamp(0.9rem,3.5vw,0.95rem)] text-kex-gray leading-relaxed flex-grow"><%- fmt(card.description || '') %></p>
           </a>
         <% }) %>
       <% } %>
     </div>
 
     <% if (cards && cards.data && (cards.data.buttonenabled === true || cards.data.buttonenabled === 'true')) { %>
-      <div class="cards-footer reveal">
-        <a href="<%= cards.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
+      <div class="flex justify-center w-full mt-[10vw] sm:mt-[48px] reveal">
+        <a href="<%= cards.data.buttonurl || '#' %>" class="hero-btn inline-flex items-center justify-center gap-2 bg-kex-green text-white font-semibold text-[clamp(1rem,4vw,1.1rem)] py-[3.5vw] px-[7vw] sm:py-3.5 sm:px-6 rounded-full no-underline transition-all duration-300 shadow-[0_8px_20px_-6px_rgba(26,215,111,0.5)] hover:bg-kex-darkGreen hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-8px_rgba(26,215,111,0.6)] active:bg-kex-darkGreen active:scale-95 outline-none" target="_blank" rel="noopener">
           <% if (cards.data.buttonicon) { %><i class="<%= cards.data.buttonicon %>"></i><% } %>
           <span><%= cards.data.buttontext || '' %></span>
         </a>
@@ -676,27 +246,27 @@
     <% } %>
   </section>
 
-  <section class="faqs-section container" id="faqs">
+  <section class="relative z-10 w-full max-w-[1280px] mx-auto px-[5vw] sm:px-[20px] pt-[15vw] pb-[20vw] sm:pt-[60px] sm:pb-[100px] scroll-mt-[85px]" id="faqs">
     <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %>
-      <div class="faqs-header reveal">
+      <div class="text-center mb-[10vw] sm:mb-[50px] reveal">
         <% if (faqs.data.title) { %>
-          <h2 class="faqs-title"><%- fmt(faqs.data.title) %></h2>
+          <h2 class="text-[clamp(1.8rem,6vw,2.4rem)] font-extrabold text-kex-white mb-4 tracking-tight"><%- fmt(faqs.data.title) %></h2>
         <% } %>
         <% if (faqs.data.description) { %>
-          <p class="faqs-description"><%- fmt(faqs.data.description) %></p>
+          <p class="text-[clamp(1rem,4vw,1.15rem)] text-kex-gray max-w-[650px] mx-auto leading-relaxed"><%- fmt(faqs.data.description) %></p>
         <% } %>
       </div>
     <% } %>
 
-    <div class="faqs-container">
+    <div class="flex flex-wrap justify-center items-start gap-[5vw] sm:gap-6 w-full">
       <% if (faqs && faqs.items && faqs.items.length > 0) { %>
         <% faqs.items.forEach((faq, index) => { %>
-          <div class="faq-item reveal">
-            <button class="faq-question" aria-expanded="false">
+          <div class="faq-item reveal flex-1 basis-[100%] sm:basis-[320px] max-w-full sm:max-w-[400px] min-w-[min(100%,280px)] bg-[#14141E]/40 border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 backdrop-blur-md">
+            <button class="faq-question w-full text-left bg-transparent border-none p-[5vw] sm:p-6 flex justify-between items-center text-kex-white text-[clamp(1rem,4vw,1.1rem)] font-semibold cursor-pointer transition-colors duration-300 outline-none hover:text-kex-green">
               <span><%- fmt(faq.title || '') %></span>
-              <i class="fa-solid fa-plus faq-icon"></i>
+              <i class="fa-solid fa-plus faq-icon text-kex-green text-xl shrink-0 ml-4 transition-transform duration-300"></i>
             </button>
-            <div class="faq-answer">
+            <div class="faq-answer px-[5vw] sm:px-6 text-kex-gray text-[clamp(0.9rem,3.5vw,0.95rem)] leading-relaxed">
               <%- fmt(faq.description || '') %>
             </div>
           </div>
@@ -705,8 +275,8 @@
     </div>
 
     <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
-      <div class="faqs-footer reveal">
-        <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
+      <div class="flex justify-center w-full mt-[10vw] sm:mt-[48px] reveal">
+        <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn inline-flex items-center justify-center gap-2 bg-kex-green text-white font-semibold text-[clamp(1rem,4vw,1.1rem)] py-[3.5vw] px-[7vw] sm:py-3.5 sm:px-6 rounded-full no-underline transition-all duration-300 shadow-[0_8px_20px_-6px_rgba(26,215,111,0.5)] hover:bg-kex-darkGreen hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-8px_rgba(26,215,111,0.6)] active:bg-kex-darkGreen active:scale-95 outline-none" target="_blank" rel="noopener">
           <% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %>
           <span><%= faqs.data.buttontext || '' %></span>
         </a>
@@ -717,15 +287,15 @@
   <% function fmt(t) {
     if (!t) return '';
     
-    t = t.replace(/\[a url=([^\]]+)\](.*?)\[\/a\]/gi, '<a href="$1" target="_blank" rel="noopener" style="color: var(--kex-green); text-decoration: none;">$2</a>');
+    t = t.replace(/\[a url=([^\]]+)\](.*?)\[\/a\]/gi, '<a href="$1" target="_blank" rel="noopener" class="text-kex-green no-underline hover:underline">$2</a>');
     t = t.replace(/\[icon\](.*?)\[\/icon\]/gi, '<i class="$1"></i>');
-    
     t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1;">$2</span>');
-    t = t.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
-    t = t.replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>');
-    t = t.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
+    t = t.replace(/\[b\](.*?)\[\/b\]/gi, '<b class="font-extrabold">$1</b>');
+    t = t.replace(/\[i\](.*?)\[\/i\]/gi, '<i class="italic">$1</i>');
+    t = t.replace(/\[u\](.*?)\[\/u\]/gi, '<u class="underline">$1</u>');
     t = t.replace(/\[br\]/gi, '<br>');
-    t = t.replace(/\n/g, '<br>');
+    /* Flexibly collapsing break tags ensuring mobile users aren't zoomed out due to giant unbreaking strings */
+    t = t.replace(/\n/g, ' <br class="hidden sm:block"> ');
     return t;
   } %>
 
@@ -827,7 +397,7 @@
         navTimeout = setTimeout(() => { isNavigating = false; }, 800); 
       }
 
-      document.querySelectorAll('.brand').forEach(brand => {
+      document.querySelectorAll('.brand-link').forEach(brand => {
         brand.addEventListener('click', function(e) {
           e.preventDefault();
           scrollToTop();
