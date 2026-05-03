@@ -36,18 +36,21 @@
     .header__toggle,.sidebar__close{background:transparent;border:none;color:var(--kex-white);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all .15s ease}
     .header__toggle{font-size:1.6rem;width:40px;height:40px}.header__toggle i{transition:transform .2s ease}
     .sidebar__close{font-size:1.5rem;width:36px;height:36px;margin-right:-8px}
-    .sidebar.is-expanded .sidebar__close i{transform:rotate(90deg)}
     .brand{display:flex;align-items:center;gap:10px;transition:opacity .2s ease;text-decoration:none}
     .brand--header{height:36px}.brand--sidebar{height:32px}
     .logoimg{height:100%;width:auto;object-fit:contain}
     .alticon,.alttext{color:var(--kex-green);text-shadow:0 0 12px rgba(26,215,111,.45)}
     .alticon{font-size:1.6rem;display:inline-block}
     .alttext{font-size:1.5rem;font-weight:800;letter-spacing:-.5px;font-family:'Playfair Display',serif;color:#fff;text-shadow:none}
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;visibility:hidden;transition:all .3s ease;z-index:998;cursor:pointer}
+    
+    /* 🔧 FIX 4: Professional & Simple Sidebar/Overlay Animation */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;z-index:998;cursor:pointer}
     .overlay.is-visible{opacity:1;visibility:visible}
-    .sidebar{position:fixed;top:0;bottom:0;left:0;height:100vh;height:100dvh;width:280px;max-width:80vw;background:rgba(15,15,20,.65);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);z-index:999;display:flex;flex-direction:column;border-radius:0 24px 24px 0;border-right:1px solid rgba(255,255,255,.08);box-shadow:10px 0 30px rgba(0,0,0,.5),inset -1px 0 0 rgba(255,255,255,.03);transform:translateX(-100%);transition:transform .4s cubic-bezier(.16,1,.3,1)}
-    .sidebar.is-expanded{transform:translateX(0)}
-    .sidebar__header,.sidebar__body,.sidebar__footer{opacity:0;transform:translateY(15px);transition:opacity .4s ease,transform .4s cubic-bezier(.16,1,.3,1)}.sidebar.is-expanded .sidebar__header,.sidebar.is-expanded .sidebar__body,.sidebar.is-expanded .sidebar__footer{opacity:1;transform:translateY(0)}    .sidebar.is-expanded .sidebar__header{transition-delay:.1s}.sidebar.is-expanded .sidebar__body{transition-delay:.18s}.sidebar.is-expanded .sidebar__footer{transition-delay:.26s}
+    .sidebar{position:fixed;top:0;bottom:0;left:0;height:100vh;height:100dvh;width:280px;max-width:80vw;background:rgba(16,16,22,.92);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;border-right:1px solid rgba(255,255,255,.06);box-shadow:12px 0 40px rgba(0,0,0,.5);transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+    .sidebar.is-expanded{transform:translateX(0)}    .sidebar__header,.sidebar__body,.sidebar__footer{opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease}
+    .sidebar.is-expanded .sidebar__header,.sidebar.is-expanded .sidebar__body,.sidebar.is-expanded .sidebar__footer{opacity:1;transform:translateY(0)}
+    .sidebar.is-expanded .sidebar__close i{transform:rotate(90deg);transition:transform .3s ease}
+    
     .sidebar__header{display:flex;justify-content:space-between;align-items:center;padding:0 24px;border-bottom:1px solid rgba(255,255,255,.08);height:73px;flex-shrink:0}
     .sidebar__body{flex:1;padding:16px 12px 20px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent}
     .sidebar__body::-webkit-scrollbar{width:5px}.sidebar__body::-webkit-scrollbar-track{background:transparent}.sidebar__body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:10px}
@@ -84,8 +87,8 @@
       width:100%;
       max-width:900px;
       margin:0 auto;
-      align-items:start; /* ← Prevents items from stretching to match row height */
-      align-content:start; /* ← Prevents row reflow when items expand */
+      align-items:start;
+      align-content:start;
     }
     
     .card-bg{background:rgba(20,20,30,.4);border:1px solid rgba(255,255,255,.05);border-radius:20px;padding:32px 28px;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;transition:all .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:relative;overflow:hidden;outline:none;min-height:280px}
@@ -93,14 +96,14 @@
     /* 🔧 FIX 3: FAQ item - independent height, no layout shift */
     .faq-item{
       background:rgba(20,20,30,.4);
-      border:1px solid rgba(255,255,255,.05);
-      border-radius:16px;
+      border:1px solid rgba(255,255,255,.05);      border-radius:16px;
       overflow:hidden;
-      transition:border-color .3s ease, background .3s ease;      backdrop-filter:blur(12px);
+      transition:border-color .3s ease, background .3s ease;
+      backdrop-filter:blur(12px);
       -webkit-backdrop-filter:blur(12px);
       display:flex;
       flex-direction:column;
-      align-self:start; /* ← Key: prevents grid item from stretching */
+      align-self:start;
     }
     
     .card-status{position:absolute;top:24px;right:24px;display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;pointer-events:none;transition:all .3s ease;border:1px solid}
@@ -142,10 +145,10 @@
     }
     
     @media(max-width:479px){
-      .container{padding:0 16px}
-      .header{margin:8px 8px 0;border-radius:14px}
+      .container{padding:0 16px}      .header{margin:8px 8px 0;border-radius:14px}
       .header .container{padding:0 12px}
-      .header__nav{padding:10px 0}      .header__toggle{width:36px;height:36px}
+      .header__nav{padding:10px 0}
+      .header__toggle{width:36px;height:36px}
       .hero{padding:50px 16px 40px}
       .cards-section,.faqs-section{padding:30px 16px 60px}
       .cards-grid,.faqs-container{grid-template-columns:1fr;gap:16px}
@@ -191,10 +194,10 @@
         <% } %>
       </a>
       <button class="sidebar__close" id="close-sidebar" aria-label="Close Menu"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="sidebar__body">
+    </div>    <div class="sidebar__body">
       <nav class="navmenu" id="navmenu">
-        <% if (sidebar.body && sidebar.body.length > 0) { %>          <% sidebar.body.forEach(link => { %>
+        <% if (sidebar.body && sidebar.body.length > 0) { %>
+          <% sidebar.body.forEach(link => { %>
             <a href="<%= link.url || '#' %>" class="navbutton">
               <% if (link.icon) { %><i class="<%= link.icon %>"></i><% } %>
               <div class="navbutton__content"><span class="navbutton__text"><%= link.text || '' %></span></div>
@@ -240,10 +243,10 @@
           if (cards && cards.items && cards.items.length > 0) sortedCards = cards.items.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
         %>
         <% if (sortedCards.length > 0) { %>
-          <% sortedCards.slice(0, 6).forEach(card => { %>
-            <a href="<%= card.url || '#' %>" class="card-bg reveal" target="_blank" rel="noopener">
+          <% sortedCards.slice(0, 6).forEach(card => { %>            <a href="<%= card.url || '#' %>" class="card-bg reveal" target="_blank" rel="noopener">
               <% if (card.status && card.status.trim() !== '') { 
-                let statusClass = 'status-default', statusText = card.status.trim().toLowerCase();                if (statusText === 'online') statusClass = 'status-online';
+                let statusClass = 'status-default', statusText = card.status.trim().toLowerCase();
+                if (statusText === 'online') statusClass = 'status-online';
                 else if (statusText === 'maintenance') statusClass = 'status-maintenance';
                 else if (statusText === 'offline') statusClass = 'status-offline';
                 else if (statusText === 'soon') statusClass = 'status-soon';
@@ -289,10 +292,10 @@
             </div>
           <% }) %>
         <% } %>
-      </div>
-      <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
+      </div>      <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
         <div class="faqs-footer reveal">
-          <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">            <% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %><span><%= faqs.data.buttontext || '' %></span>
+          <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
+            <% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %><span><%= faqs.data.buttontext || '' %></span>
           </a>
         </div>
       <% } %>
@@ -339,9 +342,9 @@
         const answer = item.querySelector('.faq-answer');
         const icon = item.querySelector('.faq-toggle-icon i');
         const isActive = item.classList.contains('is-active');
-
         // Toggle ONLY the clicked FAQ - others remain untouched
-        if (!isActive) {          // Open this FAQ
+        if (!isActive) {
+          // Open this FAQ
           item.classList.add('is-active');
           this.setAttribute('aria-expanded', 'true');
           icon.className = 'fa-solid fa-minus';
@@ -387,10 +390,10 @@
         navigating = true; window.scrollTo({ top: 0, behavior: 'smooth' });
         history.pushState(null, null, location.pathname); setNav('home'); lastSec = 'home';
         setTimeout(() => navigating = false, 800);
-      };
-      document.querySelectorAll('.brand').forEach(b => b.addEventListener('click', e => { e.preventDefault(); scrollTop(); window.dispatchEvent(new Event('hideSidebar')); }));
+      };      document.querySelectorAll('.brand').forEach(b => b.addEventListener('click', e => { e.preventDefault(); scrollTop(); window.dispatchEvent(new Event('hideSidebar')); }));
       navBtns.forEach(b => b.addEventListener('click', e => {
-        const h = b.getAttribute('href');        if (h === '/' || h === '#home') { e.preventDefault(); scrollTop(); window.dispatchEvent(new Event('hideSidebar')); }
+        const h = b.getAttribute('href');
+        if (h === '/' || h === '#home') { e.preventDefault(); scrollTop(); window.dispatchEvent(new Event('hideSidebar')); }
         else if (h?.startsWith('#')) {
           e.preventDefault(); const t = document.getElementById(h.slice(1));
           if (t) { navigating = true; t.scrollIntoView({ behavior: 'smooth' }); history.pushState(null, null, h); setNav(h.slice(1)); lastSec = h.slice(1); window.dispatchEvent(new Event('hideSidebar')); setTimeout(() => navigating = false, 800); }
@@ -436,10 +439,10 @@
       };
       draw();
       window.addEventListener('resize', () => { w = innerWidth; h = innerHeight; c.width = w; c.height = h; });
-      const openBtn = document.getElementById('open-sidebar'), closeBtn = document.getElementById('close-sidebar'), sidebar = document.getElementById('sidebar'), overlay = document.getElementById('overlay');
-      const show = () => { sidebar.classList.add('is-expanded'); overlay.classList.add('is-visible'); document.body.classList.add('has-sidebar-open'); };
+      const openBtn = document.getElementById('open-sidebar'), closeBtn = document.getElementById('close-sidebar'), sidebar = document.getElementById('sidebar'), overlay = document.getElementById('overlay');      const show = () => { sidebar.classList.add('is-expanded'); overlay.classList.add('is-visible'); document.body.classList.add('has-sidebar-open'); };
       const hide = () => { sidebar.classList.remove('is-expanded'); overlay.classList.remove('is-visible'); document.body.classList.remove('has-sidebar-open'); };
-      openBtn.addEventListener('click', show); closeBtn.addEventListener('click', hide); overlay.addEventListener('click', hide); window.addEventListener('hideSidebar', hide);    })();
+      openBtn.addEventListener('click', show); closeBtn.addEventListener('click', hide); overlay.addEventListener('click', hide); window.addEventListener('hideSidebar', hide);
+    })();
   </script>
 </body>
 </html>
