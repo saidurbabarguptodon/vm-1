@@ -907,21 +907,18 @@
         }
       }, { passive: true });
 
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+
       window.addEventListener('load', () => {
-        const hash = window.location.hash;
-        
-        if (!hash || hash === '#home') {
-          if (hash === '#home') history.replaceState(null, null, window.location.pathname);
-          setNavActive('home');
-          lastActiveSection = 'home';
-        } else {
-          const targetId = hash.substring(1);
-          setNavActive(targetId);
-          lastActiveSection = targetId;
-          const target = document.getElementById(targetId);
-          if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 50);
+        if (window.location.hash) {
+          history.replaceState(null, null, window.location.pathname);
         }
-        
+        window.scrollTo(0, 0);
+
+        setNavActive('home');
+        lastActiveSection = 'home';
         updateScrollSpy(); 
       });
     })();
