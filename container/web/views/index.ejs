@@ -59,8 +59,8 @@
       position: relative; 
       z-index: 2; 
       width: 100%; 
-      max-width: 1280px; 
-      margin: 0 auto; 
+      max-width: 100%; 
+      margin: 0; 
       padding: 0 20px; 
     }
 
@@ -75,8 +75,8 @@
     }
 
     .header {
-      width: calc(100% - 16px);
-      max-width: 1240px;
+      width: 95%;
+      max-width: 100%;
       margin: 10px auto 0;
       background: rgba(18, 18, 24, 0.65);
       backdrop-filter: blur(24px) saturate(180%);
@@ -92,11 +92,12 @@
     
     .header .container {
       padding: 0 16px;
+      max-width: 100%;
     }
 
     .header__nav { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
-
-    .header__toggle, .sidebar__close {      background: transparent;
+    .header__toggle, .sidebar__close {
+      background: transparent;
       border: none;
       color: var(--kex-white);
       cursor: pointer;
@@ -144,8 +145,8 @@
       width: 280px; max-width: 80vw;
       background: rgba(15, 15, 20, 0.65);
       backdrop-filter: blur(28px) saturate(180%);
-      -webkit-backdrop-filter: blur(28px) saturate(180%);
-      z-index: 999;      display: flex; flex-direction: column;
+      -webkit-backdrop-filter: blur(28px) saturate(180%);      z-index: 999;
+      display: flex; flex-direction: column;
       border-radius: 0 24px 24px 0;
       border-right: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5), 
@@ -193,8 +194,8 @@
 
     .navmenu { display: flex; flex-direction: column; gap: 6px; }
     .navbutton {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 15px; min-height: 56px;      color: #fff; text-decoration: none;
+      display: flex; align-items: center; gap: 12px;      padding: 14px 15px; min-height: 56px;
+      color: #fff; text-decoration: none;
       border-radius: 12px;
       transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
       position: relative; overflow: hidden;
@@ -230,7 +231,9 @@
       padding-bottom: 80px; 
       min-height: 50vh; 
       position: relative; 
-      scroll-margin-top: 80px; 
+      scroll-margin-top: 80px;
+      width: 100%;
+      max-width: 100%;
     }
     .hero-title {
       font-size: clamp(1.8rem,5vw,2.8rem);
@@ -240,10 +243,10 @@
     }
     .hero-description {
       font-size: clamp(1.1rem,4vw,1.4rem);
-      color: var(--kex-gray); margin-bottom: 32px; hyphens: auto;
-    }
+      color: var(--kex-gray); margin-bottom: 32px; hyphens: auto;    }
     .hero-btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;      background-color: var(--kex-green); 
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background-color: var(--kex-green); 
       color: #fff;
       font-weight: 600; font-size: 1.1rem;
       padding: 14px 24px; border-radius: 60px;
@@ -264,7 +267,9 @@
       margin-top: 0; 
       position: relative;
       z-index: 2;
-      scroll-margin-top: 85px; 
+      scroll-margin-top: 85px;
+      width: 100%;
+      max-width: 100%;
     }
     .cards-header {
       text-align: center;
@@ -287,12 +292,12 @@
     
     .cards-grid {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      flex-wrap: wrap;      justify-content: center;
       gap: 24px;
       width: 100%;
     }
-        .card-bg {
+    
+    .card-bg {
       background: rgba(20, 20, 30, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 20px;
@@ -336,12 +341,12 @@
       border-radius: 50%;
       position: relative;
     }
-    .status-dot::after {
-      content: '';
+    .status-dot::after {      content: '';
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
       border-radius: 50%;
-      animation: pulse 2s infinite;    }
+      animation: pulse 2s infinite;
+    }
     @keyframes pulse {
       0% { transform: scale(0.95); box-shadow: 0 0 0 0 var(--pulse-color); }
       70% { transform: scale(1); box-shadow: 0 0 0 4px transparent; }
@@ -385,11 +390,11 @@
       transition: color 0.3s ease;
     }
     .card-description {
-      font-size: 0.95rem;
-      color: var(--kex-gray);
+      font-size: 0.95rem;      color: var(--kex-gray);
       line-height: 1.6;
       flex-grow: 1;
     }
+
     .cards-footer {
       display: flex;
       justify-content: center;
@@ -406,6 +411,8 @@
       position: relative;
       z-index: 2;
       scroll-margin-top: 85px;
+      width: 100%;
+      max-width: 100%;
     }
     .faqs-header {
       text-align: center;
@@ -432,14 +439,14 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 24px; 
-      align-items: flex-start; 
-    }
+      align-items: flex-start;     }
     
     .faq-item {
       background: rgba(20, 20, 30, 0.4);
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 16px;
-      overflow: hidden;      transition: all 0.3s ease;
+      overflow: hidden;
+      transition: all 0.3s ease;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       flex: 1 1 320px;
@@ -481,14 +488,14 @@
     .faq-answer {
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.3s ease-out, padding 0.3s ease;
-      padding: 0 24px;
+      transition: max-height 0.3s ease-out, padding 0.3s ease;      padding: 0 24px;
       color: var(--kex-gray);
       font-size: 0.95rem;
       line-height: 1.6;
     }
     .faqs-footer {
-      display: flex;      justify-content: center;
+      display: flex;
+      justify-content: center;
       width: 100%;
       margin-top: 48px;
     }
@@ -517,16 +524,12 @@
     .card-bg:active .card-icon, .card-bg.force-active .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px -6px rgba(26, 215, 111, 0.5); }
     .card-bg:active .card-title, .card-bg.force-active .card-title { color: var(--kex-green); }
 
-    /* ===== NEW: RESPONSIVE MEDIA QUERIES (Mobile-First) ===== */
-
-    /* Prevent horizontal overflow on all viewports */
     img, video, iframe, canvas, svg { max-width: 100%; height: auto; display: block; }
 
-    /* Small mobile: 320px - 479px */
     @media (max-width: 479px) {
       .container { padding: 0 16px; }
       
-      .header { width: 100%; margin: 8px auto 0; border-radius: 14px; }
+      .header { width: 95%; margin: 8px auto 0; border-radius: 14px; }
       .header .container { padding: 0 12px; }
       .header__nav { padding: 10px 0; }
       .header__toggle { width: 36px; height: 36px; }
@@ -534,10 +537,10 @@
       .hero { padding-top: 50px; padding-bottom: 40px; }
       .hero-title { font-size: clamp(1.6rem, 6.5vw, 2.8rem); }
       .hero-description { font-size: clamp(1rem, 4.5vw, 1.4rem); margin-bottom: 24px; }
-      .hero-btn { padding: 12px 20px; font-size: 1rem; min-height: 48px; }
-      
+      .hero-btn { padding: 12px 20px; font-size: 1rem; min-height: 48px; }      
       .cards-section, .faqs-section { padding-top: 30px; padding-bottom: 60px; }
-      .cards-title, .faqs-title { font-size: clamp(1.6rem, 5.5vw, 2.4rem); }      .cards-description, .faqs-description { font-size: clamp(0.95rem, 4vw, 1.15rem); }
+      .cards-title, .faqs-title { font-size: clamp(1.6rem, 5.5vw, 2.4rem); }
+      .cards-description, .faqs-description { font-size: clamp(0.95rem, 4vw, 1.15rem); }
       
       .cards-grid, .faqs-container { gap: 16px; }
       
@@ -579,21 +582,18 @@
       .navbutton__text { font-size: 1rem; }
     }
 
-    /* Tablet: 768px - 1023px */
     @media (min-width: 768px) and (max-width: 1023px) {
       .container { padding: 0 24px; }
       .hero { padding-top: 70px; padding-bottom: 60px; }
       .cards-grid, .faqs-container { gap: 20px; }
-      .card-bg, .faq-item { flex: 1 1 calc(50% - 20px); }
-    }
-    /* Desktop: 1024px+ (maintain original 3-column layout) */
+      .card-bg, .faq-item { flex: 1 1 calc(50% - 20px); }    }
+
     @media (min-width: 1024px) {
       .card-bg, .faq-item { flex: 1 1 calc(33.333% - 24px); }
     }
 
-    /* Large screens: 1440px+ */
     @media (min-width: 1440px) {
-      .container { max-width: 1300px; }
+      .container { max-width: 100%; }
     }
   </style>
 </head>
