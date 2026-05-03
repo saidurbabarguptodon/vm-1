@@ -71,8 +71,8 @@
     .cards-title,.faqs-title{font-size:clamp(1.8rem,4vw,2.4rem);font-weight:800;color:var(--kex-white);margin-bottom:16px;letter-spacing:-.02em}
     .cards-description,.faqs-description{font-size:clamp(1rem,3vw,1.15rem);color:var(--kex-gray);max-width:650px;margin:0 auto;line-height:1.6}
     .cards-grid,.faqs-container{display:flex;flex-wrap:wrap;justify-content:center;gap:24px}
-    .card-bg,.faq-item{background:rgba(20,20,30,.4);border:1px solid rgba(255,255,255,.05);border-radius:20px 20px 16px 16px;padding:32px 28px;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;transition:all .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:relative;overflow:hidden;outline:none;flex:1 1 320px;max-width:400px;min-width:min(100%,280px)}
-    .faq-item{border-radius:16px}
+    .card-bg{background:rgba(20,20,30,.4);border:1px solid rgba(255,255,255,.05);border-radius:20px;padding:32px 28px;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;transition:all .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:relative;overflow:hidden;outline:none;flex:1 1 320px;max-width:400px;min-width:min(100%,280px)}
+    .faq-item{background:rgba(20,20,30,.4);border:1px solid rgba(255,255,255,.05);border-radius:16px;overflow:hidden;transition:all .3s ease;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);flex:1 1 320px;max-width:400px;min-width:min(100%,280px)}
     .card-status{position:absolute;top:24px;right:24px;display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;pointer-events:none;transition:all .3s ease;border:1px solid}
     .status-dot{width:6px;height:6px;border-radius:50%;position:relative}
     .status-dot::after{content:'';position:absolute;inset:0;border-radius:50%;animation:pulse 2s infinite}
@@ -88,83 +88,39 @@
     .cards-footer,.faqs-footer{display:flex;justify-content:center;margin-top:48px}
     .cards-footer .hero-btn,.faqs-footer .hero-btn{margin-bottom:0}
     .faq-question{width:100%;text-align:left;background:transparent;border:none;padding:24px;display:flex;justify-content:space-between;align-items:center;color:var(--kex-white);font-size:1.1rem;font-weight:600;cursor:pointer;transition:color .3s ease;font-family:inherit;outline:none}
-    .faq-icon{color:var(--kex-green);font-size:1.2rem;transition:transform .3s ease;flex-shrink:0;margin-left:16px}
-    .faq-item.is-active .faq-icon{transform:rotate(45deg)}
+    .faq-toggle-icon{display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(26,215,111,.1);border-radius:10px;color:var(--kex-green);font-size:1.1rem;transition:all .3s ease;flex-shrink:0}
+    .faq-item.is-active .faq-toggle-icon{background:rgba(26,215,111,.15);color:var(--kex-green)}
     .faq-item.is-active{border-color:rgba(26,215,111,.3);background:rgba(20,20,30,.6)}
-    .faq-answer{max-height:0;overflow:hidden;transition:max-height .3s ease-out,padding .3s ease;padding:0 24px;color:var(--kex-gray);font-size:.95rem;line-height:1.6}
+    .faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease-out,padding .35s ease,opacity .3s ease;padding:0 24px;color:var(--kex-gray);font-size:.95rem;line-height:1.6;opacity:0}
+    .faq-item.is-active .faq-answer{opacity:1;padding-bottom:24px}
     @media(hover:hover){.header__toggle:hover,.sidebar__close:hover{background:rgba(255,255,255,.06);color:#fff}.brand:hover{opacity:.8}.navbutton:hover{background:var(--kex-dark-green);transform:translateX(4px);color:#fff}.navbutton:hover i{color:var(--kex-green)}.sociallink:hover{background:var(--kex-dark-green);border-color:var(--kex-dark-green);color:#fff;transform:translateY(-4px) scale(1.05);box-shadow:0 10px 20px -5px rgba(26,215,111,.5)}.hero-btn:hover{background:var(--kex-dark-green);transform:translateY(-2px);box-shadow:0 12px 24px -8px rgba(26,215,111,.6)}.card-bg:hover{transform:translateY(-8px);border-color:rgba(26,215,111,.4);box-shadow:0 15px 35px -10px rgba(0,0,0,.6),0 0 25px rgba(26,215,111,.08)}.card-bg:hover .card-icon{transform:scale(1.1) rotate(-5deg);background:var(--kex-green);color:#fff;box-shadow:0 8px 20px -6px rgba(26,215,111,.5)}.card-bg:hover .card-title{color:var(--kex-green)}.faq-question:hover{color:var(--kex-green)}}
     .header__toggle:active i,.header__toggle.force-active i{transform:scale(.85)}
     .sociallink:active,.sociallink.force-active,.hero-btn:active,.hero-btn.force-active{background:var(--kex-dark-green);transform:scale(.95)}
-    .card-bg:active,.card-bg.force-active{transform:scale(.98);border-color:rgba(26,215,111,.4)}
-    .card-bg:active .card-icon,.card-bg.force-active .card-icon{transform:scale(1.1) rotate(-5deg);background:var(--kex-green);color:#fff;box-shadow:0 8px 20px -6px rgba(26,215,111,.5)}    .card-bg:active .card-title,.card-bg.force-active .card-title{color:var(--kex-green)}
+    .card-bg:active,.card-bg.force-active{transform:scale(.98);border-color:rgba(26,215,111,.4)}    .card-bg:active .card-icon,.card-bg.force-active .card-icon{transform:scale(1.1) rotate(-5deg);background:var(--kex-green);color:#fff;box-shadow:0 8px 20px -6px rgba(26,215,111,.5)}
+    .card-bg:active .card-title,.card-bg.force-active .card-title{color:var(--kex-green)}
     img,video,iframe,canvas,svg{max-width:100%;height:auto;display:block}
-
-    /* ===== NEW: CARDS & FAQS FIX ===== */
     @media(max-width:479px){
       .container{padding:0 16px}.header{margin:8px auto 0;border-radius:14px}.header .container{padding:0 12px}.header__nav{padding:10px 0}.header__toggle{width:36px;height:36px}
       .hero{padding:50px 0 40px}.hero-title{font-size:clamp(1.6rem,6.5vw,2.8rem)}.hero-description{font-size:clamp(1rem,4.5vw,1.4rem);margin-bottom:24px}.hero-btn{padding:12px 20px;font-size:1rem;min-height:48px}
       .cards-section,.faqs-section{padding:30px 0 60px}.cards-title,.faqs-title{font-size:clamp(1.6rem,5.5vw,2.4rem)}.cards-description,.faqs-description{font-size:clamp(.95rem,4vw,1.15rem)}
       .cards-grid,.faqs-container{gap:16px}
-
-      /* FIXED CARDS - proper side margins, smaller padding, better proportions */
-      .card-bg,.faq-item{
-        margin:0 8px;
-        padding:20px 16px;
-        border-radius:14px;
-      }
-      .card-status{
-        top:12px;right:12px;
-        padding:3px 8px;
-        font-size:.55rem;
-      }
-      .card-icon{
-        width:42px;height:42px;
-        font-size:1.2rem;
-        border-radius:10px;
-        margin-bottom:14px;
-      }
-      .card-title{
-        font-size:1.1rem;
-        margin-bottom:8px;
-      }
-      .card-description{
-        font-size:.85rem;
-        line-height:1.5;
-      }
-
-      /* FIXED FAQS - more compact, smaller */
-      .faq-item{
-        margin:0 8px;
-        padding:0;
-        border-radius:12px;
-        overflow:hidden;
-      }
-      .faq-question{
-        padding:16px;
-        font-size:.95rem;
-        min-height:52px;
-      }
-      .faq-icon{
-        font-size:1.1rem;        margin-left:12px;
-      }
-      .faq-answer{
-        padding:0 16px 16px;
-        font-size:.85rem;
-        line-height:1.5;
-      }
-      .faq-item.is-active{
-        border-color:rgba(26,215,111,.25);
-      }
-
+      /* CARDS - bigger side gap, more square proportions */
+      .card-bg{margin:0 16px;padding:24px 20px;min-height:200px;border-radius:16px}
+      .card-status{top:16px;right:16px;padding:3px 8px;font-size:.58rem}
+      .card-icon{width:48px;height:48px;font-size:1.3rem;border-radius:12px;margin-bottom:18px}
+      .card-title{font-size:1.15rem;margin-bottom:10px}
+      .card-description{font-size:.88rem;line-height:1.55}
+      /* FAQS - compact, accordion style, clean close/open */
+      .faq-item{margin:0 16px;border-radius:14px}
+      .faq-question{padding:16px 18px;font-size:.98rem;min-height:54px}
+      .faq-toggle-icon{width:32px;height:32px;border-radius:8px;font-size:1rem}
+      .faq-answer{padding:0 18px;font-size:.88rem;line-height:1.55}
       .sociallink{width:38px;height:38px;font-size:17px}
       .bg-ambient-glow{width:300px;height:300px;top:-100px;left:-100px;filter:blur(80px)}
       .sidebar{width:260px}.sidebar__header{padding:0 20px;height:68px}.sidebar__body{padding:12px 8px 16px}.sidebar__footer{padding:12px 20px calc(12px + env(safe-area-inset-bottom));min-height:calc(68px + env(safe-area-inset-bottom))}
       .navbutton{padding:12px 14px;min-height:52px}.navbutton i{font-size:1.2rem;width:26px}.navbutton__text{font-size:1rem}
     }
-
-    @media(min-width:768px) and (max-width:1023px){
-      .container{padding:0 24px}.hero{padding:70px 0 60px}.cards-grid,.faqs-container{gap:20px}.card-bg,.faq-item{flex:1 1 calc(50% - 20px)}
-    }
+    @media(min-width:768px) and (max-width:1023px){.container{padding:0 24px}.hero{padding:70px 0 60px}.cards-grid,.faqs-container{gap:20px}.card-bg,.faq-item{flex:1 1 calc(50% - 20px)}}
     @media(min-width:1024px){.card-bg,.faq-item{flex:1 1 calc(33.333% - 24px)}}
   </style>
 </head>
@@ -189,12 +145,12 @@
   <div class="overlay" id="overlay"></div>
 
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar__header">
-      <a href="/" class="brand brand--sidebar" id="brand-sidebar">
+    <div class="sidebar__header">      <a href="/" class="brand brand--sidebar" id="brand-sidebar">
         <% if (sidebar.header && sidebar.header.logourl) { %><img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="logoimg"><% } else { %>
           <% if (sidebar.header && sidebar.header.alticon) { %><i class="<%= sidebar.header.alticon %> alticon"></i><% } %>
           <% if (sidebar.header && sidebar.header.alttext) { %><span class="alttext"><%= sidebar.header.alttext %></span><% } %>
-        <% } %>      </a>
+        <% } %>
+      </a>
       <button class="sidebar__close" id="close-sidebar" aria-label="Close Menu"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="sidebar__body">
@@ -238,12 +194,12 @@
       <div class="cards-header reveal">
         <% if (cards.data.title) { %><h2 class="cards-title"><%- fmt(cards.data.title) %></h2><% } %>
         <% if (cards.data.description) { %><p class="cards-description"><%- fmt(cards.data.description) %></p><% } %>
-      </div>
-    <% } %>
+      </div>    <% } %>
     <div class="cards-grid">
       <% 
         let sortedCards =[];
-        if (cards && cards.items && cards.items.length > 0) sortedCards = cards.items.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));      %>
+        if (cards && cards.items && cards.items.length > 0) sortedCards = cards.items.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+      %>
       <% if (sortedCards.length > 0) { %>
         <% sortedCards.slice(0, 6).forEach(card => { %>
           <a href="<%= card.url || '#' %>" class="card-bg reveal" target="_blank" rel="noopener">
@@ -283,8 +239,12 @@
       <% if (faqs && faqs.items && faqs.items.length > 0) { %>
         <% faqs.items.forEach(faq => { %>
           <div class="faq-item reveal">
-            <button class="faq-question" aria-expanded="false"><span><%- fmt(faq.title || '') %></span><i class="fa-solid fa-plus faq-icon"></i></button>
-            <div class="faq-answer"><%- fmt(faq.description || '') %></div>
+            <button class="faq-question" aria-expanded="false">
+              <span><%- fmt(faq.title || '') %></span>
+              <span class="faq-toggle-icon"><i class="fa-solid fa-plus"></i></span>
+            </button>
+            <div class="faq-answer">              <%- fmt(faq.description || '') %>
+            </div>
           </div>
         <% }) %>
       <% } %>
@@ -292,7 +252,8 @@
     <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
       <div class="faqs-footer reveal">
         <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
-          <% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %><span><%= faqs.data.buttontext || '' %></span>        </a>
+          <% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %><span><%= faqs.data.buttontext || '' %></span>
+        </a>
       </div>
     <% } %>
   </section>
@@ -330,18 +291,30 @@
       setTimeout(() => { btn.classList.remove('force-active'); btn.blur(); }, 2500);
     });
 
-    document.querySelectorAll('.faq-question').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const item = btn.parentElement, ans = item.querySelector('.faq-answer'), active = item.classList.contains('is-active');
-        if (!active) {
+    /* FAQ Accordion - open one, close others */
+    document.querySelectorAll('.faq-question').forEach(btn => {      btn.addEventListener('click', () => {
+        const item = btn.parentElement;
+        const ans = item.querySelector('.faq-answer');
+        const icon = item.querySelector('.faq-toggle-icon i');
+        const wasActive = item.classList.contains('is-active');
+
+        // Close ALL faq items first
+        document.querySelectorAll('.faq-item.is-active').forEach(activeItem => {
+          activeItem.classList.remove('is-active');
+          activeItem.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+          activeItem.querySelector('.faq-toggle-icon i').className = 'fa-solid fa-plus';
+          const a = activeItem.querySelector('.faq-answer');
+          a.style.maxHeight = null;
+          a.style.paddingBottom = '0';
+        });
+
+        // If the clicked one was NOT already open, open it
+        if (!wasActive) {
           item.classList.add('is-active');
           btn.setAttribute('aria-expanded', 'true');
+          icon.className = 'fa-solid fa-minus';
           ans.style.maxHeight = ans.scrollHeight + 24 + 'px';
           ans.style.paddingBottom = '24px';
-        } else {
-          item.classList.remove('is-active');
-          btn.setAttribute('aria-expanded', 'false');
-          ans.style.maxHeight = null;          ans.style.paddingBottom = '0';
         }
       });
     });
@@ -368,8 +341,7 @@
         }
       }));
       const updateSpy = () => {
-        if (navigating) return;
-        const y = window.scrollY || document.documentElement.scrollTop;
+        if (navigating) return;        const y = window.scrollY || document.documentElement.scrollTop;
         let cur = null;
         const mid = headerH + (innerHeight / 3);
         if (innerHeight + y >= document.body.offsetHeight - 10) cur = sections[sections.length - 1].id;
@@ -390,7 +362,8 @@
 
     (() => {
       const c = document.getElementById('snow-canvas'), ctx = c.getContext('2d');
-      let w = innerWidth, h = innerHeight; c.width = w; c.height = h;      const max = w < 768 ? 20 : 50, flakes = Array.from({ length: max }, () => ({
+      let w = innerWidth, h = innerHeight; c.width = w; c.height = h;
+      const max = w < 768 ? 20 : 50, flakes = Array.from({ length: max }, () => ({
         x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.5 + 0.5,
         d: Math.random() * 0.4 + 0.15, a: Math.random() * Math.PI * 2,
         aStep: Math.random() * 0.01 + 0.005, op: Math.random() * 0.4 + 0.15
