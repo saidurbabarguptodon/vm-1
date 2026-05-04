@@ -29,12 +29,11 @@
     #snow-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
     .bg-ambient-glow{position:fixed;top:-150px;left:-150px;width:500px;height:500px;background:rgba(26,215,111,.25);border-radius:50%;z-index:0;pointer-events:none;filter:blur(100px)}
     
-    /* 🔧 FIX 5: Reduced side gaps globally */
     .container{position:relative;z-index:2;width:100%;max-width:100%;margin:0;padding:0 14px}
     
     .reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s cubic-bezier(.16,1,.3,1)}.reveal.active{opacity:1;transform:translateY(0)}
     .header{width:calc(100% - 24px);margin:12px 12px 0;background:rgba(18,18,24,.7);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);position:sticky;top:12px;z-index:100;border:1px solid rgba(26,215,111,.5);border-radius:16px;box-shadow:0 10px 40px -10px rgba(0,0,0,.5),0 0 20px rgba(26,215,111,.15)}
-    .header .container{padding:0 12px;max-width:100%} /* 🔧 Reduced header padding */
+    .header .container{padding:0 12px;max-width:100%}
     .header__nav{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
     .header__toggle,.sidebar__close{background:transparent;border:none;color:var(--kex-white);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all .15s ease}
     .header__toggle{font-size:1.6rem;width:40px;height:40px}.header__toggle i{transition:transform .2s ease}
@@ -46,7 +45,6 @@
     .alticon{font-size:1.6rem;display:inline-block}
     .alttext{font-size:1.5rem;font-weight:800;letter-spacing:-.5px;font-family:'Playfair Display',serif;color:#fff;text-shadow:none}
     
-    /* 🔧 FIX 4: Professional & Simple Sidebar/Overlay Animation */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;z-index:998;cursor:pointer}    
     .overlay.is-visible{opacity:1;visibility:visible}
     .sidebar{position:fixed;top:0;bottom:0;left:0;height:100vh;height:100dvh;width:280px;max-width:80vw;background:rgba(16,16,22,.92);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;border-right:1px solid rgba(255,255,255,.06);box-shadow:12px 0 40px rgba(0,0,0,.5);transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
@@ -68,7 +66,6 @@
     .sociallinks{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%}
     .sociallink{display:flex;align-items:center;justify-content:center;width:42px;height:42px;background:var(--kex-green);border:1px solid var(--kex-green);color:#fff;border-radius:50%;text-decoration:none;font-size:19px;transition:all .3s cubic-bezier(.4,0,.2,1)}
     
-    /* 🔧 FIX 1: Hero centering improvements */
     .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 0 60px;min-height:50vh;position:relative;scroll-margin-top:80px;width:100%}
     .hero .container{display:flex;flex-direction:column;align-items:center;width:100%}
     .hero-title{font-size:clamp(1.8rem,5vw,3.5rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--kex-white);margin:0 auto 18px;text-align:center;hyphens:auto;max-width:800px;width:100%}
@@ -78,7 +75,10 @@
     .hero-footer{font-size:.95rem;color:var(--kex-gray);opacity:.8}
     
     .cards-section,.faqs-section{padding:50px 0 80px;position:relative;z-index:2;scroll-margin-top:85px;width:100%}
-    .cards-header,.faqs-header{text-align:center;margin-bottom:40px}
+    
+    /* Separated headers to control the gap individually */
+    .cards-header{text-align:center;margin-bottom:40px}
+    .faqs-header{text-align:center;margin-bottom:60px} /* Increased gap between description and cards */
     
     /* Larger FAQs Title & standard cards title */
     .cards-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
@@ -87,7 +87,6 @@
     .cards-description,.faqs-description{font-size:clamp(1rem,2vw,1.25rem);color:var(--kex-gray);max-width:700px;margin:0 auto;line-height:1.7}
     .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;width:100%;max-width:1000px;margin:0 auto}
     
-    /* 🔧 FIX 3: FAQ grid - independent cards that don't shift each other */
     .faqs-container{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
@@ -101,7 +100,6 @@
     
     .card-bg{background:rgba(20,20,30,.4);border:1px solid rgba(255,255,255,.05);border-radius:20px;padding:30px 26px;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;transition:all .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:relative;overflow:hidden;outline:none;min-height:280px}
     
-    /* 🔧 FIX 3 & 5: FAQ item - independent height, compact padding */    
     .faq-item{
       background:rgba(20,20,30,.4);
       border:1px solid rgba(255,255,255,.05);
@@ -130,7 +128,6 @@
     .cards-footer,.faqs-footer{display:flex;justify-content:center;margin-top:40px}
     .cards-footer .hero-btn,.faqs-footer .hero-btn{margin-bottom:0}
     
-    /* 🔧 FIX 5: Reduced FAQ card height via tighter padding & increased title size slightly */
     .faq-question{width:100%;text-align:left;background:transparent;border:none;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;color:var(--kex-white);font-size:1.15rem;font-weight:600;cursor:pointer;transition:color .3s ease;font-family:inherit;outline:none}
     .faq-toggle-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(26,215,111,.1);border-radius:10px;color:var(--kex-green);font-size:1rem;transition:all .3s ease;flex-shrink:0}
     .faq-item.is-active .faq-toggle-icon{background:rgba(26,215,111,.15);color:var(--kex-green)}
@@ -156,16 +153,15 @@
       .card-bg{min-height:300px;padding:34px 30px}
     }
 
-    /* Intermediate Screen (where cards might begin stacking) - Tighter FAQs paddings */
+    /* Intermediate Screen (where cards might begin stacking) */
     @media(max-width:768px){
       .faqs-section{padding:40px 0 50px}
-      .faqs-header{margin-bottom:24px}
+      .faqs-header{margin-bottom:40px} /* Increased gap here too */
       .faqs-title{margin-bottom:6px}
       .faq-question{padding:14px 16px}
     }
     
     @media(max-width:479px){
-      /* 🔧 FIX 5: Tighter mobile side gaps & tighter vertical spacing */
       .container{padding:0 12px}
       .header{margin:8px 8px 0;border-radius:14px}
       .header .container{padding:0 10px}
@@ -174,16 +170,15 @@
       .hero{padding:40px 0 30px}
       
       .cards-section{padding:30px 0 50px}
-      /* Highly reduced gap vertically above and below FAQ main section */
       .faqs-section{padding:20px 0 40px}
-      .faqs-header{margin-bottom:16px}
+      
+      .faqs-header{margin-bottom:32px} /* Increased gap for small mobile view */
       .faqs-title{margin-bottom:4px}
       
       .cards-grid,.faqs-container{grid-template-columns:1fr;gap:14px}
       .card-bg{margin:0;min-height:240px;padding:22px 18px}
       
       .faq-item{margin:0}
-      /* Tighter vertical gap in the FAQ cards content */
       .faq-question{padding:12px 14px}
       
       .sociallink{width:38px;height:38px;font-size:17px}
@@ -366,7 +361,7 @@
       if (actionable) setTimeout(() => target === '_blank' ? window.open(href, '_blank') : window.location.href = href, 200);
       setTimeout(() => { btn.classList.remove('force-active'); btn.blur(); }, 2500);
     });
-    // 🔧 FIX 2: Independent FAQ toggle - each card expands without affecting others
+    
     document.querySelectorAll('.faq-question').forEach(btn => {
       btn.addEventListener('click', function() {
         const item = this.closest('.faq-item');
@@ -374,9 +369,7 @@
         const icon = item.querySelector('.faq-toggle-icon i');
         const isActive = item.classList.contains('is-active');
 
-        // Toggle ONLY the clicked FAQ - others remain untouched
         if (!isActive) {
-          // Open this FAQ
           item.classList.add('is-active');
           this.setAttribute('aria-expanded', 'true');
           icon.className = 'fa-solid fa-minus';
@@ -385,7 +378,6 @@
           answer.style.visibility = 'visible';
           answer.style.opacity = '1';
           
-          // Force reflow for accurate scrollHeight
           void answer.offsetHeight;
           
           requestAnimationFrame(() => {
@@ -393,7 +385,6 @@
             answer.style.paddingBottom = '16px';
           });
         } else {
-          // Close this FAQ
           item.classList.remove('is-active');
           this.setAttribute('aria-expanded', 'false');
           icon.className = 'fa-solid fa-plus';
