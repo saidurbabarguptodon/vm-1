@@ -47,7 +47,8 @@
     .alttext{font-size:1.5rem;font-weight:800;letter-spacing:-.5px;font-family:'Playfair Display',serif;color:#fff;text-shadow:none}
     
     /* 🔧 FIX 4: Professional & Simple Sidebar/Overlay Animation */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;z-index:998;cursor:pointer}    .overlay.is-visible{opacity:1;visibility:visible}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;z-index:998;cursor:pointer}    
+    .overlay.is-visible{opacity:1;visibility:visible}
     .sidebar{position:fixed;top:0;bottom:0;left:0;height:100vh;height:100dvh;width:280px;max-width:80vw;background:rgba(16,16,22,.92);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;border-right:1px solid rgba(255,255,255,.06);box-shadow:12px 0 40px rgba(0,0,0,.5);transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
     .sidebar.is-expanded{transform:translateX(0)}
     .sidebar__header,.sidebar__body,.sidebar__footer{opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease}
@@ -78,7 +79,11 @@
     
     .cards-section,.faqs-section{padding:50px 0 80px;position:relative;z-index:2;scroll-margin-top:85px;width:100%}
     .cards-header,.faqs-header{text-align:center;margin-bottom:40px}
-    .cards-title,.faqs-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
+    
+    /* Larger FAQs Title & standard cards title */
+    .cards-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
+    .faqs-title{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
+    
     .cards-description,.faqs-description{font-size:clamp(1rem,2vw,1.25rem);color:var(--kex-gray);max-width:700px;margin:0 auto;line-height:1.7}
     .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;width:100%;max-width:1000px;margin:0 auto}
     
@@ -96,7 +101,8 @@
     
     .card-bg{background:rgba(20,20,30,.4);border:1px solid rgba(255,255,255,.05);border-radius:20px;padding:30px 26px;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;transition:all .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:relative;overflow:hidden;outline:none;min-height:280px}
     
-    /* 🔧 FIX 3 & 5: FAQ item - independent height, compact padding */    .faq-item{
+    /* 🔧 FIX 3 & 5: FAQ item - independent height, compact padding */    
+    .faq-item{
       background:rgba(20,20,30,.4);
       border:1px solid rgba(255,255,255,.05);
       border-radius:16px;
@@ -124,8 +130,8 @@
     .cards-footer,.faqs-footer{display:flex;justify-content:center;margin-top:40px}
     .cards-footer .hero-btn,.faqs-footer .hero-btn{margin-bottom:0}
     
-    /* 🔧 FIX 5: Reduced FAQ card height via tighter padding */
-    .faq-question{width:100%;text-align:left;background:transparent;border:none;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;color:var(--kex-white);font-size:1.05rem;font-weight:600;cursor:pointer;transition:color .3s ease;font-family:inherit;outline:none}
+    /* 🔧 FIX 5: Reduced FAQ card height via tighter padding & increased title size slightly */
+    .faq-question{width:100%;text-align:left;background:transparent;border:none;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;color:var(--kex-white);font-size:1.15rem;font-weight:600;cursor:pointer;transition:color .3s ease;font-family:inherit;outline:none}
     .faq-toggle-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(26,215,111,.1);border-radius:10px;color:var(--kex-green);font-size:1rem;transition:all .3s ease;flex-shrink:0}
     .faq-item.is-active .faq-toggle-icon{background:rgba(26,215,111,.15);color:var(--kex-green)}
     .faq-item.is-active{border-color:rgba(26,215,111,.3);background:rgba(20,20,30,.6)}
@@ -145,22 +151,41 @@
     }
     
     @media(min-width:1200px){
-      html{font-size:18px}      .cards-grid{gap:28px}
+      html{font-size:18px}      
+      .cards-grid{gap:28px}
       .card-bg{min-height:300px;padding:34px 30px}
+    }
+
+    /* Intermediate Screen (where cards might begin stacking) - Tighter FAQs paddings */
+    @media(max-width:768px){
+      .faqs-section{padding:40px 0 50px}
+      .faqs-header{margin-bottom:24px}
+      .faqs-title{margin-bottom:6px}
+      .faq-question{padding:14px 16px}
     }
     
     @media(max-width:479px){
-      /* 🔧 FIX 5: Tighter mobile side gaps */
+      /* 🔧 FIX 5: Tighter mobile side gaps & tighter vertical spacing */
       .container{padding:0 12px}
       .header{margin:8px 8px 0;border-radius:14px}
       .header .container{padding:0 10px}
       .header__nav{padding:10px 0}
       .header__toggle{width:36px;height:36px}
       .hero{padding:40px 0 30px}
-      .cards-section,.faqs-section{padding:30px 0 50px}
+      
+      .cards-section{padding:30px 0 50px}
+      /* Highly reduced gap vertically above and below FAQ main section */
+      .faqs-section{padding:20px 0 40px}
+      .faqs-header{margin-bottom:16px}
+      .faqs-title{margin-bottom:4px}
+      
       .cards-grid,.faqs-container{grid-template-columns:1fr;gap:14px}
       .card-bg{margin:0;min-height:240px;padding:22px 18px}
+      
       .faq-item{margin:0}
+      /* Tighter vertical gap in the FAQ cards content */
+      .faq-question{padding:12px 14px}
+      
       .sociallink{width:38px;height:38px;font-size:17px}
       .bg-ambient-glow{width:300px;height:300px;top:-100px;left:-100px;filter:blur(80px)}
       .sidebar{width:260px}
