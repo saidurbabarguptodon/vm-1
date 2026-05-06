@@ -1,15 +1,14 @@
 {
-  "name": "",
+  "name": "saidur-nsfw-bot",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "axios": "^1.8.4",
+    "telegraf": "^4.16.3",
     "dotenv": "^16.4.7",
-    "telegraf": "^4.24.1"
+    "axios": "^1.8.4",
+    "adm-zip": "^0.5.16"
   }
 }
