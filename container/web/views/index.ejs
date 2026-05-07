@@ -47,8 +47,7 @@
     
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;z-index:998;cursor:pointer}    
     .overlay.is-visible{opacity:1;visibility:visible}
-    .sidebar{position:fixed;top:0;bottom:0;left:0;height:100vh;height:100dvh;width:280px;max-width:80vw;background:rgba(16,16,22,.92);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;border-right:1px solid rgba(255,255,255,.06);box-shadow:12px 0 40px rgba(0,0,0,.5);transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
-    .sidebar.is-expanded{transform:translateX(0)}
+    .sidebar{position:fixed;top:0;bottom:0;left:0;height:100vh;height:100dvh;width:280px;max-width:80vw;background:rgba(16,16,22,.92);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;border-right:1px solid rgba(255,255,255,.06);box-shadow:12px 0 40px rgba(0,0,0,.5);transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}    .sidebar.is-expanded{transform:translateX(0)}
     .sidebar__header,.sidebar__body,.sidebar__footer{opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease}
     .sidebar.is-expanded .sidebar__header,.sidebar.is-expanded .sidebar__body,.sidebar.is-expanded .sidebar__footer{opacity:1;transform:translateY(0)}
     .sidebar.is-expanded .sidebar__close i{transform:rotate(90deg);transition:transform .3s ease}
@@ -76,9 +75,9 @@
     
     .cards-section,.faqs-section{padding:50px 0 80px;position:relative;z-index:2;scroll-margin-top:85px;width:100%}
     
-    /* Separated headers to control the gap individually */
-    .cards-header{text-align:center;margin-bottom:40px}
-    .faqs-header{text-align:center;margin-bottom:80px} /* Much larger gap for desktop between description and cards */
+    /* Separated headers to control the gap individually - REDUCED GAP */
+    .cards-header{text-align:center;margin-bottom:20px}
+    .faqs-header{text-align:center;margin-bottom:110px} /* INCREASED GAP for desktop */
     
     /* Larger FAQs Title & standard cards title */
     .cards-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
@@ -97,8 +96,32 @@
       align-items:start;
       align-content:start;
     }
+        /* CARDS - Allow natural growth with content, min-height only */
+    .card-bg{
+      background:rgba(20,20,30,.4);
+      border:1px solid rgba(255,255,255,.05);
+      border-radius:20px;
+      padding:30px 26px;
+      text-decoration:none;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      transition:all .3s cubic-bezier(.4,0,.2,1);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      position:relative;
+      overflow:hidden;
+      outline:none;
+      min-height:280px;
+      height:auto;
+    }
     
-    .card-bg{background:rgba(20,20,30,.4);border:1px solid rgba(255,255,255,.05);border-radius:20px;padding:30px 26px;text-decoration:none;display:flex;flex-direction:column;align-items:flex-start;transition:all .3s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:relative;overflow:hidden;outline:none;min-height:280px}
+    .card-description{
+      font-size:.95rem;
+      color:var(--kex-gray);
+      line-height:1.6;
+      flex-grow:1;
+    }
     
     .faq-item{
       background:rgba(20,20,30,.4);
@@ -122,9 +145,7 @@
     .status-offline{color:var(--kex-red);border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.05)}.status-offline .status-dot{background:var(--kex-red);--pulse-color:rgba(239,68,68,.7)}
     .status-soon{color:var(--kex-blue);border-color:rgba(59,130,246,.2);background:rgba(59,130,246,.05)}.status-soon .status-dot{background:var(--kex-blue);--pulse-color:rgba(59,130,246,.7)}
     .status-default{color:var(--kex-white);border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.05)}.status-default .status-dot{background:var(--kex-white);--pulse-color:rgba(255,255,255,.7)}
-    .card-icon{display:flex;align-items:center;justify-content:center;width:56px;height:56px;background:rgba(26,215,111,.1);color:var(--kex-green);border-radius:14px;font-size:1.6rem;margin-bottom:22px;transition:all .3s ease}
-    .card-title{font-size:1.3rem;font-weight:700;color:var(--kex-white);margin-bottom:10px;line-height:1.3;transition:color .3s ease}
-    .card-description{font-size:.95rem;color:var(--kex-gray);line-height:1.6;flex-grow:1}
+    .card-icon{display:flex;align-items:center;justify-content:center;width:56px;height:56px;background:rgba(26,215,111,.1);color:var(--kex-green);border-radius:14px;font-size:1.6rem;margin-bottom:22px;transition:all .3s ease}    .card-title{font-size:1.3rem;font-weight:700;color:var(--kex-white);margin-bottom:10px;line-height:1.3;transition:color .3s ease}
     .cards-footer,.faqs-footer{display:flex;justify-content:center;margin-top:40px}
     .cards-footer .hero-btn,.faqs-footer .hero-btn{margin-bottom:0}
     
@@ -134,6 +155,10 @@
     .faq-item.is-active{border-color:rgba(26,215,111,.3);background:rgba(20,20,30,.6)}
     .faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease-out,padding .35s ease,opacity .3s ease;padding:0 18px;color:var(--kex-gray);font-size:.92rem;line-height:1.55;opacity:0}
     .faq-item.is-active .faq-answer{opacity:1;padding-bottom:16px}
+    
+    /* FAQ Individual Element Classes */
+    .faq-title{display:block}
+    .faq-description{display:block}
     
     @media(hover:hover){.header__toggle:hover,.sidebar__close:hover{background:rgba(255,255,255,.06);color:#fff}.brand:hover{opacity:.8}.navbutton:hover{background:var(--kex-dark-green);transform:translateX(4px);color:#fff}.navbutton:hover i{color:var(--kex-green)}.sociallink:hover{background:var(--kex-dark-green);border-color:var(--kex-dark-green);color:#fff;transform:translateY(-4px) scale(1.05);box-shadow:0 10px 20px -5px rgba(26,215,111,.5)}.hero-btn:hover{background:var(--kex-dark-green);transform:translateY(-2px);box-shadow:0 12px 24px -8px rgba(26,215,111,.6)}.card-bg:hover{transform:translateY(-8px);border-color:rgba(26,215,111,.4);box-shadow:0 15px 35px -10px rgba(0,0,0,.6),0 0 25px rgba(26,215,111,.08)}.card-bg:hover .card-icon{transform:scale(1.1) rotate(-5deg);background:var(--kex-green);color:#fff;box-shadow:0 8px 20px -6px rgba(26,215,111,.5)}.card-bg:hover .card-title{color:var(--kex-green)}.faq-question:hover{color:var(--kex-green)}}
     .header__toggle:active i,.header__toggle.force-active i{transform:scale(.85)}.sociallink:active,.sociallink.force-active,.hero-btn:active,.hero-btn.force-active{background:var(--kex-dark-green);transform:scale(.95)}
@@ -156,7 +181,7 @@
     /* Intermediate Screen */
     @media(max-width:768px){
       .faqs-section{padding:40px 0 50px}
-      .faqs-header{margin-bottom:60px} /* Increased tablet gap */
+      .faqs-header{margin-bottom:75px} /* Increased tablet gap */
       .faqs-title{margin-bottom:6px}
       .faq-question{padding:14px 16px}
     }
@@ -169,14 +194,14 @@
       .header__toggle{width:36px;height:36px}
       .hero{padding:40px 0 30px}
       
-      .cards-section{padding:30px 0 50px}
-      .faqs-section{padding:20px 0 40px}
+      .cards-section{padding:30px 0 50px}      .faqs-section{padding:20px 0 40px}
       
-      .faqs-header{margin-bottom:50px} /* Much larger gap for small mobile view */
+      .cards-header{margin-bottom:15px}
+      .faqs-header{margin-bottom:65px} /* Much larger gap for small mobile view */
       .faqs-title{margin-bottom:4px}
       
       .cards-grid,.faqs-container{grid-template-columns:1fr;gap:14px}
-      .card-bg{margin:0;min-height:240px;padding:22px 18px}
+      .card-bg{margin:0;min-height:240px;padding:22px 18px;height:auto}
       
       .faq-item{margin:0}
       .faq-question{padding:12px 14px}
@@ -218,8 +243,7 @@
           <% if (sidebar.header && sidebar.header.alticon) { %><i class="<%= sidebar.header.alticon %> alticon"></i><% } %>
           <% if (sidebar.header && sidebar.header.alttext) { %><span class="alttext"><%= sidebar.header.alttext %></span><% } %>
         <% } %>
-      </a>
-      <button class="sidebar__close" id="close-sidebar" aria-label="Close Menu"><i class="fa-solid fa-xmark"></i></button>
+      </a>      <button class="sidebar__close" id="close-sidebar" aria-label="Close Menu"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="sidebar__body">
       <nav class="navmenu" id="navmenu">
@@ -268,8 +292,7 @@
           let sortedCards =[];
           if (cards && cards.items && cards.items.length > 0) sortedCards = cards.items.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
         %>
-        <% if (sortedCards.length > 0) { %>
-          <% sortedCards.slice(0, 6).forEach(card => { %>
+        <% if (sortedCards.length > 0) { %>          <% sortedCards.slice(0, 6).forEach(card => { %>
             <a href="<%= card.url || '#' %>" class="card-bg reveal" target="_blank" rel="noopener">
               <% if (card.status && card.status.trim() !== '') { 
                 let statusClass = 'status-default', statusText = card.status.trim().toLowerCase();
@@ -310,16 +333,15 @@
           <% faqs.items.forEach(faq => { %>
             <div class="faq-item reveal">
               <button class="faq-question" aria-expanded="false">
-                <span><%- fmt(faq.title || '') %></span>
+                <span class="faq-title"><%- fmt(faq.title || '') %></span>
                 <span class="faq-toggle-icon"><i class="fa-solid fa-plus"></i></span>
               </button>              <div class="faq-answer">
-                <%- fmt(faq.description || '') %>
+                <span class="faq-description"><%- fmt(faq.description || '') %></span>
               </div>
             </div>
           <% }) %>
         <% } %>
-      </div>
-      <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
+      </div>      <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
         <div class="faqs-footer reveal">
           <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
             <% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %><span><%= faqs.data.buttontext || '' %></span>
@@ -368,7 +390,6 @@
         const answer = item.querySelector('.faq-answer');
         const icon = item.querySelector('.faq-toggle-icon i');
         const isActive = item.classList.contains('is-active');
-
         if (!isActive) {
           item.classList.add('is-active');
           this.setAttribute('aria-expanded', 'true');
@@ -418,8 +439,7 @@
         const h = b.getAttribute('href');
         if (h === '/' || h === '#home') { e.preventDefault(); scrollTop(); window.dispatchEvent(new Event('hideSidebar')); }
         else if (h?.startsWith('#')) {
-          e.preventDefault(); const t = document.getElementById(h.slice(1));
-          if (t) { navigating = true; t.scrollIntoView({ behavior: 'smooth' }); history.pushState(null, null, h); setNav(h.slice(1)); lastSec = h.slice(1); window.dispatchEvent(new Event('hideSidebar')); setTimeout(() => navigating = false, 800); }
+          e.preventDefault(); const t = document.getElementById(h.slice(1));          if (t) { navigating = true; t.scrollIntoView({ behavior: 'smooth' }); history.pushState(null, null, h); setNav(h.slice(1)); lastSec = h.slice(1); window.dispatchEvent(new Event('hideSidebar')); setTimeout(() => navigating = false, 800); }
         }
       }));
       const updateSpy = () => {
