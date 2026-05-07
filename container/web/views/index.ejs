@@ -78,7 +78,7 @@
     
     /* Separated headers to control the gap individually */
     .cards-header{text-align:center;margin-bottom:40px}
-    .faqs-header{text-align:center;margin-bottom:60px} /* Increased gap between description and cards */
+    .faqs-header{text-align:center;margin-bottom:80px} /* Much larger gap for desktop between description and cards */
     
     /* Larger FAQs Title & standard cards title */
     .cards-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
@@ -153,10 +153,10 @@
       .card-bg{min-height:300px;padding:34px 30px}
     }
 
-    /* Intermediate Screen (where cards might begin stacking) */
+    /* Intermediate Screen */
     @media(max-width:768px){
       .faqs-section{padding:40px 0 50px}
-      .faqs-header{margin-bottom:40px} /* Increased gap here too */
+      .faqs-header{margin-bottom:60px} /* Increased tablet gap */
       .faqs-title{margin-bottom:6px}
       .faq-question{padding:14px 16px}
     }
@@ -172,7 +172,7 @@
       .cards-section{padding:30px 0 50px}
       .faqs-section{padding:20px 0 40px}
       
-      .faqs-header{margin-bottom:32px} /* Increased gap for small mobile view */
+      .faqs-header{margin-bottom:50px} /* Much larger gap for small mobile view */
       .faqs-title{margin-bottom:4px}
       
       .cards-grid,.faqs-container{grid-template-columns:1fr;gap:14px}
