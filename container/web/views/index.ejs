@@ -67,21 +67,25 @@
     
     .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 0 60px;min-height:50vh;position:relative;scroll-margin-top:80px;width:100%}
     .hero .container{display:flex;flex-direction:column;align-items:center;width:100%}
-    .hero-title{font-size:clamp(1.8rem,5vw,3.5rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--kex-white);margin:0 auto 18px;text-align:center;hyphens:auto;max-width:90%;width:100%}
-    .hero-description{font-size:clamp(1rem,2vw,1.4rem);color:var(--kex-gray);margin:0 auto 28px;text-align:center;hyphens:auto;max-width:85%;width:100%;line-height:1.7}
-    .hero-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--kex-green);color:#fff;font-weight:600;font-size:1.1rem;padding:14px 32px;border-radius:60px;text-decoration:none;transition:background .3s ease,transform .3s ease,box-shadow .3s ease;box-shadow:0 8px 20px -6px rgba(26,215,111,.5);margin-bottom:20px;outline:none}
-    .hero-btn i{font-size:1.3rem;font-style:normal!important}
-    .hero-footer{font-size:.95rem;color:var(--kex-gray);opacity:.8}
+    
+    /* Increased Hero Text Size */
+    .hero-title{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--kex-white);margin:0 auto 18px;text-align:center;hyphens:auto;max-width:90%;width:100%}
+    .hero-description{font-size:clamp(1.2rem,2.5vw,1.6rem);color:var(--kex-gray);margin:0 auto 28px;text-align:center;hyphens:auto;max-width:85%;width:100%;line-height:1.7}
+    .hero-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--kex-green);color:#fff;font-weight:600;font-size:1.2rem;padding:16px 36px;border-radius:60px;text-decoration:none;transition:background .3s ease,transform .3s ease,box-shadow .3s ease;box-shadow:0 8px 20px -6px rgba(26,215,111,.5);margin-bottom:20px;outline:none}
+    .hero-btn i{font-size:1.4rem;font-style:normal!important}
+    .hero-footer{font-size:1.1rem;color:var(--kex-gray);opacity:.8}
     
     .cards-section,.faqs-section{padding:50px 0 80px;position:relative;z-index:2;scroll-margin-top:85px;width:100%}
     
     .cards-header{text-align:center;margin-bottom:65px}
     .faqs-header{text-align:center;margin-bottom:65px}
     
-    .cards-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
-    .faqs-title{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
+    /* Increased Header Text Sizes */
+    .cards-title{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
+    .faqs-title{font-size:clamp(2.4rem,6vw,3.8rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
     
-    .cards-description,.faqs-description{font-size:clamp(1rem,2vw,1.25rem);color:var(--kex-gray);max-width:85%;margin:0 auto;line-height:1.7}
+    /* Increased Description Text Sizes */
+    .cards-description,.faqs-description{font-size:clamp(1.15rem,2.5vw,1.5rem);color:var(--kex-gray);max-width:85%;margin:0 auto;line-height:1.7}
     
     .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:22px;width:100%;max-width:92%;margin:0 auto}
     
@@ -133,7 +137,7 @@
       color:var(--kex-gray);
       line-height:1.6;
       flex-grow:1;
-      /* FIX: Forces long strings like "Sjsisbsisbsisbs..." to break into a new line */
+      /* FIX: Forces long strings to break into a new line */
       word-break: break-word;
       overflow-wrap: break-word;
     }
