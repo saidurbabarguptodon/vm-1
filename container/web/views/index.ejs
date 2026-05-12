@@ -21,7 +21,12 @@
       --kex-dark-blue: #1E3A8A;
       --kex-white: #F1F5F9;
       --kex-gray: #94A3B8;
-      --kex-blur: 16px; 
+      
+      /* Premium Glassmorphism Variables */
+      --kex-blur: 24px;
+      --glass-border: rgba(255, 255, 255, 0.05);
+      --glass-highlight: rgba(255, 255, 255, 0.12); /* Mimics light hitting the edge */
+      --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
     }
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html{font-size:clamp(14px,1vw + 8px,18px)}
@@ -33,8 +38,22 @@
     .container{position:relative;z-index:2;width:100%;max-width:100%;margin:0;padding:0 14px}
     
     .reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s cubic-bezier(.16,1,.3,1)}.reveal.active{opacity:1;transform:translateY(0)}
-    /* Added var(--kex-blur) to header */
-    .header{width:calc(100% - 24px);margin:12px 12px 0;background:rgba(18,18,24,.7);backdrop-filter:blur(var(--kex-blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--kex-blur)) saturate(180%);position:sticky;top:12px;z-index:100;border:1px solid rgba(26,215,111,.5);border-radius:16px;box-shadow:0 10px 40px -10px rgba(0,0,0,.5),0 0 20px rgba(26,215,111,.15)}
+    
+    /* PROFESSIONAL GLASS HEADER */
+    .header{
+      width:calc(100% - 24px);
+      margin:12px 12px 0;
+      background: linear-gradient(135deg, rgba(20,20,30,0.65) 0%, rgba(20,20,30,0.45) 100%);
+      backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      position:sticky;
+      top:12px;
+      z-index:100;
+      border:1px solid var(--glass-border);
+      border-top:1px solid var(--glass-highlight); /* Top light edge */
+      border-radius:16px;
+      box-shadow: var(--glass-shadow), 0 0 20px rgba(26,215,111,.08);
+    }
     .header .container{padding:0 12px;max-width:100%}
     .header__nav{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
     .header__toggle,.sidebar__close{background:transparent;border:none;color:var(--kex-white);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all .15s ease}
@@ -49,8 +68,19 @@
     
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;z-index:998;cursor:pointer}    
     .overlay.is-visible{opacity:1;visibility:visible}
-    /* Added var(--kex-blur) to sidebar */
-    .sidebar{position:fixed;top:0;bottom:0;left:0;height:100vh;height:100dvh;width:280px;max-width:80vw;background:rgba(16,16,22,.92);backdrop-filter:blur(var(--kex-blur)) saturate(150%);-webkit-backdrop-filter:blur(var(--kex-blur)) saturate(150%);z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;border-right:1px solid rgba(255,255,255,.06);box-shadow:12px 0 40px rgba(0,0,0,.5);transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}    .sidebar.is-expanded{transform:translateX(0)}
+    
+    /* PROFESSIONAL GLASS SIDEBAR */
+    .sidebar{
+      position:fixed;top:0;bottom:0;left:0;height:100vh;height:100dvh;width:280px;max-width:80vw;
+      background: linear-gradient(180deg, rgba(16,16,22,0.6) 0%, rgba(16,16,22,0.85) 100%); /* Slightly lower opacity to reveal blur */
+      backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;
+      border-right:1px solid var(--glass-highlight); /* Light hitting the expanded edge */
+      box-shadow: 15px 0 40px rgba(0,0,0,.6);
+      transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1)
+    }    
+    .sidebar.is-expanded{transform:translateX(0)}
     .sidebar__header,.sidebar__body,.sidebar__footer{opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease}
     .sidebar.is-expanded .sidebar__header,.sidebar.is-expanded .sidebar__body,.sidebar.is-expanded .sidebar__footer{opacity:1;transform:translateY(0)}
     .sidebar.is-expanded .sidebar__close i{transform:rotate(90deg);transition:transform .3s ease}
@@ -100,10 +130,15 @@
       align-content:start;
     }
     
-    /* CARDS - Added var(--kex-blur) */
+    /* PROFESSIONAL GLASS CARDS */
     .card-bg{
-      background:rgba(20,20,30,.4);
-      border:1px solid rgba(255,255,255,.05);
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(20,20,30,0.4) 100%);
+      backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-top: 1px solid var(--glass-highlight); /* Light coming from top */
+      border-left: 1px solid var(--glass-highlight); /* Light coming from left */
+      box-shadow: var(--glass-shadow);
       border-radius:20px;
       padding:30px 26px 20px 26px; 
       text-decoration:none;
@@ -111,8 +146,6 @@
       flex-direction:column;
       align-items:flex-start;
       transition:all .3s cubic-bezier(.4,0,.2,1);
-      backdrop-filter:blur(var(--kex-blur));
-      -webkit-backdrop-filter:blur(var(--kex-blur));
       position:relative;
       overflow:hidden;
       outline:none;
@@ -140,15 +173,18 @@
       overflow-wrap: break-word;
     }
     
-    /* Added var(--kex-blur) to FAQs as well since they are styled like cards */
+    /* PROFESSIONAL GLASS FAQs */
     .faq-item{
-      background:rgba(20,20,30,.4);
-      border:1px solid rgba(255,255,255,.05);
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(20,20,30,0.4) 100%);
+      backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-top: 1px solid var(--glass-highlight);
+      border-left: 1px solid var(--glass-highlight);
+      box-shadow: var(--glass-shadow);
       border-radius:16px;
       overflow:hidden;
       transition:border-color .3s ease, background .3s ease;
-      backdrop-filter:blur(var(--kex-blur));
-      -webkit-backdrop-filter:blur(var(--kex-blur));
       display:flex;
       flex-direction:column;
       align-self:start;
@@ -170,14 +206,28 @@
     .faq-question{width:100%;text-align:left;background:transparent;border:none;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;color:var(--kex-white);font-size:1.15rem;font-weight:600;cursor:pointer;transition:color .3s ease;font-family:inherit;outline:none}
     .faq-toggle-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(26,215,111,.1);border-radius:10px;color:var(--kex-green);font-size:1rem;transition:all .3s ease;flex-shrink:0}
     .faq-item.is-active .faq-toggle-icon{background:rgba(26,215,111,.15);color:var(--kex-green)}
-    .faq-item.is-active{border-color:rgba(26,215,111,.3);background:rgba(20,20,30,.6)}
+    .faq-item.is-active{
+      border-color:rgba(26,215,111,.4);
+      background: linear-gradient(135deg, rgba(20,20,30,0.6) 0%, rgba(20,20,30,0.8) 100%);
+    }
     .faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease-out,padding .35s ease,opacity .3s ease;padding:0 18px;color:var(--kex-gray);font-size:.92rem;line-height:1.55;opacity:0}
     .faq-item.is-active .faq-answer{opacity:1;padding-bottom:16px}
     
     .faq-question-title{display:block; word-break: break-word; overflow-wrap: break-word;}
     .faq-answer-content{display:block; word-break: break-word; overflow-wrap: break-word;}
     
-    @media(hover:hover){.header__toggle:hover,.sidebar__close:hover{background:rgba(255,255,255,.06);color:#fff}.brand:hover{opacity:.8}.navbutton:hover{background:var(--kex-dark-green);transform:translateX(4px);color:#fff}.navbutton:hover i{color:var(--kex-green)}.sociallink:hover{background:var(--kex-dark-green);border-color:var(--kex-dark-green);color:#fff;transform:translateY(-4px) scale(1.05);box-shadow:0 10px 20px -5px rgba(26,215,111,.5)}.hero-btn:hover{background:var(--kex-dark-green);transform:translateY(-2px);box-shadow:0 12px 24px -8px rgba(26,215,111,.6)}.card-bg:hover{transform:translateY(-8px);border-color:rgba(26,215,111,.4);box-shadow:0 15px 35px -10px rgba(0,0,0,.6),0 0 25px rgba(26,215,111,.08)}.card-bg:hover .card-icon{transform:scale(1.1) rotate(-5deg);background:var(--kex-green);color:#fff;box-shadow:0 8px 20px -6px rgba(26,215,111,.5)}.card-bg:hover .card-title{color:var(--kex-green)}.faq-question:hover{color:var(--kex-green)}}
+    @media(hover:hover){
+      .header__toggle:hover,.sidebar__close:hover{background:rgba(255,255,255,.06);color:#fff}.brand:hover{opacity:.8}.navbutton:hover{background:var(--kex-dark-green);transform:translateX(4px);color:#fff}.navbutton:hover i{color:var(--kex-green)}.sociallink:hover{background:var(--kex-dark-green);border-color:var(--kex-dark-green);color:#fff;transform:translateY(-4px) scale(1.05);box-shadow:0 10px 20px -5px rgba(26,215,111,.5)}.hero-btn:hover{background:var(--kex-dark-green);transform:translateY(-2px);box-shadow:0 12px 24px -8px rgba(26,215,111,.6)}
+      
+      /* Enhanced Hover for Glass Cards */
+      .card-bg:hover{
+        transform:translateY(-8px);
+        background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(20,20,30,0.5) 100%);
+        border-color:rgba(26,215,111,.4);
+        box-shadow: 0 15px 35px -10px rgba(0,0,0,.7), 0 0 25px rgba(26,215,111,.15);
+      }
+      .card-bg:hover .card-icon{transform:scale(1.1) rotate(-5deg);background:var(--kex-green);color:#fff;box-shadow:0 8px 20px -6px rgba(26,215,111,.5)}.card-bg:hover .card-title{color:var(--kex-green)}.faq-question:hover{color:var(--kex-green)}
+    }
     .header__toggle:active i,.header__toggle.force-active i{transform:scale(.85)}.sociallink:active,.sociallink.force-active,.hero-btn:active,.hero-btn.force-active{background:var(--kex-dark-green);transform:scale(.95)}
     .card-bg:active,.card-bg.force-active{transform:scale(.98);border-color:rgba(26,215,111,.4)}
     .card-bg:active .card-icon,.card-bg.force-active .card-icon{transform:scale(1.1) rotate(-5deg);background:var(--kex-green);color:#fff;box-shadow:0 8px 20px -6px rgba(26,215,111,.5)}
