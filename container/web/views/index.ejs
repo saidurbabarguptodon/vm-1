@@ -65,26 +65,26 @@
     .sociallinks{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%}
     .sociallink{display:flex;align-items:center;justify-content:center;width:42px;height:42px;background:var(--kex-green);border:1px solid var(--kex-green);color:#fff;border-radius:50%;text-decoration:none;font-size:19px;transition:all .3s cubic-bezier(.4,0,.2,1)}
     
-    /* Increased Base Gap Padding for Hero */
     .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:110px 0 90px;min-height:50vh;position:relative;scroll-margin-top:80px;width:100%}
     .hero .container{display:flex;flex-direction:column;align-items:center;width:100%}
     
-    .hero-title{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--kex-white);margin:0 auto 18px;text-align:center;hyphens:auto;max-width:90%;width:100%}
-    .hero-description{font-size:clamp(1.2rem,2.5vw,1.6rem);color:var(--kex-gray);margin:0 auto 28px;text-align:center;hyphens:auto;max-width:85%;width:100%;line-height:1.7}
+    /* Adjusted Min sizes in Clamp for bigger mobile appearance */
+    .hero-title{font-size:clamp(2.5rem,7vw,4rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--kex-white);margin:0 auto 18px;text-align:center;hyphens:auto;max-width:90%;width:100%}
+    .hero-description{font-size:clamp(1.3rem,3vw,1.6rem);color:var(--kex-gray);margin:0 auto 28px;text-align:center;hyphens:auto;max-width:85%;width:100%;line-height:1.7}
     .hero-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--kex-green);color:#fff;font-weight:600;font-size:1.2rem;padding:16px 36px;border-radius:60px;text-decoration:none;transition:background .3s ease,transform .3s ease,box-shadow .3s ease;box-shadow:0 8px 20px -6px rgba(26,215,111,.5);margin-bottom:20px;outline:none}
     .hero-btn i{font-size:1.4rem;font-style:normal!important}
     .hero-footer{font-size:1.1rem;color:var(--kex-gray);opacity:.8}
     
-    /* Increased Base Gap Padding for Sections */
     .cards-section,.faqs-section{padding:90px 0 120px;position:relative;z-index:2;scroll-margin-top:85px;width:100%}
     
     .cards-header{text-align:center;margin-bottom:80px}
     .faqs-header{text-align:center;margin-bottom:80px}
     
-    .cards-title{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
-    .faqs-title{font-size:clamp(2.4rem,6vw,3.8rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
+    /* Adjusted Min sizes for section titles */
+    .cards-title{font-size:clamp(2.4rem,6vw,3.6rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
+    .faqs-title{font-size:clamp(2.5rem,6vw,3.8rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
     
-    .cards-description,.faqs-description{font-size:clamp(1.15rem,2.5vw,1.5rem);color:var(--kex-gray);max-width:85%;margin:0 auto;line-height:1.7}
+    .cards-description,.faqs-description{font-size:clamp(1.2rem,3vw,1.5rem);color:var(--kex-gray);max-width:85%;margin:0 auto;line-height:1.7}
     
     .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:22px;width:100%;max-width:92%;margin:0 auto}
     
@@ -119,8 +119,9 @@
       height:100%; 
     }
     
+    /* Increased base card text sizing */
     .card-title{
-      font-size:1.3rem;
+      font-size:1.45rem;
       font-weight:700;
       color:var(--kex-white);
       margin-bottom:10px;
@@ -131,7 +132,7 @@
     }
 
     .card-description{
-      font-size:.95rem;
+      font-size:1.05rem;
       color:var(--kex-gray);
       line-height:1.6;
       flex-grow:1;
@@ -187,7 +188,6 @@
       .cards-section, .faqs-section { padding: 110px 0 140px; }
       .cards-grid{grid-template-columns:repeat(2,1fr);gap:28px}
       .faqs-container{grid-template-columns:repeat(2,1fr);gap:24px}
-      /* Tablet/Small Laptop: make cards taller/wider */
       .card-bg{padding:36px 32px 24px 32px; min-height: 280px;}
     }
     
@@ -197,43 +197,48 @@
       .cards-section, .faqs-section { padding: 140px 0 170px; }
       .cards-grid{gap:36px;max-width:88%;}
       .faqs-container{gap:32px; max-width:88%;}
-      /* Desktop: Drastically larger cards, higher padding, taller base height */
       .card-bg{padding:44px 40px 30px 40px; min-height: 340px; border-radius: 24px;}
-      .card-icon{width: 72px; height: 72px; font-size: 2rem; margin-bottom: 30px; border-radius: 18px;}
-      .card-title{font-size: 1.7rem; margin-bottom: 14px;}
-      .card-description{font-size: 1.1rem; line-height: 1.7;}
+      .card-icon{width: 72px; height: 72px; font-size: 2.2rem; margin-bottom: 30px; border-radius: 18px;}
+      .card-title{font-size: 1.8rem; margin-bottom: 14px;}
+      .card-description{font-size: 1.15rem; line-height: 1.7;}
     }
 
-    /* Preserve Mobile Comfort */
+    /* Tablet sizing - Noticeably bigger gaps than before */
     @media(max-width:768px){
-      .hero { padding: 90px 0 70px; }
-      .faqs-section{padding:70px 0 80px}
-      .cards-section{padding:70px 0 80px}
-      .cards-header{margin-bottom:60px}
-      .faqs-header{margin-bottom:60px}
-      .faqs-title{margin-bottom:6px}
-      .faq-question{padding:14px 16px}
+      .hero { padding: 110px 0 90px; }
+      .faqs-section{padding:90px 0 100px}
+      .cards-section{padding:90px 0 100px}
+      .cards-header{margin-bottom:70px}
+      .faqs-header{margin-bottom:70px}
+      .faqs-title{margin-bottom:8px}
+      .faq-question{padding:16px 20px; font-size: 1.2rem;}
     }
     
+    /* Mobile Sizing - Bigger cards, larger gaps, larger texts */
     @media(max-width:479px){
       .container{padding:0 12px}
       .header{margin:8px 8px 0;border-radius:14px}
       .header .container{padding:0 10px}
       .header__nav{padding:10px 0}
       .header__toggle{width:36px;height:36px}
-      .hero{padding:50px 0 40px}
-      .cards-section{padding:40px 0 60px}
-      .faqs-section{padding:30px 0 50px}
       
-      .cards-header{margin-bottom:40px}
-      .faqs-header{margin-bottom:40px}
-      .faqs-title{margin-bottom:4px}
+      .hero{padding:80px 0 60px}
+      .cards-section{padding:60px 0 80px}
+      .faqs-section{padding:50px 0 70px}
       
-      .cards-grid,.faqs-container{grid-template-columns:1fr;gap:14px;max-width:100%;}
-      .card-bg{margin:0;padding:22px 18px 16px 18px;height:100%;min-height:180px;}
+      .cards-header{margin-bottom:50px}
+      .faqs-header{margin-bottom:50px}
+      .faqs-title{margin-bottom:6px}
+      
+      /* Grid gaps increased from 14px to 20px */
+      .cards-grid,.faqs-container{grid-template-columns:1fr;gap:20px;max-width:100%;}
+      
+      /* Card padding and min-height increased for a bigger footprint */
+      .card-bg{margin:0;padding:28px 24px 20px 24px;height:100%;min-height:200px;}
+      .card-icon{width: 60px; height: 60px; font-size: 1.7rem; margin-bottom: 24px;}
       
       .faq-item{margin:0}
-      .faq-question{padding:12px 14px}
+      .faq-question{padding:14px 16px; font-size: 1.1rem;}
       
       .sociallink{width:38px;height:38px;font-size:17px}
       .bg-ambient-glow{width:300px;height:300px;top:-100px;left:-100px;filter:blur(80px)}
