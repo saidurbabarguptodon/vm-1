@@ -30,7 +30,7 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MODEL = "llama-3.1-8b-instant";
-const MAX_HISTORY = 20;        // Maximum messages to keep in history
+const MAX_HISTORY = 20;
 
 const userHistories = new Map();
 
@@ -41,10 +41,8 @@ async function getAIResponse(userId, userMessage) {
 
     const history = userHistories.get(userId);
     
-    // Add new user message
     history.push({ role: "user", content: userMessage });
 
-    // Keep only the latest MAX_HISTORY messages
     if (history.length > MAX_HISTORY) {
         userHistories.set(userId, history.slice(-MAX_HISTORY));
     }
@@ -67,10 +65,8 @@ async function getAIResponse(userId, userMessage) {
 
         let reply = response.data.choices[0].message.content.trim();
 
-        // Add assistant reply
         history.push({ role: "assistant", content: reply });
 
-        // Trim again after adding reply
         if (history.length > MAX_HISTORY) {
             userHistories.set(userId, history.slice(-MAX_HISTORY));
         }
@@ -94,11 +90,14 @@ async function getAIResponse(userId, userMessage) {
 
 bot.start(async (ctx) => {
     await ctx.reply(
-`You just came back home after a long day...
+`You open the door and enter your own small 1-bedroom apartment after a long tiring day.
 
-Your two childhood friends — Fatema and Mohona — who are so close to you that they're basically like sisters, have been living together with you for a while now.
+Zara — the girl you've lived with since childhood and always treated as your little sister — is waiting for you.
 
-The relationship between the three of you has long become extremely open... and very sexual.`
+Even though you're not blood-related, the two of you have always been extremely close. 
+Over time that closeness turned into something much deeper... and very sexual.
+
+It's a hot summer evening.`
     );
 });
 
@@ -118,7 +117,6 @@ bot.on('text', async (ctx) => {
     const userId = ctx.from.id;
     const text = ctx.message.text.trim();
 
-    // Ignore unknown commands
     if (text.startsWith('/') && !['/start', '/help', '/reset'].includes(text.split(' ')[0])) {
         return;
     }
