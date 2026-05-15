@@ -55,15 +55,15 @@
       box-shadow: var(--glass-shadow), 0 0 20px rgba(26,215,111,.08);
     }
     .header .container{padding:0 12px;max-width:100%}
-    .header__nav{display:flex;justify-content:space-between;align-items:center;padding:22px 0}
+    .header__nav{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
     .header__toggle,.sidebar__close{background:transparent;border:none;color:var(--kex-white);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all .15s ease}
-    .header__toggle{font-size:1.8rem;width:48px;height:48px}.header__toggle i{transition:transform .2s ease}
+    .header__toggle{font-size:1.5rem;width:40px;height:40px}.header__toggle i{transition:transform .2s ease}
     .sidebar__close{font-size:1.5rem;width:36px;height:36px;margin-right:-8px}
     .brand{display:flex;align-items:center;gap:10px;transition:opacity .2s ease;text-decoration:none}
-    .brand--header{height:46px}.brand--sidebar{height:32px}
+    .brand--header{height:36px}.brand--sidebar{height:32px}
     .logoimg{height:100%;width:auto;object-fit:contain}
-    .alticon{font-size:1.9rem;display:inline-block;color:var(--kex-green);text-shadow:0 0 12px rgba(26,215,111,.45)}
-    .alttext{font-size:1.8rem;font-weight:900;letter-spacing:-.5px;font-family:'Playfair Display',serif;color:#fff;text-shadow:none}
+    .alticon{font-size:1.7rem;display:inline-block;color:var(--kex-green);text-shadow:0 0 12px rgba(26,215,111,.45)}
+    .alttext{font-size:1.6rem;font-weight:900;letter-spacing:-.5px;font-family:'Playfair Display',serif;color:#fff;text-shadow:none}
     
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;z-index:998;cursor:pointer}    
     .overlay.is-visible{opacity:1;visibility:visible}
@@ -267,8 +267,11 @@
       .container{padding:0 12px}
       .header{margin:8px 8px 0;border-radius:14px}
       .header .container{padding:0 10px}
-      .header__nav{padding:16px 0}
-      .header__toggle{width:42px;height:42px}
+      .header__nav{padding:10px 0}
+      .header__toggle{width:36px;height:36px;font-size:1.3rem}
+      .brand--header{height:30px}
+      .alttext{font-size:1.4rem}
+      .alticon{font-size:1.5rem}
       
       .hero{padding:40px 0 60px}
       .cards-section{padding:60px 0 80px}
@@ -503,7 +506,7 @@
     });
 
     (() => {
-      const navBtns = document.querySelectorAll('.navbutton'), sections = Array.from(document.querySelectorAll('section[id]')), headerH = 115;
+      const navBtns = document.querySelectorAll('.navbutton'), sections = Array.from(document.querySelectorAll('section[id]')), headerH = 85;
       let navigating = false, lastSec = '', scrollLock = false;
       const setNav = id => navBtns.forEach(b => {
         const h = b.getAttribute('href');        b.classList.toggle('is-active', (id === 'home' && (h === '/' || h === '#home')) || h === `#${id}`);
