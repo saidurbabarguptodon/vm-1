@@ -167,9 +167,7 @@
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(20,20,30,0.4) 100%);
       backdrop-filter: blur(var(--kex-blur)) saturate(180%);
       -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
-      border: 1px solid var(--glass-border);
-      border-top: 1px solid var(--glass-highlight); /* Light coming from top */
-      border-left: 1px solid var(--glass-highlight); /* Light coming from left */
+      border: 1px solid var(--kex-dark-green); /* Solid Dark Green Default */
       box-shadow: var(--glass-shadow);
       border-radius:20px;
       padding:30px 26px 20px 26px; 
@@ -210,9 +208,7 @@
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(20,20,30,0.4) 100%);
       backdrop-filter: blur(var(--kex-blur)) saturate(180%);
       -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
-      border: 1px solid var(--glass-border);
-      border-top: 1px solid var(--glass-highlight);
-      border-left: 1px solid var(--glass-highlight);
+      border: 1px solid var(--kex-dark-green); /* Solid Dark Green Default */
       box-shadow: var(--glass-shadow);
       border-radius:16px;
       overflow:hidden;
@@ -238,15 +234,38 @@
     .faq-question{width:100%;text-align:left;background:transparent;border:none;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;color:var(--kex-white);font-size:1.15rem;font-weight:600;cursor:pointer;transition:color .3s ease;font-family:inherit;outline:none}
     .faq-toggle-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(26,215,111,.1);border-radius:10px;color:var(--kex-green);font-size:1rem;transition:all .3s ease;flex-shrink:0}
     .faq-item.is-active .faq-toggle-icon{background:rgba(26,215,111,.15);color:var(--kex-green)}
+    
     .faq-item.is-active{
       border-color:var(--kex-green);
       background: linear-gradient(135deg, rgba(20,20,30,0.6) 0%, rgba(20,20,30,0.8) 100%);
     }
-    .faq-answer{max-height:0;overflow:hidden;transition:max-height .35s ease-out,padding .35s ease,opacity .3s ease;padding:0 18px;color:var(--kex-gray);font-size:.92rem;line-height:1.55;opacity:0}
-    .faq-item.is-active .faq-answer{opacity:1;padding-bottom:16px}
+
+    /* SMOOTH CSS GRID ANIMATION FOR FAQS */
+    .faq-answer{
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-out;
+    }
+    .faq-item.is-active .faq-answer{
+      grid-template-rows: 1fr;
+      opacity: 1;
+    }
+    .faq-answer-content{
+      overflow: hidden;
+      padding: 0 18px 0;
+      transition: padding-bottom 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--kex-gray);
+      font-size: .92rem;
+      line-height: 1.55;
+      word-break: break-word; 
+      overflow-wrap: break-word;
+    }
+    .faq-item.is-active .faq-answer-content{
+      padding-bottom: 16px;
+    }
     
     .faq-question-title{display:block; word-break: break-word; overflow-wrap: break-word;}
-    .faq-answer-content{display:block; word-break: break-word; overflow-wrap: break-word;}
     
     @media(hover:hover){
       .header__toggle:hover,.sidebar__close:hover{background:rgba(255,255,255,.06);color:#fff}.brand:hover{opacity:.8}.navbutton:hover{background:var(--kex-dark-green);transform:translateX(4px);color:#fff}.navbutton:hover i{color:var(--kex-green)}.sociallink:hover{background:var(--kex-dark-green);border-color:var(--kex-dark-green);color:#fff;transform:translateY(-6px) scale(1.2);box-shadow:0 12px 25px -4px rgba(26,215,111,.7)}.hero-btn:hover{background:var(--kex-dark-green);border-color:var(--kex-green);transform:translateY(-2px);box-shadow:0 12px 24px -8px rgba(26,215,111,.6)}
@@ -450,7 +469,8 @@
               <button class="faq-question" aria-expanded="false">
                 <span class="faq-question-title"><%- fmt(faq.title || '') %></span>
                 <span class="faq-toggle-icon"><i class="fa-solid fa-plus"></i></span>
-              </button>              <div class="faq-answer">
+              </button>              
+              <div class="faq-answer">
                 <div class="faq-answer-content"><%- fmt(faq.description || '') %></div>
               </div>
             </div>
@@ -499,41 +519,21 @@
       setTimeout(() => { btn.classList.remove('force-active'); btn.blur(); }, 2500);
     });
     
+    // Clean, bug-free FAQ JS toggler
     document.querySelectorAll('.faq-question').forEach(btn => {
       btn.addEventListener('click', function() {
         const item = this.closest('.faq-item');
-        const answer = item.querySelector('.faq-answer');
         const icon = item.querySelector('.faq-toggle-icon i');
         const isActive = item.classList.contains('is-active');
+        
         if (!isActive) {
           item.classList.add('is-active');
           this.setAttribute('aria-expanded', 'true');
           icon.className = 'fa-solid fa-minus';
-          
-          answer.style.display = 'block';
-          answer.style.visibility = 'visible';
-          answer.style.opacity = '1';
-          
-          void answer.offsetHeight;
-          
-          requestAnimationFrame(() => {
-            answer.style.maxHeight = answer.scrollHeight + 'px';
-            answer.style.paddingBottom = '16px';
-          });
         } else {
           item.classList.remove('is-active');
           this.setAttribute('aria-expanded', 'false');
           icon.className = 'fa-solid fa-plus';
-          answer.style.maxHeight = null;
-          answer.style.paddingBottom = '0';
-          
-          setTimeout(() => {
-            if (!item.classList.contains('is-active')) {
-              answer.style.display = '';
-              answer.style.visibility = '';
-              answer.style.opacity = '';
-            }
-          }, 350);
         }
       });
     });
