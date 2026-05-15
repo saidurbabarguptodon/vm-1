@@ -63,21 +63,23 @@
       box-shadow: var(--glass-shadow), 0 0 20px rgba(26,215,111,.08);
     }
 
-    /* The Animated Snake Border - Now Solid and 1.3px */
+    /* The Animated Snake Border - Solid 1.3px with Static Dark Green Track */
     .header::before {
       content: "";
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      padding: 1.3px; /* Scaled down to 1.3px exactly */
-      /* Hard color stops to make a solid green line with no fading tail */
+      padding: 1.3px; /* 1.3px border thickness */
+      
+      /* Dark green takes up 75% acting as a static track, bright green takes 25% acting as the snake */
       background: conic-gradient(
         from var(--header-angle), 
-        transparent 0%, 
-        transparent 75%, 
+        var(--kex-dark-green) 0%, 
+        var(--kex-dark-green) 75%, 
         var(--kex-green) 75%, 
         var(--kex-green) 100%
       );
+      
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
       mask-composite: exclude;
