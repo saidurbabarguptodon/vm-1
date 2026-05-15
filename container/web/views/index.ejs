@@ -63,13 +63,13 @@
       box-shadow: var(--glass-shadow), 0 0 20px rgba(26,215,111,.08);
     }
 
-    /* The Animated Snake Border - Solid 1.3px with Static Dark Green Track */
+    /* The Animated Snake Border - Scaled to 1px to match other elements */
     .header::before {
       content: "";
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      padding: 1.3px; /* 1.3px border thickness */
+      padding: 1px; /* Exactly 1px thick to match the cards and FAQs */
       
       /* Dark green takes up 75% acting as a static track, bright green takes 25% acting as the snake */
       background: conic-gradient(
