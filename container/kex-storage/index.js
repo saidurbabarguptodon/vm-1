@@ -3,7 +3,6 @@ const path = require('path');
 const AdmZip = require('adm-zip');
 
 const envZipPath = path.join(__dirname, '.env.zip');
-
 if (fs.existsSync(envZipPath)) {
     try {
         const zip = new AdmZip(envZipPath);
@@ -45,8 +44,25 @@ async function uploadToTelegram(filePath, fileName) {
     form.append('document', fs.createReadStream(filePath), { filename: fileName });
     
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`;
-    const res = await axios.post(url, form, { headers: form.getHeaders() });
-    return res.data.result.document.file_id;
+    const res = await axios.post(url, form, { 
+        headers: form.getHeaders(),
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity
+    });
+    return {
+        fileId: res.data.result.document.file_id,
+        messageId: res.data.result.message_id
+    };
+}
+
+async function deleteFromTelegram(messageId) {
+    if (!messageId) return;
+    try {
+        await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/deleteMessage`, {
+            chat_id: CHANNEL_ID,
+            message_id: messageId
+        });
+    } catch (err) {}
 }
 
 async function getTelegramFileUrl(fileId) {
@@ -64,18 +80,10 @@ function formatBytes(bytes, decimals = 2) {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
-app.get('/', (req, res) => {
-    const parentId = req.query.dir || 'root';
-    const db = getDb();
-    const items = db.items.filter(item => item.parentId === parentId);
-    
-    let breadcrumbs = [];
-    let curr = db.items.find(i => i.id === parentId);
-    while (curr) {
-        breadcrumbs.unshift(curr);
-        curr = db.items.find(i => i.id === curr.parentId);
-    }
+app.get('/', (req, res) => res.redirect('/dash'));
 
+app.get('/dash', (req, res) => {
+    const db = getDb();
     let totalSize = 0;
     let fileCount = 0;
     let folderCount = 0;
@@ -95,16 +103,31 @@ app.get('/', (req, res) => {
         folderCount
     };
 
-    res.render('index', { items, parentId, breadcrumbs, stats, formatBytes });
+    res.render('index', { page: 'dash', stats, formatBytes, parentId: null, items: [], breadcrumbs: [] });
+});
+
+app.get('/files', (req, res) => {
+    const parentId = req.query.dir || 'root';
+    const db = getDb();
+    const items = db.items.filter(item => item.parentId === parentId);
+    
+    let breadcrumbs = [];
+    let curr = db.items.find(i => i.id === parentId);
+    while (curr) {
+        breadcrumbs.unshift(curr);
+        curr = db.items.find(i => i.id === curr.parentId);
+    }
+
+    res.render('index', { page: 'files', items, parentId, breadcrumbs, formatBytes, stats: null });
 });
 
 app.post('/upload', upload.single('file'), async (req, res) => {
     try {
         const { parentId } = req.body;
         const file = req.file;
-        if (!file) return res.redirect(`/?dir=${parentId}`);
+        if (!file) return res.status(400).json({ error: 'No file' });
 
-        const telegramId = await uploadToTelegram(file.path, file.originalname);
+        const tgData = await uploadToTelegram(file.path, file.originalname);
         
         const db = getDb();
         db.items.push({
@@ -112,15 +135,16 @@ app.post('/upload', upload.single('file'), async (req, res) => {
             name: file.originalname,
             type: 'file',
             parentId: parentId,
-            telegramId: telegramId,
+            telegramId: tgData.fileId,
+            messageId: tgData.messageId,
             size: file.size
         });
         saveDb(db);
 
         fs.unlinkSync(file.path);
-        res.redirect(`/?dir=${parentId}`);
+        res.status(200).json({ success: true });
     } catch (err) {
-        res.status(500).send("Upload failed.");
+        res.status(500).json({ error: "Upload failed." });
     }
 });
 
@@ -134,7 +158,7 @@ app.post('/create-folder', (req, res) => {
         parentId: parentId
     });
     saveDb(db);
-    res.redirect(`/?dir=${parentId}`);
+    res.redirect(`/files?dir=${parentId}`);
 });
 
 app.post('/create-file', async (req, res) => {
@@ -145,7 +169,7 @@ app.post('/create-file', async (req, res) => {
         
         fs.writeFileSync(tempPath, content || '');
         const size = Buffer.byteLength(content || '', 'utf8');
-        const telegramId = await uploadToTelegram(tempPath, fileName);
+        const tgData = await uploadToTelegram(tempPath, fileName);
         
         const db = getDb();
         db.items.push({
@@ -153,13 +177,14 @@ app.post('/create-file', async (req, res) => {
             name: fileName,
             type: 'file',
             parentId: parentId,
-            telegramId: telegramId,
+            telegramId: tgData.fileId,
+            messageId: tgData.messageId,
             size: size
         });
         saveDb(db);
         fs.unlinkSync(tempPath);
         
-        res.redirect(`/?dir=${parentId}`);
+        res.redirect(`/files?dir=${parentId}`);
     } catch (err) {
         res.status(500).send("File creation failed.");
     }
@@ -172,9 +197,16 @@ app.get('/download/:id', async (req, res) => {
         if (!file || file.type !== 'file') return res.status(404).send("File not found");
 
         const url = await getTelegramFileUrl(file.telegramId);
-        const response = await axios.get(url, { responseType: 'stream' });
+        const response = await axios({
+            method: 'GET',
+            url: url,
+            responseType: 'stream'
+        });
         
+        res.setHeader('Content-Length', response.headers['content-length']);
+        res.setHeader('Content-Type', response.headers['content-type']);
         res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`);
+        
         response.data.pipe(res);
     } catch (err) {
         res.status(500).send("Download failed.");
@@ -201,20 +233,21 @@ app.post('/zip/:id', async (req, res) => {
         zip.writeZip(zipPath);
         
         const size = fs.statSync(zipPath).size;
-        const telegramId = await uploadToTelegram(zipPath, zipName);
+        const tgData = await uploadToTelegram(zipPath, zipName);
         
         db.items.push({
             id: crypto.randomUUID(),
             name: zipName,
             type: 'file',
             parentId: folder.parentId,
-            telegramId: telegramId,
+            telegramId: tgData.fileId,
+            messageId: tgData.messageId,
             size: size
         });
         saveDb(db);
         fs.unlinkSync(zipPath);
 
-        res.redirect(`/?dir=${folder.parentId}`);
+        res.redirect(`/files?dir=${folder.parentId}`);
     } catch (err) {
         res.status(500).send("Zipping failed.");
     }
@@ -244,13 +277,14 @@ app.post('/unzip/:id', async (req, res) => {
             const exPath = path.join(extractDir, exFile);
             if (fs.statSync(exPath).isFile()) {
                 const size = fs.statSync(exPath).size;
-                const tgId = await uploadToTelegram(exPath, exFile);
+                const tgData = await uploadToTelegram(exPath, exFile);
                 db.items.push({
                     id: crypto.randomUUID(),
                     name: exFile,
                     type: 'file',
                     parentId: newFolderId,
-                    telegramId: tgId,
+                    telegramId: tgData.fileId,
+                    messageId: tgData.messageId,
                     size: size
                 });
             }
@@ -260,28 +294,34 @@ app.post('/unzip/:id', async (req, res) => {
         fs.unlinkSync(zipPath);
         fs.rmSync(extractDir, { recursive: true, force: true });
 
-        res.redirect(`/?dir=${file.parentId}`);
+        res.redirect(`/files?dir=${file.parentId}`);
     } catch (err) {
         res.status(500).send("Unzipping failed.");
     }
 });
 
-app.post('/delete/:id', (req, res) => {
+app.post('/delete/:id', async (req, res) => {
     try {
         const db = getDb();
         const item = db.items.find(i => i.id === req.params.id);
-        if (!item) return res.redirect('/');
+        if (!item) return res.redirect('/files');
         const parentId = item.parentId;
         
-        function deleteItem(id) {
+        async function deleteItem(id) {
             const children = db.items.filter(i => i.parentId === id);
-            children.forEach(c => deleteItem(c.id));
+            for (const c of children) {
+                await deleteItem(c.id);
+            }
+            const target = db.items.find(i => i.id === id);
+            if (target && target.messageId) {
+                await deleteFromTelegram(target.messageId);
+            }
             db.items = db.items.filter(i => i.id !== id);
         }
         
-        deleteItem(req.params.id);
+        await deleteItem(req.params.id);
         saveDb(db);
-        res.redirect(`/?dir=${parentId}`);
+        res.redirect(`/files?dir=${parentId}`);
     } catch (err) {
         res.status(500).send("Deletion failed.");
     }
