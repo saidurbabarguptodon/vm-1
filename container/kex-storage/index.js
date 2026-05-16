@@ -38,6 +38,7 @@ if (!fs.existsSync(dbPath)) fs.writeFileSync(dbPath, JSON.stringify({ items: [] 
 const getDb = () => JSON.parse(fs.readFileSync(dbPath, 'utf8'));
 const saveDb = (data) => fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
 
+// Magic Backend: Stream directly to Telegram for fast uploads
 async function uploadToTelegram(filePath, fileName) {
     const form = new FormData();
     form.append('chat_id', CHANNEL_ID);
@@ -55,6 +56,7 @@ async function uploadToTelegram(filePath, fileName) {
     };
 }
 
+// Backend Deletion Sync
 async function deleteFromTelegram(messageId) {
     if (!messageId) return;
     try {
@@ -62,7 +64,9 @@ async function deleteFromTelegram(messageId) {
             chat_id: CHANNEL_ID,
             message_id: messageId
         });
-    } catch (err) {}
+    } catch (err) {
+        console.error("Failed to delete from Telegram (may already be deleted).");
+    }
 }
 
 async function getTelegramFileUrl(fileId) {
@@ -190,6 +194,7 @@ app.post('/create-file', async (req, res) => {
     }
 });
 
+// Magic Backend: Stream directly to response for fast downloads
 app.get('/download/:id', async (req, res) => {
     try {
         const db = getDb();
@@ -203,8 +208,9 @@ app.get('/download/:id', async (req, res) => {
             responseType: 'stream'
         });
         
-        res.setHeader('Content-Length', response.headers['content-length']);
-        res.setHeader('Content-Type', response.headers['content-type']);
+        // Pass headers securely to the frontend for precise ETA tracking
+        res.setHeader('Content-Length', response.headers['content-length'] || file.size);
+        res.setHeader('Content-Type', response.headers['content-type'] || 'application/octet-stream');
         res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`);
         
         response.data.pipe(res);
@@ -314,7 +320,7 @@ app.post('/delete/:id', async (req, res) => {
             }
             const target = db.items.find(i => i.id === id);
             if (target && target.messageId) {
-                await deleteFromTelegram(target.messageId);
+                await deleteFromTelegram(target.messageId); // Actually delete it from Telegram
             }
             db.items = db.items.filter(i => i.id !== id);
         }
@@ -327,4 +333,4 @@ app.post('/delete/:id', async (req, res) => {
     }
 });
 
-app.listen(PORT);
+app.listen(PORT, () => console.log(`Running on port ${PORT}`));
