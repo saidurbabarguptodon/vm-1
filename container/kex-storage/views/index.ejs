@@ -3,46 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Panel</title>
+    <title>Kex Storage</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            background-color: #0f172a;
-            color: #e2e8f0;
+            background-color: #111827;
+            color: #f3f4f6;
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
         }
         .navbar-top {
-            background-color: #1e293b;
-            border-bottom: 1px solid #334155;
+            background-color: #1f2937;
+            border-bottom: 2px solid #10b981;
             height: 64px;
         }
         .offcanvas-start {
-            background-color: #1e293b;
-            border-right: 1px solid #334155;
-            width: 280px;
+            background-color: #1f2937;
+            border-right: 1px solid #374151;
+            width: 45% !important;
+            max-width: 400px;
         }
         .card {
-            background-color: #1e293b;
-            border: 1px solid #334155;
+            background-color: #1f2937;
+            border: 1px solid #374151;
             border-radius: 0.5rem;
+            color: #f3f4f6;
         }
         .table {
-            color: #e2e8f0;
+            color: #f3f4f6;
             margin-bottom: 0;
+            --bs-table-bg: transparent;
+            --bs-table-color: #f3f4f6;
         }
         .table thead th {
-            border-bottom: 1px solid #334155;
-            color: #94a3b8;
+            border-bottom: 1px solid #374151;
+            background-color: #111827;
+            color: #9ca3af;
             font-weight: 600;
             text-transform: uppercase;
             font-size: 0.75rem;
             padding: 1rem;
         }
         .table tbody td {
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid #374151;
+            background-color: #1f2937;
+            color: #f3f4f6;
             vertical-align: middle;
             padding: 1rem;
         }
@@ -50,21 +57,26 @@
             border-bottom: none;
         }
         .table tbody tr:hover td {
-            background-color: #334155;
-            color: #f8fafc;
+            background-color: #374151;
+            color: #ffffff;
         }
         .btn-primary {
-            background-color: #3b82f6;
-            border: none;
+            background-color: #10b981;
+            border-color: #10b981;
+            color: #ffffff;
         }
         .btn-primary:hover {
-            background-color: #2563eb;
+            background-color: #059669;
+            border-color: #059669;
         }
         .text-muted {
-            color: #94a3b8 !important;
+            color: #9ca3af !important;
+        }
+        .text-primary {
+            color: #10b981 !important;
         }
         .icon-action {
-            color: #94a3b8;
+            color: #9ca3af;
             cursor: pointer;
             transition: color 0.2s;
             background: none;
@@ -72,43 +84,59 @@
             padding: 0.25rem 0.5rem;
         }
         .icon-action:hover {
-            color: #e2e8f0;
+            color: #10b981;
         }
         .icon-action.delete:hover {
             color: #ef4444;
         }
         .breadcrumb-item a {
-            color: #3b82f6;
+            color: #10b981;
             text-decoration: none;
         }
         .breadcrumb-item a:hover {
             text-decoration: underline;
         }
         .breadcrumb-item.active {
-            color: #e2e8f0;
+            color: #f3f4f6;
         }
         .nav-link-custom {
-            color: #cbd5e1;
+            color: #d1d5db;
             transition: all 0.2s;
         }
         .nav-link-custom:hover, .nav-link-custom.active {
-            color: #f8fafc;
-            background-color: #334155;
+            color: #ffffff;
+            background-color: #10b981;
             border-radius: 0.375rem;
         }
         .modal-content {
-            border: 1px solid #334155;
+            border: 1px solid #374151;
+            background-color: #1f2937;
+            color: #f3f4f6;
+        }
+        .modal-header {
+            border-bottom: 1px solid #374151;
+        }
+        .modal-footer {
+            border-top: 1px solid #374151;
         }
         .form-control {
-            background-color: #0f172a;
-            border: 1px solid #334155;
-            color: #e2e8f0;
+            background-color: #111827;
+            border: 1px solid #374151;
+            color: #f3f4f6;
         }
         .form-control:focus {
-            background-color: #0f172a;
-            border-color: #3b82f6;
-            color: #f8fafc;
-            box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+            background-color: #111827;
+            border-color: #10b981;
+            color: #ffffff;
+            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+        }
+        .toast {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            color: #f3f4f6;
+        }
+        .progress-bar {
+            background-color: #10b981;
         }
     </style>
 </head>
@@ -116,7 +144,7 @@
 
 <nav class="navbar navbar-top px-4 d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center">
-        <h5 class="mb-0 text-light fw-bold"><i class="fas fa-server text-primary me-2"></i> PteroCloud</h5>
+        <h5 class="mb-0 text-light fw-bold"><i class="fas fa-server text-primary me-2"></i> Kex Storage</h5>
     </div>
     <button class="btn btn-outline-secondary border-0 text-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
         <i class="fas fa-bars fa-lg"></i>
@@ -124,25 +152,24 @@
 </nav>
 
 <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" data-bs-theme="dark">
-    <div class="offcanvas-header border-bottom" style="border-color: #334155 !important;">
-        <h5 class="offcanvas-title fw-bold"><i class="fas fa-server text-primary me-2"></i> PteroCloud</h5>
+    <div class="offcanvas-header border-bottom" style="border-color: #374151 !important;">
+        <h5 class="offcanvas-title fw-bold"><i class="fas fa-server text-primary me-2"></i> Kex Storage</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body p-3">
         <div class="d-flex flex-column gap-2">
-            <a href="#" onclick="switchTab('dashboard')" class="text-decoration-none p-3 nav-link-custom d-flex align-items-center" data-bs-dismiss="offcanvas">
-                <i class="fas fa-tachometer-alt fa-fw me-3"></i> Dashboard
+            <a href="/dash" class="text-decoration-none p-3 nav-link-custom <%= page === 'dash' ? 'active' : '' %> d-flex align-items-center">
+                <i class="fas fa-tachometer-alt fa-fw me-3"></i> Dash
             </a>
-            <a href="#" onclick="switchTab('storage')" class="text-decoration-none p-3 nav-link-custom d-flex align-items-center" data-bs-dismiss="offcanvas">
-                <i class="fas fa-folder-open fa-fw me-3"></i> Storage
+            <a href="/files" class="text-decoration-none p-3 nav-link-custom <%= page === 'files' ? 'active' : '' %> d-flex align-items-center">
+                <i class="fas fa-folder-open fa-fw me-3"></i> Files
             </a>
         </div>
     </div>
 </div>
 
 <div class="container mt-5">
-    
-    <div id="dashboard-view" style="display: none;">
+    <% if (page === 'dash') { %>
         <h4 class="mb-4 fw-bold">System Overview</h4>
         <div class="row g-4">
             <div class="col-md-4">
@@ -154,28 +181,26 @@
             </div>
             <div class="col-md-4">
                 <div class="card p-4 text-center shadow-sm">
-                    <i class="fas fa-file-alt fa-3x mb-3 text-success"></i>
+                    <i class="fas fa-file-alt fa-3x mb-3 text-primary"></i>
                     <h6 class="text-muted text-uppercase fw-semibold mb-1">Total Files</h6>
                     <h3 class="mb-0 fw-bold"><%= stats.fileCount %></h3>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card p-4 text-center shadow-sm">
-                    <i class="fas fa-folder fa-3x mb-3 text-warning"></i>
+                    <i class="fas fa-folder fa-3x mb-3 text-primary"></i>
                     <h6 class="text-muted text-uppercase fw-semibold mb-1">Total Folders</h6>
                     <h3 class="mb-0 fw-bold"><%= stats.folderCount %></h3>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div id="storage-view" style="display: none;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+    <% } else if (page === 'files') { %>
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 fs-5 fw-semibold">
-                    <li class="breadcrumb-item"><a href="/?dir=root">/root</a></li>
+                    <li class="breadcrumb-item"><a href="/files?dir=root">/root</a></li>
                     <% breadcrumbs.forEach(crumb => { %>
-                        <li class="breadcrumb-item"><a href="/?dir=<%= crumb.id %>"><%= crumb.name %></a></li>
+                        <li class="breadcrumb-item"><a href="/files?dir=<%= crumb.id %>"><%= crumb.name %></a></li>
                     <% }) %>
                 </ol>
             </nav>
@@ -194,7 +219,7 @@
 
         <div class="card shadow-sm overflow-hidden">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table mb-0">
                     <thead>
                         <tr>
                             <th style="width: 50%;">Name</th>
@@ -218,8 +243,8 @@
                         <tr>
                             <td>
                                 <% if (item.type === 'folder') { %>
-                                    <a href="/?dir=<%= item.id %>" class="text-decoration-none text-light d-flex align-items-center fw-medium">
-                                        <i class="fas fa-folder me-3" style="color: #60a5fa;"></i> <%= item.name %>
+                                    <a href="/files?dir=<%= item.id %>" class="text-decoration-none text-light d-flex align-items-center fw-medium">
+                                        <i class="fas fa-folder me-3 text-primary"></i> <%= item.name %>
                                     </a>
                                 <% } else { %>
                                     <div class="d-flex align-items-center fw-medium text-light">
@@ -236,7 +261,9 @@
                                             <button type="submit" class="icon-action" title="Archive"><i class="fas fa-file-archive"></i></button>
                                         </form>
                                     <% } else { %>
-                                        <a href="/download/<%= item.id %>" class="icon-action text-decoration-none me-1" title="Download"><i class="fas fa-download"></i></a>
+                                        <button class="icon-action me-1" onclick="downloadFile('<%= item.id %>', '<%= item.name %>')" title="Download">
+                                            <i class="fas fa-download"></i>
+                                        </button>
                                         <% if (item.name.endsWith('.zip')) { %>
                                             <form action="/unzip/<%= item.id %>" method="POST" class="m-0 p-0 me-1">
                                                 <button type="submit" class="icon-action" title="Unarchive"><i class="fas fa-box-open"></i></button>
@@ -262,22 +289,32 @@
                 </table>
             </div>
         </div>
-    </div>
+    <% } %>
 </div>
 
 <div class="modal fade" id="uploadModal" tabindex="-1" data-bs-theme="dark">
     <div class="modal-dialog modal-dialog-centered">
-        <form action="/upload" method="POST" enctype="multipart/form-data" class="modal-content" style="background-color: #1e293b;">
+        <form id="uploadForm" class="modal-content">
             <div class="modal-header border-bottom-0">
                 <h5 class="modal-title">Upload File</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" name="parentId" value="<%= parentId %>">
+                <input type="hidden" name="parentId" value="<%= typeof parentId !== 'undefined' ? parentId : 'root' %>">
                 <input type="file" name="file" class="form-control" required>
+                
+                <div id="uploadProgressUI" class="mt-3" style="display: none;">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small text-light">Uploading...</span>
+                        <span id="uploadETA" class="small text-muted">0%</span>
+                    </div>
+                    <div class="progress" style="height: 10px; background-color: #374151;">
+                        <div id="uploadProgressBar" class="progress-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer border-top-0">
-                <button type="submit" class="btn btn-primary px-4">Upload</button>
+                <button type="submit" id="uploadSubmitBtn" class="btn btn-primary px-4">Upload</button>
             </div>
         </form>
     </div>
@@ -285,13 +322,13 @@
 
 <div class="modal fade" id="folderModal" tabindex="-1" data-bs-theme="dark">
     <div class="modal-dialog modal-dialog-centered">
-        <form action="/create-folder" method="POST" class="modal-content" style="background-color: #1e293b;">
+        <form action="/create-folder" method="POST" class="modal-content">
             <div class="modal-header border-bottom-0">
                 <h5 class="modal-title">Create Directory</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" name="parentId" value="<%= parentId %>">
+                <input type="hidden" name="parentId" value="<%= typeof parentId !== 'undefined' ? parentId : 'root' %>">
                 <input type="text" name="name" class="form-control" placeholder="Directory Name" required>
             </div>
             <div class="modal-footer border-top-0">
@@ -303,13 +340,13 @@
 
 <div class="modal fade" id="fileModal" tabindex="-1" data-bs-theme="dark">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <form action="/create-file" method="POST" class="modal-content" style="background-color: #1e293b;">
+        <form action="/create-file" method="POST" class="modal-content">
             <div class="modal-header border-bottom-0">
                 <h5 class="modal-title">Create File</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" name="parentId" value="<%= parentId %>">
+                <input type="hidden" name="parentId" value="<%= typeof parentId !== 'undefined' ? parentId : 'root' %>">
                 <input type="text" name="name" class="form-control mb-3" placeholder="filename.txt" required>
                 <textarea name="content" class="form-control" rows="8" placeholder="Enter file contents here..." style="font-family: monospace;"></textarea>
             </div>
@@ -320,30 +357,100 @@
     </div>
 </div>
 
+<div id="downloadProgressContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100; display: none;">
+    <div class="toast show border-0 shadow" style="background-color: #1f2937;">
+        <div class="toast-body">
+            <div class="mb-2 fw-semibold text-light" id="downloadFileName">Downloading...</div>
+            <div class="progress" style="height: 10px; background-color: #374151;">
+                <div id="downloadProgressBar" class="progress-bar" style="width: 0%"></div>
+            </div>
+            <div id="downloadProgressText" class="mt-2 text-muted small">0% - ETA: Calculating...</div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    function switchTab(tabId) {
-        document.getElementById('dashboard-view').style.display = tabId === 'dashboard' ? 'block' : 'none';
-        document.getElementById('storage-view').style.display = tabId === 'storage' ? 'block' : 'none';
-        
-        const url = new URL(window.location);
-        if (tabId === 'dashboard') {
-            url.searchParams.delete('dir');
-        } else if (!url.searchParams.has('dir')) {
-            url.searchParams.set('dir', 'root');
-        }
-        window.history.replaceState({}, '', url);
+    function formatTime(seconds) {
+        if (!Number.isFinite(seconds) || seconds < 0) return 'Calculating...';
+        if (seconds < 60) return Math.round(seconds) + 's';
+        return Math.floor(seconds/60) + 'm ' + Math.round(seconds%60) + 's';
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('dir')) {
-            switchTab('storage');
-        } else {
-            switchTab('dashboard');
-        }
-    });
-</script>
+    const uploadForm = document.getElementById('uploadForm');
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const xhr = new XMLHttpRequest();
+            
+            document.getElementById('uploadSubmitBtn').style.display = 'none';
+            document.getElementById('uploadProgressUI').style.display = 'block';
+            
+            let startTime = Date.now();
+            xhr.upload.addEventListener("progress", (evt) => {
+                if (evt.lengthComputable) {
+                    let percentComplete = (evt.loaded / evt.total) * 100;
+                    document.getElementById('uploadProgressBar').style.width = percentComplete + '%';
+                    
+                    let timeElapsed = (Date.now() - startTime) / 1000;
+                    let speed = evt.loaded / timeElapsed;
+                    let timeRemaining = (evt.total - evt.loaded) / speed;
+                    
+                    document.getElementById('uploadETA').innerText = `${Math.round(percentComplete)}% - ETA: ${formatTime(timeRemaining)}`;
+                }
+            });
 
+            xhr.addEventListener("load", () => window.location.reload());
+            xhr.open("POST", "/upload");
+            xhr.send(formData);
+        });
+    }
+
+    function downloadFile(id, fileName) {
+        document.getElementById('downloadProgressContainer').style.display = 'block';
+        document.getElementById('downloadFileName').innerText = 'Downloading ' + fileName;
+        document.getElementById('downloadProgressBar').style.width = '0%';
+        document.getElementById('downloadProgressText').innerText = 'Starting...';
+        
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', '/download/' + id, true);
+        xhr.responseType = 'blob';
+        let startTime = Date.now();
+
+        xhr.addEventListener('progress', function(evt) {
+            if (evt.lengthComputable) {
+                let percentComplete = (evt.loaded / evt.total) * 100;
+                document.getElementById('downloadProgressBar').style.width = percentComplete + '%';
+                
+                let timeElapsed = (Date.now() - startTime) / 1000;
+                let speed = evt.loaded / timeElapsed;
+                let timeRemaining = (evt.total - evt.loaded) / speed;
+                
+                document.getElementById('downloadProgressText').innerText = 
+                    `${Math.round(percentComplete)}% - ETA: ${formatTime(timeRemaining)}`;
+            } else {
+                document.getElementById('downloadProgressText').innerText = 'Downloading... (Size unknown)';
+            }
+        });
+
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                const blob = xhr.response;
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                setTimeout(() => {
+                    document.getElementById('downloadProgressContainer').style.display = 'none';
+                }, 2000);
+            }
+        });
+        xhr.send();
+    }
+</script>
 </body>
 </html>
