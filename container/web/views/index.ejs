@@ -38,13 +38,13 @@
     
     html{
       font-size:clamp(14px,1vw + 8px,18px);
-      scroll-behavior:smooth; /* Moved from body to fix programmatic scroll jumps */
+      scroll-behavior:smooth;
     }
     
     body{
       width:100%;
-      overflow-x:clip; /* Changed from hidden to prevent position:sticky breakage */
-      overflow-anchor:none; /* PREVENTS THE SCROLL "BACKFIRE" BUG DURING REVEALS */
+      overflow-x:clip; /* Prevents animations from expanding screen width and breaking sticky header */
+      overflow-anchor:none; /* Prevents browser from forcefully jumping scroll position */
       font-family:'Inter',sans-serif;
       background:#0A0A0F;
       color:var(--kex-white);
@@ -84,10 +84,8 @@
       z-index:100;
       border-radius:16px;
       box-shadow: var(--glass-shadow), 0 0 20px rgba(26,215,111,.08);
-      transform: translateZ(0); /* Hardware accelerates the header to prevent it glitching out of screen */
     }
 
-    /* The Animated Snake Border */
     .header::before {
       content: "";
       position: absolute;
@@ -168,7 +166,7 @@
     .hero-btn i{font-size:1.4rem;font-style:normal!important}
     .hero-footer{font-size:1.1rem;color:var(--kex-gray);opacity:.8}
     
-    .cards-section,.faqs-section{padding:90px 0 120px;position:relative;z-index:2;scroll-margin-top:125px;width:100%}
+    .cards-section,.faqs-section{padding:90px 0 120px;position:relative;z-index:2;scroll-margin-top:125px;width:100%;overflow-x:clip;}
     
     .cards-header{text-align:center;margin-bottom:80px}
     .faqs-header{text-align:center;margin-bottom:80px}
@@ -241,10 +239,21 @@
       box-shadow: var(--glass-shadow);
       border-radius:16px;
       overflow:hidden;
-      transition:border-color .3s ease, background .3s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease-out;
+      transition: border-color .3s ease, background .3s ease; /* Removed explicit transform transition to stop layout conflicts */
       display:flex;
       flex-direction:column;
       align-self:start;
+    }
+
+    /* RESTORED: Alternating Slide-in Animation for FAQs */
+    .faqs-container .faq-item.reveal:nth-child(odd) {
+      transform: translate(60px, 30px);
+    }
+    .faqs-container .faq-item.reveal:nth-child(even) {
+      transform: translate(-60px, 30px);
+    }
+    .faqs-container .faq-item.reveal.active {
+      transform: translate(0, 0); 
     }
     
     .card-status{position:absolute;top:22px;right:22px;display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;pointer-events:none;transition:all .3s ease;border:1px solid}
@@ -317,7 +326,6 @@
     @media(hover:hover){
       .header__toggle:hover,.sidebar__close:hover{background:rgba(255,255,255,.06);color:#fff}.brand:hover{opacity:.8}.navbutton:hover{background:var(--kex-dark-green);transform:translateX(4px);color:#fff}.navbutton:hover i{color:var(--kex-green)}.sociallink:hover{background:var(--kex-dark-green);border-color:var(--kex-dark-green);color:#fff;transform:translateY(-6px) scale(1.2);box-shadow:0 12px 25px -4px rgba(26,215,111,.7)}.hero-btn:hover{background:var(--kex-dark-green);border-color:var(--kex-green);transform:translateY(-2px);box-shadow:0 12px 24px -8px rgba(26,215,111,.6)}
       
-      /* Enhanced Hover for Glass Cards */
       .card-bg:hover{
         transform:translateY(-8px);
         background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(20,20,30,0.5) 100%);
@@ -413,7 +421,6 @@
         </a>
         
         <div class="header__right">
-          <!-- Desktop Navigation Links rendered left of Hamburger menu -->
           <div class="header__links" id="header-links">
             <% if (sidebar.body && sidebar.body.length > 0) { %>
               <% sidebar.body.forEach(link => { %>
@@ -673,7 +680,7 @@
         if (cur !== lastSec) {
           lastSec = cur; 
           setNav(cur);
-          // Removed `history.replaceState` here to stop mobile browsers from triggering their URL bar resizing glitch during scroll!
+          // Removed dynamic URL replacestate to stop mobile URL bar from resizing screen!
         }
       };
       window.addEventListener('scroll', () => { if (!scrollLock) { requestAnimationFrame(() => { updateSpy(); scrollLock = false; }); scrollLock = true; } }, { passive: true });
