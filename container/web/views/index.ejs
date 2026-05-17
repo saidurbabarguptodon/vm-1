@@ -544,9 +544,10 @@
 
   <% function fmt(t) {
     if (!t) return '';
-    t = t.replace(/\[a url=([^\]]+)\](.*?)\[\/a\]/gi, '<a href="$1" target="_blank" rel="noopener" style="color: var(--kex-green); text-decoration: none;">$2</a>');
+    /* Updated below to properly inherit defined custom colors, failing back to brand green */
+    t = t.replace(/\[a url=([^\]]+)\](.*?)\[\/a\]/gi, '<a href="$1" target="_blank" rel="noopener" style="color: var(--link-color, var(--kex-green)); text-decoration: none;">$2</a>');
     t = t.replace(/\[icon\](.*?)\[\/icon\]/gi, '<i class="$1"></i>');
-    t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1;">$2</span>');
+    t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1; --link-color: #$1;">$2</span>');
     t = t.replace(/\[b\](.*?)\[\/b\]/gi, '<b>$1</b>');
     t = t.replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>');
     t = t.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
