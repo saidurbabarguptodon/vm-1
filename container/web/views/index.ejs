@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      /* Brand Colors */
       --kex-green: #1ad76f;
       --kex-dark-green: #0E713B;
       --kex-yellow: #FBBF24;
@@ -22,12 +21,8 @@
       --kex-dark-blue: #1E3A8A;
       --kex-white: #F1F5F9;
       --kex-gray: #94A3B8;
-      
-      /* Easy Header Height Controls */
       --header-height-desktop: 70px;
       --header-height-mobile: 60px;
-
-      /* Premium Glassmorphism Variables */
       --kex-blur: 24px;
       --glass-border: rgba(148, 163, 184, 0.15);
       --glass-highlight: rgba(26, 215, 111, 0.3);
@@ -43,8 +38,8 @@
     
     body{
       width:100%;
-      overflow-x:clip; /* Prevents animations from expanding screen width and breaking sticky header */
-      overflow-anchor:none; /* Prevents browser from forcefully jumping scroll position */
+      overflow-x:clip;
+      overflow-anchor:none;
       font-family:'Inter',sans-serif;
       background:#0A0A0F;
       color:var(--kex-white);
@@ -55,13 +50,14 @@
     
     body.has-sidebar-open{overflow:hidden;touch-action:none}
     #snow-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
-    .bg-ambient-glow{position:fixed;top:-150px;left:-150px;width:500px;height:500px;background:rgba(26,215,111,.25);border-radius:50%;z-index:0;pointer-events:none;filter:blur(100px)}
+    
+    .glow-tl{position:fixed;top:-100px;left:-100px;width:350px;height:350px;background:rgba(26,215,111,.25);border-radius:50%;z-index:0;pointer-events:none;filter:blur(90px)}
+    .glow-br{position:fixed;bottom:-200px;right:-200px;width:700px;height:700px;background:rgba(26,215,111,.15);border-radius:50%;z-index:0;pointer-events:none;filter:blur(120px)}
     
     .container{position:relative;z-index:2;width:100%;max-width:100%;margin:0;padding:0 14px}
     
     .reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s cubic-bezier(.16,1,.3,1)}.reveal.active{opacity:1;transform:translateY(0)}
     
-    /* PROFESSIONAL GLASS HEADER */
     @property --header-angle {
       syntax: '<angle>';
       initial-value: 0deg;
@@ -129,7 +125,6 @@
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;z-index:998;cursor:pointer}    
     .overlay.is-visible{opacity:1;visibility:visible}
     
-    /* PROFESSIONAL GLASS SIDEBAR */
     .sidebar{
       position:fixed;top:0;bottom:0;left:0;height:100vh;height:100dvh;width:280px;max-width:80vw;
       background: linear-gradient(180deg, rgba(16,16,22,0.6) 0%, rgba(16,16,22,0.85) 100%); 
@@ -190,7 +185,6 @@
       align-content:start;
     }
     
-    /* PROFESSIONAL GLASS CARDS */
     .card-bg{
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(20,20,30,0.4) 100%);
       backdrop-filter: blur(var(--kex-blur)) saturate(180%);
@@ -231,7 +225,6 @@
       overflow-wrap: break-word;
     }
     
-    /* PROFESSIONAL GLASS FAQs */
     .faq-item{
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(20,20,30,0.4) 100%);
       backdrop-filter: blur(var(--kex-blur)) saturate(180%);
@@ -240,15 +233,12 @@
       box-shadow: var(--glass-shadow);
       border-radius:16px;
       overflow:hidden;
-      
-      /* RESTORED: This makes the side-by-side transform actually animate instead of snap */
       transition: border-color .3s ease, background .3s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease-out;
       display:flex;
       flex-direction:column;
       align-self:start;
     }
 
-    /* Side-by-Side Slide-in Animation for FAQs */
     .faqs-container .faq-item.reveal:nth-child(odd) {
       transform: translate(60px, 30px);
     }
@@ -290,7 +280,6 @@
       overflow-wrap: break-word;
     }
 
-    /* SMOOTH CSS GRID ANIMATION FOR MOBILE FAQS */
     @media(max-width: 899px) {
       .faq-answer{
         display: grid;
@@ -312,7 +301,6 @@
       }
     }
 
-    /* PREVIOUS JS MAX-HEIGHT ANIMATION FOR DESKTOP FAQS */
     @media(min-width: 900px) {
       .faq-answer{
         max-height: 0;
@@ -399,7 +387,10 @@
       .faq-question{padding:14px 16px; font-size: 1.1rem;}
       
       .sociallink{width:38px;height:38px;font-size:17px}
-      .bg-ambient-glow{width:300px;height:300px;top:-100px;left:-100px;filter:blur(80px)}
+      
+      .glow-tl{width:250px;height:250px;top:-80px;left:-80px;filter:blur(70px)}
+      .glow-br{width:450px;height:450px;bottom:-150px;right:-150px;filter:blur(90px)}
+      
       .sidebar{width:260px}
       .sidebar__header{padding:0 20px;height:68px}
       .sidebar__body{padding:12px 8px 16px}
@@ -412,7 +403,8 @@
 </head>
 <body>
   <canvas id="snow-canvas"></canvas>
-  <div class="bg-ambient-glow"></div>
+  <div class="bg-ambient-glow glow-tl"></div>
+  <div class="bg-ambient-glow glow-br"></div>
 
   <header class="header">
     <div class="container">
@@ -683,7 +675,6 @@
         if (cur !== lastSec) {
           lastSec = cur; 
           setNav(cur);
-          // Removed dynamic URL replacestate to stop mobile URL bar from resizing screen!
         }
       };
       window.addEventListener('scroll', () => { if (!scrollLock) { requestAnimationFrame(() => { updateSpy(); scrollLock = false; }); scrollLock = true; } }, { passive: true });
