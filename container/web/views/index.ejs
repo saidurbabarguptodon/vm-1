@@ -33,9 +33,26 @@
       --glass-highlight: rgba(26, 215, 111, 0.3);
       --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
     }
+    
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html{font-size:clamp(14px,1vw + 8px,18px)}
-    body{width:100%;overflow-x:hidden;font-family:'Inter',sans-serif;background:#0A0A0F;color:var(--kex-white);line-height:1.6;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth}
+    
+    html{
+      font-size:clamp(14px,1vw + 8px,18px);
+      scroll-behavior:smooth; /* Moved from body to fix programmatic scroll jumps */
+    }
+    
+    body{
+      width:100%;
+      overflow-x:clip; /* Changed from hidden to prevent position:sticky breakage */
+      overflow-anchor:none; /* PREVENTS THE SCROLL "BACKFIRE" BUG DURING REVEALS */
+      font-family:'Inter',sans-serif;
+      background:#0A0A0F;
+      color:var(--kex-white);
+      line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+    
     body.has-sidebar-open{overflow:hidden;touch-action:none}
     #snow-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
     .bg-ambient-glow{position:fixed;top:-150px;left:-150px;width:500px;height:500px;background:rgba(26,215,111,.25);border-radius:50%;z-index:0;pointer-events:none;filter:blur(100px)}
@@ -56,7 +73,7 @@
     }
     
     .header{
-      height: var(--header-height-desktop); /* Fixed Explicit Height */
+      height: var(--header-height-desktop); 
       width:calc(100% - 24px);
       margin:12px 12px 0;
       background: linear-gradient(135deg, rgba(20,20,30,0.65) 0%, rgba(20,20,30,0.45) 100%);
@@ -67,17 +84,16 @@
       z-index:100;
       border-radius:16px;
       box-shadow: var(--glass-shadow), 0 0 20px rgba(26,215,111,.08);
+      transform: translateZ(0); /* Hardware accelerates the header to prevent it glitching out of screen */
     }
 
-    /* The Animated Snake Border - Scaled to 1px to match other elements */
+    /* The Animated Snake Border */
     .header::before {
       content: "";
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      padding: 1px; /* Exactly 1px thick to match the cards and FAQs */
-      
-      /* Dark green takes up 75% acting as a static track, bright green takes 25% acting as the snake */
+      padding: 1px; 
       background: conic-gradient(
         from var(--header-angle), 
         var(--kex-dark-green) 0%, 
@@ -85,7 +101,6 @@
         var(--kex-green) 75%, 
         var(--kex-green) 100%
       );
-      
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
       mask-composite: exclude;
@@ -181,7 +196,7 @@
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(20,20,30,0.4) 100%);
       backdrop-filter: blur(var(--kex-blur)) saturate(180%);
       -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
-      border: 1px solid var(--kex-dark-green); /* Solid Dark Green Default */
+      border: 1px solid var(--kex-dark-green);
       box-shadow: var(--glass-shadow);
       border-radius:20px;
       padding:30px 26px 20px 26px; 
@@ -222,7 +237,7 @@
       background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(20,20,30,0.4) 100%);
       backdrop-filter: blur(var(--kex-blur)) saturate(180%);
       -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
-      border: 1px solid var(--kex-dark-green); /* Solid Dark Green Default */
+      border: 1px solid var(--kex-dark-green);
       box-shadow: var(--glass-shadow);
       border-radius:16px;
       overflow:hidden;
@@ -230,17 +245,6 @@
       display:flex;
       flex-direction:column;
       align-self:start;
-    }
-
-    /* Alternating Slide-in Animation for FAQs */
-    .faqs-container .faq-item.reveal:nth-child(odd) {
-      transform: translateX(60px); /* Odd items start shifted right */
-    }
-    .faqs-container .faq-item.reveal:nth-child(even) {
-      transform: translateX(-60px); /* Even items start shifted left */
-    }
-    .faqs-container .faq-item.reveal.active {
-      transform: translateX(0); /* Slide into place naturally */
     }
     
     .card-status{position:absolute;top:22px;right:22px;display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;pointer-events:none;transition:all .3s ease;border:1px solid}
@@ -329,7 +333,7 @@
     img,video,iframe,canvas,svg{max-width:100%;height:auto;display:block}
     
     @media(min-width:900px){
-      .header__links{display:flex;} /* Show text links on large screens */
+      .header__links{display:flex;} 
       .hero { padding: 70px 0 100px; }
       .cards-section, .faqs-section { padding: 110px 0 140px; }
       .cards-grid{grid-template-columns:repeat(2,1fr);gap:28px}
@@ -521,7 +525,6 @@
         <% if (faqs && faqs.items && faqs.items.length > 0) { %>
           <% faqs.items.forEach(faq => { %>
             <div class="faq-item reveal">
-              <!-- ADDED TYPE="BUTTON" TO PREVENT JUMPS/CLICKS ACTING LIKE FORM SUBMITS -->
               <button type="button" class="faq-question" aria-expanded="false">
                 <span class="faq-question-title"><%- fmt(faq.title || '') %></span>
                 <span class="faq-toggle-icon"><i class="fa-solid fa-plus"></i></span>
@@ -544,7 +547,6 @@
 
   <% function fmt(t) {
     if (!t) return '';
-    /* Updated below to properly inherit defined custom colors, failing back to brand green */
     t = t.replace(/\[a url=([^\]]+)\](.*?)\[\/a\]/gi, '<a href="$1" target="_blank" rel="noopener" style="color: var(--link-color, var(--kex-green)); text-decoration: none;">$2</a>');
     t = t.replace(/\[icon\](.*?)\[\/icon\]/gi, '<i class="$1"></i>');
     t = t.replace(/\[color=#([0-9a-fA-F]{3,8})\](.*?)\[\/color\]/gi, '<span style="color: #$1; --link-color: #$1;">$2</span>');
@@ -576,11 +578,9 @@
       setTimeout(() => { btn.classList.remove('force-active'); btn.blur(); }, 2500);
     });
     
-    // RESTORED OLD DESKTOP ANIMATION, ADDED PREVENT DEFAULT FOR SCROLL BUG
     document.querySelectorAll('.faq-question').forEach(btn => {
       btn.addEventListener('click', function(e) {
-        e.preventDefault(); // Stop jumping bug
-        
+        e.preventDefault(); 
         const item = this.closest('.faq-item');
         const answer = item.querySelector('.faq-answer');
         const icon = item.querySelector('.faq-toggle-icon i');
@@ -596,9 +596,7 @@
             answer.style.display = 'block';
             answer.style.visibility = 'visible';
             answer.style.opacity = '1';
-            
             void answer.offsetHeight;
-            
             requestAnimationFrame(() => {
               answer.style.maxHeight = answer.scrollHeight + 'px';
               answer.style.paddingBottom = '16px';
@@ -612,7 +610,6 @@
           if (isDesktop) {
             answer.style.maxHeight = null;
             answer.style.paddingBottom = '0';
-            
             setTimeout(() => {
               if (!item.classList.contains('is-active')) {
                 answer.style.display = '';
@@ -625,7 +622,6 @@
       });
     });
 
-    // Cleanup inline styles smoothly if user resizes back and forth between Desktop/Mobile
     window.addEventListener('resize', () => {
       if (window.innerWidth < 900) {
         document.querySelectorAll('.faq-answer').forEach(ans => {
@@ -647,7 +643,6 @@
     });
 
     (() => {
-      // Connect both sidebar buttons and desktop header links to the scrollspy!
       const navBtns = document.querySelectorAll('.navbutton, .header__link'), sections = Array.from(document.querySelectorAll('section[id]')), headerH = 85;
       let navigating = false, lastSec = '', scrollLock = false;
       const setNav = id => navBtns.forEach(b => {
@@ -676,10 +671,9 @@
         else sections.forEach(s => { const r = s.getBoundingClientRect(); if (r.top <= mid && r.bottom >= mid) cur = s.id; });
         if (!cur && sections.length) cur = sections[0].id;
         if (cur !== lastSec) {
-          lastSec = cur; setNav(cur);
-          const base = location.pathname;
-          const newUrl = cur === 'home' ? base : base + '#' + cur;
-          if (location.pathname + location.hash !== newUrl) history.replaceState(null, null, newUrl);
+          lastSec = cur; 
+          setNav(cur);
+          // Removed `history.replaceState` here to stop mobile browsers from triggering their URL bar resizing glitch during scroll!
         }
       };
       window.addEventListener('scroll', () => { if (!scrollLock) { requestAnimationFrame(() => { updateSpy(); scrollLock = false; }); scrollLock = true; } }, { passive: true });
