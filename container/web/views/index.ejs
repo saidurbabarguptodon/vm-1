@@ -50,12 +50,15 @@
     body.has-sidebar-open{overflow:hidden;touch-action:none}
     #snow-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
     
-    .glow-tl{position:fixed;top:-150px;left:-150px;width:300px;height:300px;background:rgba(26,215,111,.2);border-radius:50%;z-index:0;pointer-events:none;filter:blur(100px)}
-    .glow-br{position:fixed;bottom:-200px;right:-200px;width:400px;height:400px;background:rgba(26,215,111,.15);border-radius:50%;z-index:0;pointer-events:none;filter:blur(120px)}
+    /* OPTIMIZATION: Replaced heavy filter:blur with ultra-fast radial-gradient. 
+       Precisely W/2 offset ensures exactly 1/4 of the circle is visible. */
+    .glow-tl{position:fixed;top:-250px;left:-250px;width:500px;height:500px;background:radial-gradient(circle, rgba(26,215,111,0.15) 0%, rgba(26,215,111,0) 70%);border-radius:50%;z-index:0;pointer-events:none;transform:translateZ(0)}
+    .glow-br{position:fixed;bottom:-300px;right:-300px;width:600px;height:600px;background:radial-gradient(circle, rgba(26,215,111,0.12) 0%, rgba(26,215,111,0) 70%);border-radius:50%;z-index:0;pointer-events:none;transform:translateZ(0)}
     
     .container{position:relative;z-index:2;width:100%;max-width:100%;margin:0;padding:0 14px}
     
-    .reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s cubic-bezier(.16,1,.3,1)}.reveal.active{opacity:1;transform:translateY(0)}
+    .reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s cubic-bezier(.16,1,.3,1);will-change:opacity,transform}
+    .reveal.active{opacity:1;transform:translateY(0)}
     
     @property --header-angle {
       syntax: '<angle>';
@@ -80,6 +83,7 @@
       border-radius:16px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(26,215,111,.08);
       transform: translateZ(0);
+      will-change: transform;
     }
 
     .header::before {
@@ -132,7 +136,8 @@
       z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;
       border-right:1px solid var(--glass-highlight); 
       box-shadow: 15px 0 40px rgba(0,0,0,.6);
-      transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1)
+      transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+      will-change: transform;
     }    
     .sidebar.is-expanded{transform:translateX(0)}
     .sidebar__header,.sidebar__body,.sidebar__footer{opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease}
@@ -161,7 +166,8 @@
     .hero-btn i{font-size:1.4rem;font-style:normal!important}
     .hero-footer{font-size:1.1rem;color:var(--kex-gray);opacity:.8}
     
-    .cards-section,.faqs-section{padding:90px 0 120px;position:relative;z-index:2;scroll-margin-top:125px;width:100%;overflow-x:clip;}
+    /* OPTIMIZATION: Added content-visibility for rapid page rendering */
+    .cards-section,.faqs-section{padding:90px 0 120px;position:relative;z-index:2;scroll-margin-top:125px;width:100%;overflow-x:clip;content-visibility:auto;contain-intrinsic-size:800px;}
     
     .cards-header{text-align:center;margin-bottom:80px}
     .faqs-header{text-align:center;margin-bottom:80px}
@@ -387,8 +393,8 @@
       
       .sociallink{width:38px;height:38px;font-size:17px}
       
-      .glow-tl{width:200px;height:200px;top:-100px;left:-100px;filter:blur(60px)}
-      .glow-br{width:300px;height:300px;bottom:-150px;right:-150px;filter:blur(80px)}
+      .glow-tl{width:300px;height:300px;top:-150px;left:-150px;}
+      .glow-br{width:400px;height:400px;bottom:-200px;right:-200px;}
       
       .sidebar{width:260px}
       .sidebar__header{padding:0 20px;height:68px}
@@ -680,17 +686,19 @@
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       window.addEventListener('load', () => { if (location.hash) history.replaceState(null, null, location.pathname); window.scrollTo(0, 0); setNav('home'); lastSec = 'home'; updateSpy(); });
     })();
+    
+    // OPTIMIZATION: Pre-calculated PI*2 constant to prevent thousands of redundant calculations per second in the canvas loop.
     (() => {
       const c = document.getElementById('snow-canvas'), ctx = c.getContext('2d');
       let w = innerWidth, h = innerHeight; c.width = w; c.height = h;
-      const max = w < 768 ? 20 : 50, flakes = Array.from({ length: max }, () => ({
+      const max = w < 768 ? 20 : 50, PI2 = Math.PI * 2, flakes = Array.from({ length: max }, () => ({
         x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.5 + 0.5,
-        d: Math.random() * 0.4 + 0.15, a: Math.random() * Math.PI * 2,
+        d: Math.random() * 0.4 + 0.15, a: Math.random() * PI2,
         aStep: Math.random() * 0.01 + 0.005, op: Math.random() * 0.4 + 0.15
       }));
       const draw = () => {
         ctx.clearRect(0, 0, w, h);
-        flakes.forEach(f => { if (f.op > 0) { ctx.beginPath(); ctx.fillStyle = `rgba(255,255,255,${f.op})`; ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true); ctx.fill(); } });
+        flakes.forEach(f => { if (f.op > 0) { ctx.beginPath(); ctx.fillStyle = `rgba(255,255,255,${f.op})`; ctx.arc(f.x, f.y, f.r, 0, PI2, true); ctx.fill(); } });
         flakes.forEach(f => {
           f.y += f.d; f.a += f.aStep; f.x += Math.sin(f.a) * 0.25;
           if (f.y > h) { f.y = -10; f.x = Math.random() * w; }          if (f.x > w + 10) f.x = -10; if (f.x < -10) f.x = w + 10;
