@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const AdmZip = require('adm-zip');
+const { encodeFileToken, decodeFileToken } = require('./algo');
 
 const envZipPath = path.join(__dirname, '.env.zip');
 if (fs.existsSync(envZipPath)) {
@@ -11,7 +12,6 @@ if (fs.existsSync(envZipPath)) {
 }
 
 require('dotenv').config();
-
 const express = require('express');
 const multer = require('multer');
 const axios = require('axios');
@@ -19,9 +19,8 @@ const FormData = require('form-data');
 const crypto = require('crypto');
 
 const app = express();
-
-const BOT_TOKEN = process.env.BOT_TOKEN; 
-const CHANNEL_ID = process.env.CHANNEL_ID; 
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const CHANNEL_ID = process.env.CHANNEL_ID;
 const PORT = process.env.PORT || 3000;
 
 app.set('view engine', 'ejs');
@@ -30,20 +29,19 @@ app.use(express.json());
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-const upload = multer({ dest: 'uploads/' });
 
+const upload = multer({ dest: 'uploads/' });
 const dbPath = path.join(__dirname, 'db.json');
+
 if (!fs.existsSync(dbPath)) fs.writeFileSync(dbPath, JSON.stringify({ items: [] }));
 
 const getDb = () => JSON.parse(fs.readFileSync(dbPath, 'utf8'));
 const saveDb = (data) => fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
 
-// Magic Backend: Stream directly to Telegram for fast uploads
 async function uploadToTelegram(filePath, fileName) {
     const form = new FormData();
     form.append('chat_id', CHANNEL_ID);
     form.append('document', fs.createReadStream(filePath), { filename: fileName });
-    
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`;
     const res = await axios.post(url, form, { 
         headers: form.getHeaders(),
@@ -56,7 +54,6 @@ async function uploadToTelegram(filePath, fileName) {
     };
 }
 
-// Backend Deletion Sync
 async function deleteFromTelegram(messageId) {
     if (!messageId) return;
     try {
@@ -64,9 +61,7 @@ async function deleteFromTelegram(messageId) {
             chat_id: CHANNEL_ID,
             message_id: messageId
         });
-    } catch (err) {
-        console.error("Failed to delete from Telegram (may already be deleted).");
-    }
+    } catch (err) {}
 }
 
 async function getTelegramFileUrl(fileId) {
@@ -113,8 +108,14 @@ app.get('/dash', (req, res) => {
 app.get('/files', (req, res) => {
     const parentId = req.query.dir || 'root';
     const db = getDb();
-    const items = db.items.filter(item => item.parentId === parentId);
     
+    const items = db.items.filter(item => item.parentId === parentId).map(item => {
+        if (item.type === 'file') {
+            item.token = encodeFileToken(item.parentId, item.name, item.size, item.telegramId);
+        }
+        return item;
+    });
+
     let breadcrumbs = [];
     let curr = db.items.find(i => i.id === parentId);
     while (curr) {
@@ -132,8 +133,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
         if (!file) return res.status(400).json({ error: 'No file' });
 
         const tgData = await uploadToTelegram(file.path, file.originalname);
-        
         const db = getDb();
+        
         db.items.push({
             id: crypto.randomUUID(),
             name: file.originalname,
@@ -170,7 +171,7 @@ app.post('/create-file', async (req, res) => {
         const { name, content, parentId } = req.body;
         const fileName = name.endsWith('.txt') ? name : `${name}.txt`;
         const tempPath = path.join(uploadDir, fileName);
-        
+
         fs.writeFileSync(tempPath, content || '');
         const size = Buffer.byteLength(content || '', 'utf8');
         const tgData = await uploadToTelegram(tempPath, fileName);
@@ -194,24 +195,34 @@ app.post('/create-file', async (req, res) => {
     }
 });
 
-// Magic Backend: Stream directly to response for fast downloads
 app.get('/download/:id', async (req, res) => {
     try {
-        const db = getDb();
-        const file = db.items.find(i => i.id === req.params.id);
-        if (!file || file.type !== 'file') return res.status(404).send("File not found");
+        const tokenData = decodeFileToken(req.params.id);
+        let telegramId, fileName, fileSize;
 
-        const url = await getTelegramFileUrl(file.telegramId);
+        if (tokenData && tokenData.telegramFileId) {
+            telegramId = tokenData.telegramFileId;
+            fileName = tokenData.name;
+            fileSize = tokenData.size;
+        } else {
+            const db = getDb();
+            const file = db.items.find(i => i.id === req.params.id);
+            if (!file || file.type !== 'file') return res.status(404).send("File not found");
+            telegramId = file.telegramId;
+            fileName = file.name;
+            fileSize = file.size;
+        }
+
+        const url = await getTelegramFileUrl(telegramId);
         const response = await axios({
             method: 'GET',
             url: url,
             responseType: 'stream'
         });
         
-        // Pass headers securely to the frontend for precise ETA tracking
-        res.setHeader('Content-Length', response.headers['content-length'] || file.size);
+        res.setHeader('Content-Length', response.headers['content-length'] || fileSize);
         res.setHeader('Content-Type', response.headers['content-type'] || 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="${file.name}"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
         
         response.data.pipe(res);
     } catch (err) {
@@ -312,7 +323,7 @@ app.post('/delete/:id', async (req, res) => {
         const item = db.items.find(i => i.id === req.params.id);
         if (!item) return res.redirect('/files');
         const parentId = item.parentId;
-        
+
         async function deleteItem(id) {
             const children = db.items.filter(i => i.parentId === id);
             for (const c of children) {
@@ -320,7 +331,7 @@ app.post('/delete/:id', async (req, res) => {
             }
             const target = db.items.find(i => i.id === id);
             if (target && target.messageId) {
-                await deleteFromTelegram(target.messageId); // Actually delete it from Telegram
+                await deleteFromTelegram(target.messageId);
             }
             db.items = db.items.filter(i => i.id !== id);
         }
