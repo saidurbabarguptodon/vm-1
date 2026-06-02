@@ -3,250 +3,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kex Storage</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Kex Storage | Cloud Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #1a1a1a;
-            --sidebar-bg: #121212;
-            --input-bg: #262626;
-            --text-primary: #ececec;
-            --text-secondary: #a0a0a0;
-            --emerald: #00A67E;
-            --emerald-dark: #008f6b;
-            --hover-color: #333;
-            --divider-color: rgba(255, 255, 255, 0.08);
+            --bg-dark: #0f1113;
+            --card-bg: #1a1d21;
+            --sidebar-bg: #131619;
+            --input-bg: #22262b;
+            --text-main: #f8f9fa;
+            --text-muted: #94a3b8;
+            --emerald: #10b981;
+            --emerald-glow: rgba(16, 185, 129, 0.15);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.01em;
+            min-height: 100vh;
         }
-        /* Navbar */
+
+        /* Navbar & Brand */
         .navbar-top {
+            background-color: rgba(19, 22, 25, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            height: 70px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand-logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, var(--emerald) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Sidebar / Offcanvas */
+        .offcanvas {
             background-color: var(--sidebar-bg);
-            border-bottom: 2px solid var(--emerald);
-            height: 64px;
+            border-left: 1px solid var(--border-color); /* Changed to right-side for ergonomic burger */
+            width: 300px !important;
         }
-        .header-logo-text {
-            font-size: 1.3rem;
-            color: var(--emerald);
-            margin-right: 8px;
-            font-weight: bold;
+
+        @media (max-width: 576px) { .offcanvas { width: 85% !important; } }
+
+        .nav-link-custom {
+            color: var(--text-muted);
+            padding: 12px 18px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: var(--transition);
+            margin-bottom: 4px;
         }
-        /* Hamburger sliding from left, button on right */
-        .offcanvas-start {
-            background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--divider-color);
-            width: 45% !important; /* Fixed at 45% */
-            max-width: 400px;
+
+        .nav-link-custom:hover {
+            color: var(--text-main);
+            background: var(--input-bg);
         }
-        /* Cards */
-        .card {
-            background-color: var(--input-bg);
-            border: 1px solid var(--divider-color);
-            border-radius: 0.5rem;
-            color: var(--text-primary);
+
+        .nav-link-custom.active {
+            color: #fff;
+            background: var(--emerald);
+            box-shadow: 0 4px 12px var(--emerald-glow);
         }
-        /* High contrast Table fix */
+
+        /* Stats Cards */
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--emerald);
+        }
+
+        /* Breadcrumbs */
+        .breadcrumb { background: transparent; padding: 0; margin-bottom: 0; }
+        .breadcrumb-item a { color: var(--emerald); text-decoration: none; font-weight: 500; }
+        .breadcrumb-item.active { color: var(--text-muted); }
+        .breadcrumb-item + .breadcrumb-item::before { color: var(--text-muted); content: "→"; }
+
+        /* Tables */
         .table-container {
-            background-color: var(--input-bg);
-            border-radius: 8px;
-            border: 1px solid var(--divider-color);
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
             overflow: hidden;
         }
-        .table {
-            color: var(--text-primary);
-            margin-bottom: 0;
-            --bs-table-bg: transparent;
-        }
+
+        .table { margin-bottom: 0; color: var(--text-main); }
         .table thead th {
-            border-bottom: 1px solid var(--divider-color);
-            background-color: var(--sidebar-bg);
-            color: var(--text-secondary);
-            font-weight: 600;
-            text-transform: uppercase;
+            background: rgba(255,255,255,0.02);
+            color: var(--text-muted);
             font-size: 0.75rem;
-            padding: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
         }
+
         .table tbody td {
-            border-bottom: 1px solid var(--divider-color);
-            background-color: var(--input-bg) !important;
-            color: var(--text-primary) !important;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
-            padding: 1rem;
+            background: transparent !important;
         }
-        .table tbody tr:last-child td { border-bottom: none; }
+
         .table tbody tr:hover td {
-            background-color: var(--hover-color) !important;
-            color: #ffffff !important;
+            background: rgba(255,255,255,0.03) !important;
         }
-        /* Buttons */
-        .btn-primary {
-            background-color: var(--emerald);
-            border-color: var(--emerald);
-            color: #ffffff;
-            font-weight: 500;
-        }
-        .btn-primary:hover {
-            background-color: var(--emerald-dark);
-            border-color: var(--emerald-dark);
-        }
-        /* Utilities */
-        .text-muted { color: var(--text-secondary) !important; }
-        .text-primary { color: var(--emerald) !important; }
-        .icon-action {
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: color 0.2s;
-            background: none;
+
+        /* Action Buttons */
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: var(--input-bg);
+            color: var(--text-muted);
             border: none;
-            padding: 0.25rem 0.5rem;
+            transition: var(--transition);
         }
-        .icon-action:hover { color: var(--emerald); }
-        .icon-action.delete:hover { color: #ef4444; }
-        
-        .breadcrumb-item a { color: var(--emerald); text-decoration: none; }
-        .breadcrumb-item a:hover { text-decoration: underline; }
-        .breadcrumb-item.active { color: var(--text-primary); }
-        
-        /* Sidebar Links */
-        .nav-link-custom {
-            color: var(--text-secondary);
-            transition: all 0.2s;
-            border-radius: 8px;
+
+        .btn-action:hover {
+            background: var(--emerald);
+            color: white;
+            transform: scale(1.1);
         }
-        .nav-link-custom:hover, .nav-link-custom.active {
-            color: #ffffff;
-            background-color: var(--emerald);
-        }
+
+        .btn-action.delete:hover { background: #ef4444; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--input-bg); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
         /* Modals */
         .modal-content {
-            border: 1px solid var(--divider-color);
-            background-color: var(--sidebar-bg);
-            color: var(--text-primary);
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
         }
-        .modal-header { border-bottom: 1px solid var(--divider-color); }
-        .modal-footer { border-top: 1px solid var(--divider-color); }
         .form-control {
-            background-color: var(--input-bg);
-            border: 1px solid var(--divider-color);
-            color: var(--text-primary);
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 10px;
+            padding: 12px;
         }
         .form-control:focus {
-            background-color: var(--input-bg);
+            background: var(--input-bg);
+            box-shadow: 0 0 0 3px var(--emerald-glow);
             border-color: var(--emerald);
-            color: #ffffff;
-            box-shadow: 0 0 0 0.25rem rgba(0, 166, 126, 0.25);
+            color: white;
         }
-        /* Progress bars */
-        .toast {
-            background-color: var(--sidebar-bg);
-            border: 1px solid var(--divider-color);
-            color: var(--text-primary);
+
+        .btn-primary {
+            background: var(--emerald);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
         }
-        .progress-bar { background-color: var(--emerald); }
-        .progress-bg { background-color: var(--input-bg); }
     </style>
 </head>
 <body>
 
+<!-- Navbar -->
 <nav class="navbar navbar-top px-4 d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center">
-        <h5 class="mb-0 text-light fw-bold"><i class="fas fa-server text-primary me-2"></i> <span class="header-logo-text">Kex Storage</span></h5>
+        <div class="brand-logo me-2">
+            <i class="fas fa-layer-group me-2"></i>Kex Storage
+        </div>
     </div>
-    <!-- Hamburger button on the right -->
-    <button class="btn btn-outline-secondary border-0 text-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
-        <i class="fas fa-bars fa-lg"></i>
+    <button class="btn-action" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+        <i class="fas fa-bars"></i>
     </button>
 </nav>
 
-<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu">
-    <div class="offcanvas-header border-bottom" style="border-color: var(--divider-color) !important;">
-        <h5 class="offcanvas-title fw-bold"><i class="fas fa-server text-primary me-2"></i> Kex Storage</h5>
+<!-- Sidebar (Right side for mobile convenience) -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="sidebarMenu">
+    <div class="offcanvas-header border-bottom border-secondary">
+        <h5 class="offcanvas-title fw-bold text-white">Menu</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
     </div>
-    <div class="offcanvas-body p-3">
+    <div class="offcanvas-body p-4">
         <div class="d-flex flex-column gap-2">
-            <a href="/dash" class="text-decoration-none p-3 nav-link-custom <%= page === 'dash' ? 'active' : '' %> d-flex align-items-center">
-                <i class="fas fa-tachometer-alt fa-fw me-3"></i> Dash
+            <a href="/dash" class="nav-link-custom <%= page === 'dash' ? 'active' : '' %>">
+                <i class="fas fa-chart-pie"></i> Dashboard
             </a>
-            <a href="/files" class="text-decoration-none p-3 nav-link-custom <%= page === 'files' ? 'active' : '' %> d-flex align-items-center">
-                <i class="fas fa-folder-open fa-fw me-3"></i> Files
+            <a href="/files" class="nav-link-custom <%= page === 'files' ? 'active' : '' %>">
+                <i class="fas fa-folder-tree"></i> File Manager
+            </a>
+            <hr class="my-3 opacity-10">
+            <a href="/settings" class="nav-link-custom">
+                <i class="fas fa-cog"></i> Settings
             </a>
         </div>
     </div>
 </div>
 
-<div class="container mt-5">
+<div class="container py-5">
     <% if (page === 'dash') { %>
-        <h4 class="mb-4 fw-bold">System Overview</h4>
+        <div class="mb-5">
+            <h2 class="fw-bold mb-1">System Overview</h2>
+            <p class="text-muted">Monitor your cloud storage usage and assets.</p>
+        </div>
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="card p-4 text-center shadow-sm">
-                    <i class="fas fa-hdd fa-3x mb-3 text-primary"></i>
-                    <h6 class="text-muted text-uppercase fw-semibold mb-1">Total Storage Used</h6>
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="p-3 bg-primary bg-opacity-10 rounded-3">
+                            <i class="fas fa-database text-emerald"></i>
+                        </div>
+                    </div>
+                    <h6 class="text-muted text-uppercase small fw-bold">Capacity Used</h6>
                     <h3 class="mb-0 fw-bold"><%= stats.totalSize %></h3>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card p-4 text-center shadow-sm">
-                    <i class="fas fa-file-alt fa-3x mb-3 text-primary"></i>
-                    <h6 class="text-muted text-uppercase fw-semibold mb-1">Total Files</h6>
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="p-3 bg-primary bg-opacity-10 rounded-3">
+                            <i class="fas fa-file-code text-emerald"></i>
+                        </div>
+                    </div>
+                    <h6 class="text-muted text-uppercase small fw-bold">Total Files</h6>
                     <h3 class="mb-0 fw-bold"><%= stats.fileCount %></h3>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card p-4 text-center shadow-sm">
-                    <i class="fas fa-folder fa-3x mb-3 text-primary"></i>
-                    <h6 class="text-muted text-uppercase fw-semibold mb-1">Total Folders</h6>
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="p-3 bg-primary bg-opacity-10 rounded-3">
+                            <i class="fas fa-folder-open text-emerald"></i>
+                        </div>
+                    </div>
+                    <h6 class="text-muted text-uppercase small fw-bold">Total Folders</h6>
                     <h3 class="mb-0 fw-bold"><%= stats.folderCount %></h3>
                 </div>
             </div>
         </div>
     <% } else if (page === 'files') { %>
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0 fs-5 fw-semibold">
-                    <li class="breadcrumb-item"><a href="/files?dir=root">/root</a></li>
-                    <% breadcrumbs.forEach(crumb => { %>
-                        <li class="breadcrumb-item"><a href="/files?dir=<%= crumb.id %>"><%= crumb.name %></a></li>
-                    <% }) %>
-                </ol>
-            </nav>
-            <div class="btn-group">
-                <button class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#folderModal">
-                    <i class="fas fa-folder-plus me-1"></i> New Folder
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-4 gap-3">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2">
+                        <li class="breadcrumb-item"><a href="/files?dir=root">Root</a></li>
+                        <% breadcrumbs.forEach(crumb => { %>
+                            <li class="breadcrumb-item"><a href="/files?dir=<%= crumb.id %>"><%= crumb.name %></a></li>
+                        <% }) %>
+                    </ol>
+                </nav>
+                <h3 class="fw-bold m-0">Files</h3>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <i class="fas fa-cloud-arrow-up me-2"></i>Upload
                 </button>
-                <button class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#fileModal">
-                    <i class="fas fa-file-signature me-1"></i> New File
-                </button>
-                <button class="btn btn-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                    <i class="fas fa-upload me-1"></i> Upload
-                </button>
+                <div class="dropdown">
+                    <button class="btn btn-dark border btn-sm" data-bs-toggle="dropdown">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#folderModal"><i class="fas fa-folder-plus me-2"></i>New Folder</a></li>
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#fileModal"><i class="fas fa-file-circle-plus me-2"></i>New Text File</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
 
-        <div class="table-container shadow-sm">
+        <div class="table-container shadow">
             <div class="table-responsive">
-                <table class="table mb-0">
+                <table class="table">
                     <thead>
                         <tr>
-                            <th style="width: 50%;">Name</th>
-                            <th style="width: 15%;">Size</th>
-                            <th style="width: 15%;">Type</th>
-                            <th style="width: 20%;" class="text-end">Actions</th>
+                            <th>Name</th>
+                            <th>Size</th>
+                            <th>Type</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- Glitch Fix: Proper parent navigation instead of history.back -->
                         <% if (parentId !== 'root') { %>
                         <tr>
                             <td colspan="4">
-                                <a href="javascript:history.back()" class="text-decoration-none text-light d-flex align-items-center fw-medium">
-                                    <i class="fas fa-level-up-alt fa-rotate-270 me-3 text-muted"></i> ...
+                                <a href="/files?dir=<%= parentFolderId || 'root' %>" class="text-decoration-none text-muted d-flex align-items-center">
+                                    <i class="fas fa-arrow-turn-up me-3 opacity-50"></i> Go Up One Level
                                 </a>
                             </td>
                         </tr>
@@ -256,35 +319,36 @@
                         <tr>
                             <td>
                                 <% if (item.type === 'folder') { %>
-                                    <a href="/files?dir=<%= item.id %>" class="text-decoration-none text-light d-flex align-items-center fw-medium">
-                                        <i class="fas fa-folder me-3 text-primary"></i> <%= item.name %>
+                                    <a href="/files?dir=<%= item.id %>" class="text-decoration-none text-white d-flex align-items-center fw-semibold">
+                                        <i class="fas fa-folder me-3 text-emerald shadow-sm"></i> <%= item.name %>
                                     </a>
                                 <% } else { %>
-                                    <div class="d-flex align-items-center fw-medium text-light">
-                                        <i class="fas <%= item.name.endsWith('.zip') ? 'fa-file-archive text-warning' : 'fa-file-alt text-muted' %> me-3"></i> <%= item.name %>
+                                    <div class="d-flex align-items-center text-white-50">
+                                        <i class="fas <%= item.name.endsWith('.zip') ? 'fa-file-zipper text-warning' : 'fa-file-lines' %> me-3"></i> 
+                                        <span class="text-white"><%= item.name %></span>
                                     </div>
                                 <% } %>
                             </td>
-                            <td class="text-muted"><%= item.type === 'folder' ? '-' : formatBytes(item.size) %></td>
-                            <td class="text-muted"><%= item.type === 'folder' ? 'Directory' : 'File' %></td>
+                            <td class="text-muted small"><%= item.type === 'folder' ? '--' : formatBytes(item.size) %></td>
+                            <td><span class="badge bg-secondary bg-opacity-25 text-muted fw-normal"><%= item.type === 'folder' ? 'Folder' : 'File' %></span></td>
                             <td class="text-end">
-                                <div class="d-flex justify-content-end align-items-center">
+                                <div class="d-flex justify-content-end gap-1">
                                     <% if (item.type === 'folder') { %>
-                                        <form action="/zip/<%= item.id %>" method="POST" class="m-0 p-0 me-1">
-                                            <button type="submit" class="icon-action" title="Archive Folder"><i class="fas fa-file-archive"></i></button>
+                                        <form action="/zip/<%= item.id %>" method="POST" class="d-inline">
+                                            <button type="submit" class="btn-action" title="Zip"><i class="fas fa-box-archive"></i></button>
                                         </form>
                                     <% } else { %>
-                                        <button class="icon-action me-1" onclick="downloadFile('<%= item.id %>', '<%= item.name %>')" title="Download">
+                                        <button class="btn-action" onclick="downloadFile('<%= item.id %>', '<%= item.name %>')" title="Download">
                                             <i class="fas fa-download"></i>
                                         </button>
                                         <% if (item.name.endsWith('.zip')) { %>
-                                            <form action="/unzip/<%= item.id %>" method="POST" class="m-0 p-0 me-1">
-                                                <button type="submit" class="icon-action" title="Unarchive"><i class="fas fa-box-open"></i></button>
+                                            <form action="/unzip/<%= item.id %>" method="POST" class="d-inline">
+                                                <button type="submit" class="btn-action" title="Unzip"><i class="fas fa-file-export"></i></button>
                                             </form>
                                         <% } %>
                                     <% } %>
-                                    <form action="/delete/<%= item.id %>" method="POST" class="m-0 p-0">
-                                        <button type="submit" class="icon-action delete" title="Delete Permanent"><i class="fas fa-trash-alt"></i></button>
+                                    <form action="/delete/<%= item.id %>" method="POST" class="d-inline" onsubmit="return confirm('Permanently delete this item?')">
+                                        <button type="submit" class="btn-action delete" title="Delete"><i class="fas fa-trash-alt"></i></button>
                                     </form>
                                 </div>
                             </td>
@@ -293,8 +357,9 @@
 
                         <% if (items.length === 0) { %>
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-4">
-                                This directory is empty.
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="fas fa-ghost fa-3x mb-3 opacity-10"></i>
+                                <p>No files found in this directory.</p>
                             </td>
                         </tr>
                         <% } %>
@@ -305,94 +370,64 @@
     <% } %>
 </div>
 
+<!-- Upload Modal -->
 <div class="modal fade" id="uploadModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <form id="uploadForm" class="modal-content">
-            <div class="modal-header border-bottom-0">
-                <h5 class="modal-title text-light">Upload File</h5>
+        <form id="uploadForm" class="modal-content shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Upload to Cloud</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body py-4">
                 <input type="hidden" name="parentId" value="<%= typeof parentId !== 'undefined' ? parentId : 'root' %>">
-                <input type="file" name="file" class="form-control" required>
+                <div class="upload-area p-4 text-center border border-dashed rounded-4 mb-3" style="border-style: dashed !important; border-color: var(--border-color) !important;">
+                    <i class="fas fa-cloud-upload-alt fa-3x text-emerald mb-3"></i>
+                    <input type="file" name="file" id="fileInput" class="form-control" required>
+                </div>
                 
-                <div id="uploadProgressUI" class="mt-3" style="display: none;">
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="small text-light">Uploading to Telegram...</span>
-                        <span id="uploadETA" class="small text-muted" style="color: var(--emerald) !important;">0%</span>
+                <div id="uploadProgressUI" style="display: none;">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small">Uploading...</span>
+                        <span id="uploadETA" class="small text-emerald fw-bold">0%</span>
                     </div>
-                    <div class="progress progress-bg" style="height: 10px;">
-                        <div id="uploadProgressBar" class="progress-bar" style="width: 0%;"></div>
+                    <div class="progress" style="height: 6px; background: var(--input-bg);">
+                        <div id="uploadProgressBar" class="progress-bar bg-emerald" style="width: 0%;"></div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-top-0">
-                <button type="submit" id="uploadSubmitBtn" class="btn btn-primary px-4">Upload</button>
+            <div class="modal-footer border-0 pt-0">
+                <button type="submit" id="uploadSubmitBtn" class="btn btn-primary w-100">Start Upload</button>
             </div>
         </form>
     </div>
 </div>
 
-<div class="modal fade" id="folderModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <form action="/create-folder" method="POST" class="modal-content">
-            <div class="modal-header border-bottom-0">
-                <h5 class="modal-title text-light">Create Directory</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" name="parentId" value="<%= typeof parentId !== 'undefined' ? parentId : 'root' %>">
-                <input type="text" name="name" class="form-control" placeholder="Directory Name" required>
-            </div>
-            <div class="modal-footer border-top-0">
-                <button type="submit" class="btn btn-primary px-4">Create</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="modal fade" id="fileModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <form action="/create-file" method="POST" class="modal-content">
-            <div class="modal-header border-bottom-0">
-                <h5 class="modal-title text-light">Create File</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" name="parentId" value="<%= typeof parentId !== 'undefined' ? parentId : 'root' %>">
-                <input type="text" name="name" class="form-control mb-3" placeholder="filename.txt" required>
-                <textarea name="content" class="form-control" rows="8" placeholder="Enter file contents here..." style="font-family: monospace;"></textarea>
-            </div>
-            <div class="modal-footer border-top-0">
-                <button type="submit" class="btn btn-primary px-4">Create File</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Floating Download Progress UI -->
-<div id="downloadProgressContainer" class="position-fixed bottom-0 end-0 p-4" style="z-index: 1100; display: none;">
-    <div class="toast show border-0 shadow" style="background-color: var(--sidebar-bg); width: 300px;">
+<!-- Fixed Download Progress Container -->
+<div id="downloadProgressContainer" class="position-fixed bottom-0 end-0 p-4" style="z-index: 2000; display: none;">
+    <div class="toast show border-0 bg-dark shadow-lg rounded-4" style="width: 320px;">
         <div class="toast-body p-3">
-            <div class="mb-2 fw-semibold text-light" id="downloadFileName">Downloading...</div>
-            <div class="progress progress-bg" style="height: 8px;">
-                <div id="downloadProgressBar" class="progress-bar" style="width: 0%"></div>
+            <div class="d-flex align-items-center mb-3">
+                <div class="spinner-border spinner-border-sm text-emerald me-2"></div>
+                <div class="fw-bold small text-truncate" id="downloadFileName">File</div>
             </div>
-            <div id="downloadProgressText" class="mt-2 text-muted small" style="color: var(--emerald) !important;">0% - ETA: Calculating...</div>
+            <div class="progress mb-2" style="height: 6px; background: #222;">
+                <div id="downloadProgressBar" class="progress-bar bg-emerald progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+            </div>
+            <div id="downloadProgressText" class="x-small text-muted" style="font-size: 0.75rem;">0% - Calculating...</div>
         </div>
     </div>
 </div>
 
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Format seconds into a readable ETA
     function formatTime(seconds) {
-        if (!Number.isFinite(seconds) || seconds < 0) return 'Calculating...';
+        if (!Number.isFinite(seconds) || seconds < 0) return '...';
         if (seconds < 60) return Math.round(seconds) + 's';
         return Math.floor(seconds/60) + 'm ' + Math.round(seconds%60) + 's';
     }
 
-    // Upload with progress and ETA
+    // Modern Upload Logic
     const uploadForm = document.getElementById('uploadForm');
     if (uploadForm) {
         uploadForm.addEventListener('submit', function(e) {
@@ -400,74 +435,67 @@
             const formData = new FormData(this);
             const xhr = new XMLHttpRequest();
             
-            document.getElementById('uploadSubmitBtn').style.display = 'none';
+            document.getElementById('uploadSubmitBtn').disabled = true;
             document.getElementById('uploadProgressUI').style.display = 'block';
             
             let startTime = Date.now();
             xhr.upload.addEventListener("progress", (evt) => {
                 if (evt.lengthComputable) {
-                    let percentComplete = (evt.loaded / evt.total) * 100;
-                    document.getElementById('uploadProgressBar').style.width = percentComplete + '%';
+                    let percent = (evt.loaded / evt.total) * 100;
+                    document.getElementById('uploadProgressBar').style.width = percent + '%';
                     
-                    let timeElapsed = (Date.now() - startTime) / 1000;
-                    let speed = evt.loaded / timeElapsed;
-                    let timeRemaining = (evt.total - evt.loaded) / speed;
-                    
-                    document.getElementById('uploadETA').innerText = `${Math.round(percentComplete)}% - ETA: ${formatTime(timeRemaining)}`;
+                    let elapsed = (Date.now() - startTime) / 1000;
+                    let speed = evt.loaded / elapsed;
+                    let remaining = (evt.total - evt.loaded) / speed;
+                    document.getElementById('uploadETA').innerText = `${Math.round(percent)}% (ETA: ${formatTime(remaining)})`;
                 }
             });
 
-            xhr.addEventListener("load", () => window.location.reload());
+            xhr.onload = () => window.location.reload();
             xhr.open("POST", "/upload");
             xhr.send(formData);
         });
     }
 
-    // Download with fast backend stream tracking
+    // Improved Download Logic
+    // NOTE: For very large files (>500MB), downloading via Blob (XHR) can crash the browser.
+    // This script works for most files, but for massive ones, a direct <a> link is safer.
     function downloadFile(id, fileName) {
-        document.getElementById('downloadProgressContainer').style.display = 'block';
-        document.getElementById('downloadFileName').innerText = 'Downloading ' + fileName;
-        document.getElementById('downloadProgressBar').style.width = '0%';
-        document.getElementById('downloadProgressText').innerText = 'Starting...';
+        const ui = document.getElementById('downloadProgressContainer');
+        ui.style.display = 'block';
+        document.getElementById('downloadFileName').innerText = fileName;
         
         const xhr = new XMLHttpRequest();
         xhr.open('GET', '/download/' + id, true);
-        xhr.responseType = 'blob'; // Storing in RAM temporarily to show progress
+        xhr.responseType = 'blob'; 
         let startTime = Date.now();
 
-        xhr.addEventListener('progress', function(evt) {
+        xhr.onprogress = (evt) => {
             if (evt.lengthComputable) {
-                let percentComplete = (evt.loaded / evt.total) * 100;
-                document.getElementById('downloadProgressBar').style.width = percentComplete + '%';
-                
-                let timeElapsed = (Date.now() - startTime) / 1000;
-                let speed = evt.loaded / timeElapsed;
-                let timeRemaining = (evt.total - evt.loaded) / speed;
-                
+                let percent = (evt.loaded / evt.total) * 100;
+                document.getElementById('downloadProgressBar').style.width = percent + '%';
+                let elapsed = (Date.now() - startTime) / 1000;
+                let speed = evt.loaded / elapsed;
+                let remaining = (evt.total - evt.loaded) / speed;
                 document.getElementById('downloadProgressText').innerText = 
-                    `${Math.round(percentComplete)}% - ETA: ${formatTime(timeRemaining)}`;
-            } else {
-                document.getElementById('downloadProgressText').innerText = 'Downloading... (Processing Fast Stream)';
+                    `${Math.round(percent)}% - ETA: ${formatTime(remaining)}`;
             }
-        });
+        };
 
-        xhr.addEventListener('load', function() {
+        xhr.onload = () => {
             if (xhr.status === 200) {
-                // Trigger auto-download to user device once Blob stream is fully received
                 const blob = xhr.response;
-                const link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
                 document.getElementById('downloadProgressText').innerText = 'Complete!';
-                setTimeout(() => {
-                    document.getElementById('downloadProgressContainer').style.display = 'none';
-                }, 2000);
+                setTimeout(() => ui.style.display = 'none', 3000);
             }
-        });
+        };
         xhr.send();
     }
 </script>
