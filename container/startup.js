@@ -1,29 +1,53 @@
-const { execSync } = require('child_process');
+const { exec } = require('child_process');
+const { promisify } = require('util');
+const { appendFileSync } = require('fs');
+const execPromise = promisify(exec);
 
-function startup() {
-    try {
-        console.log('⚙️ Initializing startup process...');
+(async () => {
+  // Step 0: Install PM2 globally (required before starting any app)
+  console.log('📦 Installing PM2 globally...');
+  await execPromise('sudo npm install -g pm2', { stdio: 'inherit' });
+  console.log('✓ PM2 global install done');
 
-        console.log('📦 Step 1: Installing PM2...');
-        execSync('npm install -g pm2', { stdio: 'inherit' });
+  // Step 1: Run WEB, KEX STORAGE, and ALIASES blocks in parallel
+  const webSetup = async () => {
+    const webPath = '/root/container/web';
+    console.log('🚀 WEB: installing dependencies...');
+    await execPromise('sudo npm install', { cwd: webPath, stdio: 'inherit' });
+    await execPromise('pm2 start index.js --name web', { cwd: webPath, stdio: 'inherit' });
+    await execPromise('pm2 save', { stdio: 'inherit' });
+    console.log('✓ WEB block finished');
+  };
 
-        console.log('📦 Step 2: Installing dependencies inside ./web/...');
-        execSync('npm install', { stdio: 'inherit', cwd: './web/' });
+  const storageSetup = async () => {
+    const storagePath = '/root/container/kex-storage';
+    console.log('📁 KEX STORAGE: installing dependencies...');
+    await execPromise('sudo npm install', { cwd: storagePath, stdio: 'inherit' });
+    await execPromise('pm2 start index.js --name ks', { cwd: storagePath, stdio: 'inherit' });
+    await execPromise('pm2 save', { stdio: 'inherit' });
+    console.log('✓ KEX STORAGE block finished');
+  };
 
-        console.log('🚀 Step 3: Starting index.js using PM2 inside ./web/...');
-        execSync('pm2 start index.js --name web', { stdio: 'inherit', cwd: './web/' });
+  const aliasesSetup = () => {
+    const aliases = `
+# Custom aliases for easy navigation
+alias c='cd /root/container/'
+alias cw='cd /root/container/web/'
+alias ks='cd /root/container/kex-storage/'
+`;
+    appendFileSync('/root/.bashrc', aliases);
+    console.log('✓ USEFUL ALIASES block finished');
+  };
 
-        console.log('💾 Step 4: Saving PM2 process state...');
-        execSync('pm2 save', { stdio: 'inherit' });
+  // Run all three concurrently
+  await Promise.all([
+    webSetup(),
+    storageSetup(),
+    aliasesSetup()
+  ]);
 
-        console.log('✅ Startup complete! Your web app is now running in the background.');
-        console.log('🛑 Stopping startup.js...');
-
-        process.exit(0);
-    } catch (error) {
-        console.error('❌ An error occurred during startup:', error.message);
-        process.exit(1); 
-    }
-}
-
-startup();
+  console.log('🎉 All blocks completed successfully!');
+})().catch(err => {
+  console.error('❌ Error:', err.message);
+  process.exit(1);
+});
