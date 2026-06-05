@@ -1,7 +1,7 @@
 name: Deploy VM-1
 
 on:
-  workflow_dispatch:   # ← ONLY manual start
+  workflow_dispatch:
 
 permissions:
   actions: write
@@ -23,11 +23,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup (Sync + App + Cloudflare + Cleanup)
+      - name: Setup
         run: |
           set -e
-
-          # 1. Sync container/ from repo to /root/container
           echo "=== Syncing container/ ==="
           if [ -d "container" ]; then
             ls -la container/
@@ -38,23 +36,13 @@ jobs:
             echo "⚠ container/ not found – creating empty target"
             sudo mkdir -p /root/container
           fi
-
-          # 2. Start startup.js (exactly: sudo node startup.js)
           echo "=== Starting application ==="
           if sudo test -f /root/container/startup.js; then
-            echo "Launching startup.js in background..."
-            sudo -b bash -c 'cd /root/container && node startup.js > startup.log 2>&1'
-            sleep 2
-            if pgrep -f "node /root/container/startup.js" > /dev/null; then
-              echo "✓ startup.js is running (PID $(pgrep -f 'node /root/container/startup.js'))"
-            else
-              echo "⚠ startup.js may have failed to start. Check /root/container/startup.log"
-            fi
+            echo "Launching startup.js..."
+            sudo -b bash -c 'cd /root/container && node startup.js'
           else
             echo "ℹ /root/container/startup.js not found – skipping app startup"
           fi
-
-          # 3. Cloudflare Tunnel setup
           echo "=== Setting up Cloudflare Tunnel ==="
           [ -z "${{ secrets.CLOUDFLARE_TOKEN }}" ] && { echo "✗ CLOUDFLARE_TOKEN missing"; exit 1; }
           sudo mkdir -p /usr/share/keyrings
@@ -70,8 +58,6 @@ jobs:
             echo "✗ Cloudflare Tunnel failed"
             exit 1
           fi
-
-          # 4. Cleanup old workflow runs
           echo "=== Cleaning old workflow runs ==="
           export GH_TOKEN="${{ github.token }}"
           sudo apt-get install -y -qq jq >/dev/null 2>&1
@@ -83,7 +69,6 @@ jobs:
           else
             echo "✓ No old runs to delete"
           fi
-
           echo "=== Setup completed ==="
 
       - name: Install SSH and set hostname
@@ -128,7 +113,6 @@ jobs:
           sudo tailscale up --authkey="${{ secrets.TAILSCALE_AUTHKEY }}" --hostname="${{ env.VM_NAME }}" --accept-routes --reset --ssh >/dev/null 2>&1
           sleep 3
           sudo tailscale status --json | jq -r '.Self | "✓ Tailscale connected as \(.Hostname) (\(.TailscaleIPs[0]))"'
-
           if [ -n "${{ secrets.TAILSCALE_STATIC_IP }}" ] && [ -n "${{ secrets.TAILSCALE_API_KEY }}" ]; then
             DEVICE_ID=$(curl -s -u "${{ secrets.TAILSCALE_API_KEY }}:" "https://api.tailscale.com/api/v2/tailnet/-/devices?fields=all" \
               | jq -r --arg name "${{ env.VM_NAME }}" '.devices[]? | select(.hostname==$name) | .nodeId // .id' | head -n1)
@@ -141,33 +125,24 @@ jobs:
             fi
           fi
 
-      - name: Create useful aliases
-        run: |
-          sudo bash -c 'echo "alias c=\"cd /root/container\"" >> /root/.bashrc'
-          echo "✓ Alias created: c → cd /root/container"
-
-      - name: Live sync + auto-restart every 1s (5.5 hour lifetime)
+      - name: Live sync and auto restart
         run: |
           echo "Live sync started (repo → /root/container every 5s)"
           MAX_DURATION=$((330 * 60))
           START_TIME=$(date +%s)
           DEADLINE=$((START_TIME + MAX_DURATION))
           LAST_DOT=0
-
           while true; do
             git fetch origin --quiet 2>/dev/null || true
             git reset --hard "origin/$(git rev-parse --abbrev-ref HEAD)" --quiet 2>/dev/null || true
             [ -d "container" ] && sudo rsync -aq container/ /root/container/ 2>/dev/null || true
-
             NOW=$(date +%s)
             REMAINING=$((DEADLINE - NOW))
             [ $REMAINING -lt 0 ] && REMAINING=0
-
             if [ $((NOW % 30)) -eq 0 ] && [ $NOW -ne $LAST_DOT ]; then
               echo -n "."
               LAST_DOT=$NOW
             fi
-
             if [ $NOW -ge $DEADLINE ]; then
               echo ""
               echo "⏰ 5h 30m reached → restarting workflow"
@@ -176,6 +151,5 @@ jobs:
               echo "✅ Restart triggered"
               exit 0
             fi
-
             sleep 1
           done
