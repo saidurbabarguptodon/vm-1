@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aeronotics | Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #0b0d0f; --card: #16191d; --emerald: #10b981; --border: rgba(255,255,255,0.1); }
+        body { background: var(--bg); color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+        .auth-card { background: var(--card); border: 1px solid var(--border); padding: 40px; border-radius: 24px; width: 100%; max-width: 400px; }
+        .brand { color: var(--emerald); font-size: 1.6rem; font-weight: 800; text-decoration: none; display: block; text-align: center; margin-bottom: 30px; }
+        .form-control { background: #1e2329; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 12px; }
+        .form-control:focus { background: #1e2329; color: white; border-color: var(--emerald); box-shadow: none; }
+        .btn-primary { background: var(--emerald); border: none; padding: 12px; border-radius: 12px; font-weight: 600; width: 100%; }
+        .toggle-link { color: var(--emerald); cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <a href="#" class="brand"><i class="fas fa-rocket me-2"></i>Aeronotics</a>
+        <% if (error) { %><div class="alert alert-danger py-2 small" style="background: rgba(220,53,69,0.1); border: 1px solid #dc3545; color: #ff6b6b;"><%= error %></div><% } %>
+
+        <div id="loginArea">
+            <h4 class="fw-bold mb-1">Welcome Back</h4>
+            <p class="text-muted small mb-4">Please enter your details.</p>
+            <form action="/auth/login" method="POST">
+                <div class="mb-3"><input type="email" name="email" class="form-control" placeholder="Email" required></div>
+                <div class="mb-3"><input type="password" name="password" class="form-control" placeholder="Password" required></div>
+                <button type="submit" class="btn btn-primary">Sign In</button>
+            </form>
+            <p class="text-center mt-4 small text-muted">No account? <span class="toggle-link" onclick="toggle()">Sign Up</span></p>
+        </div>
+
+        <div id="signupArea" style="display:none;">
+            <h4 class="fw-bold mb-1">Create Account</h4>
+            <p class="text-muted small mb-4">Start your journey with Aeronotics.</p>
+            <form action="/auth/signup" method="POST">
+                <div class="mb-3"><input type="email" name="email" class="form-control" placeholder="Email" required></div>
+                <div class="mb-3"><input type="password" name="password" class="form-control" placeholder="Password" required></div>
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+            <p class="text-center mt-4 small text-muted">Already have an account? <span class="toggle-link" onclick="toggle()">Sign In</span></p>
+        </div>
+    </div>
+    <script>
+        function toggle() {
+            const l = document.getElementById('loginArea'), s = document.getElementById('signupArea');
+            l.style.display = l.style.display === 'none' ? 'block' : 'none';
+            s.style.display = s.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>
