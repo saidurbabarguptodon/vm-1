@@ -50,8 +50,6 @@
     body.has-sidebar-open{overflow:hidden;touch-action:none}
     #snow-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
     
-    /* OPTIMIZATION: Replaced heavy filter:blur with ultra-fast radial-gradient. 
-       Precisely W/2 offset ensures exactly 1/4 of the circle is visible. */
     .glow-tl{position:fixed;top:-250px;left:-250px;width:500px;height:500px;background:radial-gradient(circle, rgba(26,215,111,0.15) 0%, rgba(26,215,111,0) 70%);border-radius:50%;z-index:0;pointer-events:none;transform:translateZ(0)}
     .glow-br{position:fixed;bottom:-300px;right:-300px;width:600px;height:600px;background:radial-gradient(circle, rgba(26,215,111,0.12) 0%, rgba(26,215,111,0) 70%);border-radius:50%;z-index:0;pointer-events:none;transform:translateZ(0)}
     
@@ -166,7 +164,6 @@
     .hero-btn i{font-size:1.4rem;font-style:normal!important}
     .hero-footer{font-size:1.1rem;color:var(--kex-gray);opacity:.8}
     
-    /* OPTIMIZATION: Added content-visibility for rapid page rendering */
     .cards-section,.faqs-section{padding:90px 0 120px;position:relative;z-index:2;scroll-margin-top:125px;width:100%;overflow-x:clip;content-visibility:auto;contain-intrinsic-size:800px;}
     
     .cards-header{text-align:center;margin-bottom:80px}
@@ -416,7 +413,7 @@
       <nav class="header__nav">
         <a href="/" class="brand brand--header" id="brand-header">
           <% if (header.logourl) { %><img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="logoimg"><% } else { %>
-            <% if (header.alticon) { %><i class="<%= header.alticon %> alticon"></i><% } %>            <% if (header.alttext) { %><span class="alttext"><span class="alttext"><%= header.alttext %></span><% } %>
+            <% if (header.alticon) { %><i class="<%= header.alticon %> alticon"></i><% } %><% if (header.alttext) { %><span class="alttext"><span class="alttext"><%= header.alttext %></span><% } %>
           <% } %>
         </a>
         
@@ -439,10 +436,10 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="sidebar__header">
-      <a href="/" class="brand brand--sidebar" id="brand-sidebar">        <% if (sidebar.header && sidebar.header.logourl) { %><img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="logoimg"><% } else { %>
+      <a href="/" class="brand brand--sidebar" id="brand-sidebar"><% if (sidebar.header && sidebar.header.logourl) { %><img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="logoimg"><% } else { %>
           <% if (sidebar.header && sidebar.header.alticon) { %><i class="<%= sidebar.header.alticon %> alticon"></i><% } %>
           <% if (sidebar.header && sidebar.header.alttext) { %><span class="alttext"><%= sidebar.header.alttext %></span><% } %>
-        <% } %>      </a>
+        <% } %></a>
       <button class="sidebar__close" id="close-sidebar" aria-label="Close Menu"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="sidebar__body">
@@ -487,11 +484,11 @@
           <% if (cards.data.title) { %><h2 class="cards-title"><%- fmt(cards.data.title) %></h2><% } %>
           <% if (cards.data.description) { %><p class="cards-description"><%- fmt(cards.data.description) %></p><% } %>
         </div>
-      <% } %>      <div class="cards-grid">
+      <% } %><div class="cards-grid">
         <% 
           let sortedCards =[];
           if (cards && cards.items && cards.items.length > 0) sortedCards = cards.items.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
-        %>        <% if (sortedCards.length > 0) { %>
+        %><% if (sortedCards.length > 0) { %>
           <% sortedCards.slice(0, 6).forEach(card => { %>
             <a href="<%= card.url || '#' %>" class="card-bg reveal" target="_blank" rel="noopener">
               <% if (card.status && card.status.trim() !== '') { 
@@ -541,7 +538,7 @@
               </div>
             </div>
           <% }) %>
-        <% } %>      </div>
+        <% } %></div>
       <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
         <div class="faqs-footer reveal">
           <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
@@ -680,6 +677,7 @@
         if (cur !== lastSec) {
           lastSec = cur; 
           setNav(cur);
+          history.replaceState(null, null, cur === 'home' ? window.location.pathname : `#${cur}`);
         }
       };
       window.addEventListener('scroll', () => { if (!scrollLock) { requestAnimationFrame(() => { updateSpy(); scrollLock = false; }); scrollLock = true; } }, { passive: true });
@@ -687,7 +685,6 @@
       window.addEventListener('load', () => { if (location.hash) history.replaceState(null, null, location.pathname); window.scrollTo(0, 0); setNav('home'); lastSec = 'home'; updateSpy(); });
     })();
     
-    // OPTIMIZATION: Pre-calculated PI*2 constant to prevent thousands of redundant calculations per second in the canvas loop.
     (() => {
       const c = document.getElementById('snow-canvas'), ctx = c.getContext('2d');
       let w = innerWidth, h = innerHeight; c.width = w; c.height = h;
