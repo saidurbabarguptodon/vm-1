@@ -273,31 +273,38 @@
 
     .faq-question-title{display:block; word-break: break-word; overflow-wrap: break-word;}
     
+    /* OPTIMIZED FAQ ANIMATION */
     .faq-answer {
       display: grid;
       grid-template-rows: 0fr;
-      opacity: 0;
-      transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+      transition: grid-template-rows 0.35s cubic-bezier(0.33, 1, 0.68, 1);
     }
     
     .faq-item.is-active .faq-answer {
       grid-template-rows: 1fr;
-      opacity: 1;
     }
     
     .faq-answer-content {
       overflow: hidden;
-      padding: 0 18px;
+      min-height: 0;
+    }
+    
+    .faq-answer-inner {
+      padding: 0 18px 18px 18px;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 0.2s ease, transform 0.3s ease;
       color: var(--kex-gray);
       font-size: .92rem;
       line-height: 1.55;
       word-break: break-word; 
       overflow-wrap: break-word;
-      transition: padding-bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
-    .faq-item.is-active .faq-answer-content {
-      padding-bottom: 18px;
+    .faq-item.is-active .faq-answer-inner {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.4s ease 0.1s, transform 0.4s cubic-bezier(0.33, 1, 0.68, 1);
     }
 
     @media(hover:hover){
@@ -518,7 +525,9 @@
                 <span class="faq-toggle-icon"><i class="fa-solid fa-plus"></i></span>
               </button>              
               <div class="faq-answer">
-                <div class="faq-answer-content"><%- fmt(faq.description || '') %></div>
+                <div class="faq-answer-content">
+                  <div class="faq-answer-inner"><%- fmt(faq.description || '') %></div>
+                </div>
               </div>
             </div>
           <% }) %>
