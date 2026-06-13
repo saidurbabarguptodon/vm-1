@@ -82,8 +82,8 @@ app.get('/', async (req, res) => {
           ? key.charAt(3).toLowerCase() + key.slice(4) 
           : key;
         
-        // Fetch concurrently
-        promises.push(value().then(res => ({ key: propName, val: res })));
+        // Fetch concurrently using Promise.resolve to safely handle both sync and async functions
+        promises.push(Promise.resolve(value()).then(res => ({ key: propName, val: res })));
       } else {
         templateData[key] = value;
       }
