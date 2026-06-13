@@ -573,13 +573,8 @@
     document.addEventListener('click', e => {
       const btn = e.target.closest('.hero-btn, .card-bg, .sociallink');
       if (!btn) return;
-      const href = btn.getAttribute('href');
-      const target = btn.getAttribute('target') || '_self';
-      const actionable = href && href !== '#' && !href.startsWith('#');
-      if (actionable) e.preventDefault();
       btn.classList.add('force-active');
-      if (actionable) setTimeout(() => target === '_blank' ? window.open(href, '_blank') : window.location.href = href, 200);
-      setTimeout(() => { btn.classList.remove('force-active'); btn.blur(); }, 2500);
+      setTimeout(() => { btn.classList.remove('force-active'); btn.blur(); }, 1000);
     });
     
     document.querySelectorAll('.faq-question').forEach(btn => {
@@ -654,15 +649,26 @@
       });
       const scrollTop = () => {
         navigating = true; window.scrollTo({ top: 0, behavior: 'smooth' });
-        history.pushState(null, null, location.pathname); setNav('home'); lastSec = 'home';
+        history.pushState(null, null, window.location.pathname); setNav('home'); lastSec = 'home';
         setTimeout(() => navigating = false, 800);
       };
       document.querySelectorAll('.brand').forEach(b => b.addEventListener('click', e => { e.preventDefault(); scrollTop(); window.dispatchEvent(new Event('hideSidebar')); }));
       navBtns.forEach(b => b.addEventListener('click', e => {
         const h = b.getAttribute('href');
         if (h === '/' || h === '#home') { e.preventDefault(); scrollTop(); window.dispatchEvent(new Event('hideSidebar')); }
-        else if (h?.startsWith('#')) {          e.preventDefault(); const t = document.getElementById(h.slice(1));
-          if (t) { navigating = true; t.scrollIntoView({ behavior: 'smooth' }); history.pushState(null, null, h); setNav(h.slice(1)); lastSec = h.slice(1); window.dispatchEvent(new Event('hideSidebar')); setTimeout(() => navigating = false, 800); }
+        else if (h?.startsWith('#')) {
+          e.preventDefault(); 
+          const t = document.getElementById(h.slice(1));
+          if (t) { 
+            navigating = true; 
+            const y = t.getBoundingClientRect().top + window.scrollY - 90;
+            window.scrollTo({ top: y, behavior: 'smooth' }); 
+            history.pushState(null, null, h); 
+            setNav(h.slice(1)); 
+            lastSec = h.slice(1); 
+            window.dispatchEvent(new Event('hideSidebar')); 
+            setTimeout(() => navigating = false, 800); 
+          }
         }
       }));
       const updateSpy = () => {
@@ -682,7 +688,7 @@
       };
       window.addEventListener('scroll', () => { if (!scrollLock) { requestAnimationFrame(() => { updateSpy(); scrollLock = false; }); scrollLock = true; } }, { passive: true });
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-      window.addEventListener('load', () => { if (location.hash) history.replaceState(null, null, location.pathname); window.scrollTo(0, 0); setNav('home'); lastSec = 'home'; updateSpy(); });
+      window.addEventListener('load', () => { if (location.hash) history.replaceState(null, null, window.location.pathname); window.scrollTo(0, 0); setNav('home'); lastSec = 'home'; updateSpy(); });
     })();
     
     (() => {
