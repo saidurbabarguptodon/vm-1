@@ -36,7 +36,6 @@ require('dotenv').config();
 // 3. IMPORTS (MUST BE AFTER DOTENV)
 // ===============================
 const express = require('express');
-
 const firebase = require('./firebase');
 
 // ===============================
@@ -59,25 +58,46 @@ app.set('views', path.join(__dirname, 'views'));
 // 6. ROUTES
 // ===============================
 
+// Cache variables for optimization
+let cachedData = null;
+let lastFetch = 0;
+const CACHE_TTL = 300000; // 5 minutes in milliseconds
+
 // ROUTE: HOME PAGE
 app.get('/', async (req, res) => {
   try {
+    // Serve from cache if valid
+    if (cachedData && (Date.now() - lastFetch < CACHE_TTL)) {
+      return res.render('index', cachedData);
+    }
+
     const templateData = {};
+    const promises = [];
 
     for (const [key, value] of Object.entries(firebase)) {
       if (key === 'initializeFirestore') continue;
 
       if (typeof value === 'function') {
-        let propName = key;
-        if (key.startsWith('get') && key.length > 3) {
-          propName = key.charAt(3).toLowerCase() + key.slice(4);
-        }
+        const propName = key.startsWith('get') && key.length > 3 
+          ? key.charAt(3).toLowerCase() + key.slice(4) 
+          : key;
         
-        templateData[propName] = await value();
+        // Fetch concurrently
+        promises.push(value().then(res => ({ key: propName, val: res })));
       } else {
         templateData[key] = value;
       }
     }
+
+    // Wait for all Firebase queries to finish simultaneously
+    const results = await Promise.all(promises);
+    for (const { key, val } of results) {
+      templateData[key] = val;
+    }
+
+    // Update cache
+    cachedData = templateData;
+    lastFetch = Date.now();
 
     res.render('index', templateData);
   } catch (error) {
