@@ -12,7 +12,8 @@
   <style>
     :root{--kex-green:#1ad76f;--kex-dark-green:#0E713B;--kex-yellow:#FBBF24;--kex-dark-yellow:#B45309;--kex-red:#EF4444;--kex-dark-red:#991B1B;--kex-blue:#3B82F6;--kex-dark-blue:#1E3A8A;--kex-white:#F1F5F9;--kex-gray:#94A3B8;--header-height-desktop:70px;--header-height-mobile:60px;--kex-blur:24px;--glass-border:rgba(148,163,184,.15);--glass-highlight:rgba(26,215,111,.3)}
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html{font-size:clamp(14px,1vw + 8px,18px);scroll-behavior:smooth}
+    /* Removed scroll-behavior:smooth to stop double-triggering conflicts with the JS scroller */
+    html{font-size:clamp(14px,1vw + 8px,18px)}
     body{width:100%;overflow-x:clip;overflow-anchor:none;font-family:'Inter',sans-serif;background:#0A0A0F;color:var(--kex-white);line-height:1.6;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     body.has-sidebar-open{overflow:hidden;touch-action:none}
     #snow-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
@@ -21,8 +22,8 @@
     .glow-br{bottom:-300px;right:-300px;width:600px;height:600px;background:radial-gradient(circle,rgba(26,215,111,.12) 0,rgba(26,215,111,0) 70%)}
     .container{position:relative;z-index:2;width:100%;max-width:100%;padding:0 14px}
     
-    /* FAST & SMOOTH REVEAL ANIMATION */
-    .reveal{opacity:0;transform:translate3d(0,15px,0);transition:opacity .25s ease-out,transform .3s cubic-bezier(0,0,.2,1)}
+    /* FAST & SMOOTH REVEAL ANIMATION (Optimized with will-change and slightly quicker timing) */
+    .reveal{opacity:0;transform:translate3d(0,15px,0);transition:opacity .2s ease-out,transform .25s cubic-bezier(0,0,.2,1);will-change:opacity,transform}
     .reveal.active{opacity:1;transform:translate3d(0,0,0)}
     
     @property --header-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
@@ -46,8 +47,8 @@
     .alticon{font-size:2rem;color:var(--kex-green);text-shadow:0 0 12px rgba(26,215,111,.45)}
     .alttext{font-size:1.8rem;font-weight:900;letter-spacing:-.5px;font-family:'Playfair Display',serif;color:#fff}
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;z-index:998;cursor:pointer}
-    .overlay.is-visible{opacity:1;visibility:visible}
-    .sidebar{position:fixed;top:0;bottom:0;left:0;height:100dvh;width:280px;max-width:80vw;background:linear-gradient(180deg,rgba(16,16,22,.6) 0,rgba(16,16,22,.85) 100%);backdrop-filter:blur(var(--kex-blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--kex-blur)) saturate(180%);z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;border-right:1px solid var(--glass-highlight);box-shadow:15px 0 40px rgba(0,0,0,.6);transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+    /* Added will-change: transform to sidebar for smoother menu travel */
+    .sidebar{position:fixed;top:0;bottom:0;left:0;height:100dvh;width:280px;max-width:80vw;background:linear-gradient(180deg,rgba(16,16,22,.6) 0,rgba(16,16,22,.85) 100%);backdrop-filter:blur(var(--kex-blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--kex-blur)) saturate(180%);z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;border-right:1px solid var(--glass-highlight);box-shadow:15px 0 40px rgba(0,0,0,.6);transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);will-change:transform}
     .sidebar.is-expanded{transform:translateX(0)}
     .sidebar.is-expanded .sidebar__body,.sidebar.is-expanded .sidebar__footer,.sidebar.is-expanded .sidebar__header{opacity:1;transform:translateY(0)}
     .sidebar.is-expanded .sidebar__close i{transform:rotate(90deg)}
@@ -71,7 +72,8 @@
     .hero-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--kex-green);color:#fff;font-weight:600;font-size:1.2rem;padding:14px 34px;border:2px solid transparent;border-radius:60px;text-decoration:none;transition:all .3s;box-shadow:0 8px 25px rgba(0,0,0,.6),0 0 15px rgba(26,215,111,.4);margin-bottom:20px;outline:none}
     .hero-btn i{font-size:1.4rem;font-style:normal!important}
     .hero-footer{font-size:1.1rem;color:var(--kex-gray);opacity:.8}
-    .cards-section,.faqs-section{padding:90px 0 120px;position:relative;z-index:2;scroll-margin-top:125px;width:100%;overflow-x:clip;content-visibility:auto;contain-intrinsic-size:800px}
+    /* Removed content-visibility:auto to fix the severe scroll glitching */
+    .cards-section,.faqs-section{padding:90px 0 120px;position:relative;z-index:2;scroll-margin-top:125px;width:100%;overflow-x:clip}
     .cards-header,.faqs-header{text-align:center;margin-bottom:80px}
     .cards-title,.faqs-title{font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
     .cards-title{font-size:clamp(2.4rem,6vw,3.6rem)}
@@ -83,8 +85,7 @@
     .card-title{font-size:1.45rem;font-weight:700;color:var(--kex-white);margin-bottom:10px;line-height:1.3;transition:color .3s;word-break:break-word;overflow-wrap:break-word}
     .card-description{font-size:1.05rem;color:var(--kex-gray);line-height:1.6;flex-grow:1;word-break:break-word;overflow-wrap:break-word}
     
-    /* FAST & SMOOTH FAQ REVEAL ANIMATION */
-    .faq-item{background:linear-gradient(135deg,rgba(255,255,255,.03) 0,rgba(20,20,30,.4) 100%);backdrop-filter:blur(var(--kex-blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--kex-blur)) saturate(180%);border:1px solid var(--kex-dark-green);box-shadow:0 12px 35px rgba(0,0,0,.7),0 0 15px rgba(26,215,111,.05);border-radius:16px;overflow:hidden;transition:border-color .3s,background .3s,transform .3s cubic-bezier(0,0,.2,1),opacity .25s ease-out;display:flex;flex-direction:column;align-self:start}
+    .faq-item{background:linear-gradient(135deg,rgba(255,255,255,.03) 0,rgba(20,20,30,.4) 100%);backdrop-filter:blur(var(--kex-blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--kex-blur)) saturate(180%);border:1px solid var(--kex-dark-green);box-shadow:0 12px 35px rgba(0,0,0,.7),0 0 15px rgba(26,215,111,.05);border-radius:16px;overflow:hidden;transition:border-color .3s,background .3s,transform .3s cubic-bezier(0,0,.2,1),opacity .2s ease-out;display:flex;flex-direction:column;align-self:start;will-change:transform,opacity}
     .faqs-container .faq-item.reveal:nth-child(odd){transform:translate3d(20px,10px,0)}
     .faqs-container .faq-item.reveal:nth-child(even){transform:translate3d(-20px,10px,0)}
     .faqs-container .faq-item.reveal.active{transform:translate3d(0,0,0)}
@@ -207,10 +208,10 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // Reveal Animations (Intersection Observer)
+      // Adjusted Reveal observer to a threshold of 0.05 for a much snappier load while scrolling rapidly
       const obs = new IntersectionObserver((e, o) => e.forEach(n => {
         if (n.isIntersecting) { n.target.classList.add('active'); o.unobserve(n.target); }
-      }), { threshold: 0.1 });
+      }), { threshold: 0.05 });
       document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
       // Global Event Delegation (Click interactions)
@@ -302,12 +303,12 @@
       ov.addEventListener('click', () => toggleSb(false));
       window.addEventListener('hideSidebar', () => toggleSb(false));
 
-      // High-Performance Canvas Snow
+      // High-Performance Canvas Snow (Optimized particle count to decrease mathematical looping overhead)
       const c = document.getElementById('snow-canvas'), ctx = c.getContext('2d');
       let w = innerWidth, h = innerHeight, isVisible = true;
       c.width = w; c.height = h;
       
-      const PI2 = Math.PI * 2, flakes = Array.from({ length: w < 768 ? 20 : 50 }, () => ({
+      const PI2 = Math.PI * 2, flakes = Array.from({ length: w < 768 ? 15 : 35 }, () => ({
         x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.5 + 0.5,
         d: Math.random() * 0.4 + 0.15, a: Math.random() * PI2, aStep: Math.random() * 0.01 + 0.005, op: Math.random() * 0.4 + 0.15
       }));
