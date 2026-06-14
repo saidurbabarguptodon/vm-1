@@ -35,13 +35,13 @@
     .glow-br { bottom: -300px; right: -300px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(26,215,111,.12) 0, transparent 70%); }
     .container { position: relative; z-index: 2; width: 100%; max-width: 100%; padding: 0 14px; }
     
-    /* FAST & SMOOTH REVEAL ANIMATIONS */
-    .reveal { opacity: 0; transform: translateY(15px); transition: opacity 0.25s ease-out, transform 0.25s cubic-bezier(0,0,.2,1); will-change: opacity, transform; }
+    /* ULTRA-FAST & SMOOTH REVEAL ANIMATIONS (Only triggers once!) */
+    .reveal { opacity: 0; transform: translateY(10px); transition: opacity 0.15s ease-out, transform 0.15s cubic-bezier(0,0,.2,1); will-change: opacity, transform; }
     .reveal.active { opacity: 1; transform: translateY(0); }
     
-    /* FAQ ALTERNATING REVEAL */
-    .faqs-container .faq-item.reveal:nth-child(odd) { transform: translate3d(20px, 15px, 0); }
-    .faqs-container .faq-item.reveal:nth-child(even) { transform: translate3d(-20px, 15px, 0); }
+    /* FAQ ALTERNATING REVEAL (Fast speed) */
+    .faqs-container .faq-item.reveal:nth-child(odd) { transform: translate3d(15px, 10px, 0); }
+    .faqs-container .faq-item.reveal:nth-child(even) { transform: translate3d(-15px, 10px, 0); }
     .faqs-container .faq-item.reveal.active { transform: translate3d(0, 0, 0); opacity: 1; }
     
     @property --header-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
@@ -298,6 +298,9 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       
+      // GUARANTEED ONE-TIME, ULTRA-FAST REVEAL ANIMATION
+      // The threshold is set to 0.01 so it triggers immediately when 1% visible.
+      // obs.unobserve() ensures the element strictly animates once and is removed from the observer.
       const observer = new IntersectionObserver((entries, obs) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -305,7 +308,7 @@
             obs.unobserve(entry.target);
           }
         });
-      }, { threshold: 0.05, rootMargin: '0px 0px -20px 0px' });
+      }, { threshold: 0.01, rootMargin: '0px 0px 0px 0px' });
       document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
       // Global Event Delegation (Click interactions)
