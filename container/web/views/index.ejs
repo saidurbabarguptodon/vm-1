@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* CSS OPTIMIZATIONS */
+    /* ENTERPRISE CSS OPTIMIZATIONS */
     :root {
       --kex-green: #1ad76f; --kex-dark-green: #0E713B; --kex-yellow: #FBBF24; --kex-dark-yellow: #B45309;
       --kex-red: #EF4444; --kex-dark-red: #991B1B; --kex-blue: #3B82F6; --kex-dark-blue: #1E3A8A;
@@ -21,7 +21,9 @@
     
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html { font-size: clamp(14px, 1vw + 8px, 18px); }
-    body { width: 100%; overflow-x: clip; overflow-anchor: none; font-family: 'Inter', sans-serif; background: #0A0A0F; color: var(--kex-white); line-height: 1.6; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    
+    /* Removed overflow-anchor and overflow: clip to completely stop the stuttering/tearing glitch */
+    body { width: 100%; overflow-x: hidden; font-family: 'Inter', sans-serif; background: #0A0A0F; color: var(--kex-white); line-height: 1.6; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
     body.has-sidebar-open { overflow: hidden; touch-action: none; }
     
     /* SHARED UTILITIES */
@@ -35,13 +37,17 @@
     .glow-br { bottom: -300px; right: -300px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(26,215,111,.12) 0, transparent 70%); }
     .container { position: relative; z-index: 2; width: 100%; max-width: 100%; padding: 0 14px; }
     
-    /* ULTRA-FAST & SMOOTH REVEAL ANIMATIONS (Only triggers once!) */
-    .reveal { opacity: 0; transform: translateY(10px); transition: opacity 0.15s ease-out, transform 0.15s cubic-bezier(0,0,.2,1); will-change: opacity, transform; }
+    /* 
+       ULTRA-FAST & ZERO-LATENCY REVEAL
+       Removed "will-change" to prevent GPU layer explosion and stop the "blank paper" glitch.
+       Using a professional snappy easing curve so it feels instant. 
+    */
+    .reveal { opacity: 0; transform: translateY(15px); transition: opacity 0.35s cubic-bezier(0.1, 0.9, 0.2, 1), transform 0.35s cubic-bezier(0.1, 0.9, 0.2, 1); }
     .reveal.active { opacity: 1; transform: translateY(0); }
     
-    /* FAQ ALTERNATING REVEAL (Fast speed) */
-    .faqs-container .faq-item.reveal:nth-child(odd) { transform: translate3d(15px, 10px, 0); }
-    .faqs-container .faq-item.reveal:nth-child(even) { transform: translate3d(-15px, 10px, 0); }
+    /* FAQ ALTERNATING REVEAL */
+    .faqs-container .faq-item.reveal:nth-child(odd) { transform: translate3d(25px, 0, 0); }
+    .faqs-container .faq-item.reveal:nth-child(even) { transform: translate3d(-25px, 0, 0); }
     .faqs-container .faq-item.reveal.active { transform: translate3d(0, 0, 0); opacity: 1; }
     
     @property --header-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
@@ -97,7 +103,7 @@
     .hero-btn i { font-size: 1.4rem; font-style: normal !important; }
     .hero-footer { font-size: 1.1rem; color: var(--kex-gray); opacity: .8; }
     
-    .cards-section, .faqs-section, .secret-section { padding: 90px 0 120px; position: relative; z-index: 2; scroll-margin-top: 125px; width: 100%; overflow-x: clip; }
+    .cards-section, .faqs-section, .secret-section { padding: 90px 0 120px; position: relative; z-index: 2; scroll-margin-top: 125px; width: 100%; }
     .cards-header, .faqs-header { text-align: center; margin-bottom: 80px; }
     .cards-title, .faqs-title { font-weight: 800; color: var(--kex-white); margin-bottom: 14px; letter-spacing: -.02em; }
     .cards-title { font-size: clamp(2.4rem, 6vw, 3.6rem); }
@@ -261,7 +267,6 @@
     </div>
   </section>
 
-  <!-- NEW SECRET SECTION (Pure CSS Showcase) -->
   <section class="secret-section" id="secret">
     <div class="container">
       <div class="cards-header">
@@ -298,17 +303,20 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       
-      // GUARANTEED ONE-TIME, ULTRA-FAST REVEAL ANIMATION
-      // The threshold is set to 0.01 so it triggers immediately when 1% visible.
-      // obs.unobserve() ensures the element strictly animates once and is removed from the observer.
+      // ENTERPRISE OBSERVER FIX:
+      // - rootMargin: "200px" pre-loads elements far off-screen so you never wait for them while scrolling.
+      // - requestAnimationFrame: Batches DOM updates to entirely prevent layout thrashing and stutters.
       const observer = new IntersectionObserver((entries, obs) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('active');
-            obs.unobserve(entry.target);
-          }
+        requestAnimationFrame(() => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('active');
+              obs.unobserve(entry.target); // Unobserves instantly to guarantee it NEVER fires twice.
+            }
+          });
         });
-      }, { threshold: 0.01, rootMargin: '0px 0px 0px 0px' });
+      }, { threshold: 0, rootMargin: '200px 0px 200px 0px' });
+      
       document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
       // Global Event Delegation (Click interactions)
