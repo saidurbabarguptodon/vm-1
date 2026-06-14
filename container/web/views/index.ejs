@@ -12,7 +12,6 @@
   <style>
     :root{--kex-green:#1ad76f;--kex-dark-green:#0E713B;--kex-yellow:#FBBF24;--kex-dark-yellow:#B45309;--kex-red:#EF4444;--kex-dark-red:#991B1B;--kex-blue:#3B82F6;--kex-dark-blue:#1E3A8A;--kex-white:#F1F5F9;--kex-gray:#94A3B8;--header-height-desktop:70px;--header-height-mobile:60px;--kex-blur:24px;--glass-border:rgba(148,163,184,.15);--glass-highlight:rgba(26,215,111,.3)}
     *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    /* Removed scroll-behavior:smooth to stop double-triggering conflicts with the JS scroller */
     html{font-size:clamp(14px,1vw + 8px,18px)}
     body{width:100%;overflow-x:clip;overflow-anchor:none;font-family:'Inter',sans-serif;background:#0A0A0F;color:var(--kex-white);line-height:1.6;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     body.has-sidebar-open{overflow:hidden;touch-action:none}
@@ -22,8 +21,8 @@
     .glow-br{bottom:-300px;right:-300px;width:600px;height:600px;background:radial-gradient(circle,rgba(26,215,111,.12) 0,rgba(26,215,111,0) 70%)}
     .container{position:relative;z-index:2;width:100%;max-width:100%;padding:0 14px}
     
-    /* FAST & SMOOTH REVEAL ANIMATION (Optimized with will-change and slightly quicker timing) */
-    .reveal{opacity:0;transform:translate3d(0,15px,0);transition:opacity .2s ease-out,transform .25s cubic-bezier(0,0,.2,1);will-change:opacity,transform}
+    /* FAST & SMOOTH REVEAL ANIMATION */
+    .reveal{opacity:0;transform:translate3d(0,15px,0);transition:opacity .25s ease-out,transform .3s cubic-bezier(0,0,.2,1);will-change:opacity,transform}
     .reveal.active{opacity:1;transform:translate3d(0,0,0)}
     
     @property --header-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
@@ -47,7 +46,6 @@
     .alticon{font-size:2rem;color:var(--kex-green);text-shadow:0 0 12px rgba(26,215,111,.45)}
     .alttext{font-size:1.8rem;font-weight:900;letter-spacing:-.5px;font-family:'Playfair Display',serif;color:#fff}
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s;z-index:998;cursor:pointer}
-    /* Added will-change: transform to sidebar for smoother menu travel */
     .sidebar{position:fixed;top:0;bottom:0;left:0;height:100dvh;width:280px;max-width:80vw;background:linear-gradient(180deg,rgba(16,16,22,.6) 0,rgba(16,16,22,.85) 100%);backdrop-filter:blur(var(--kex-blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--kex-blur)) saturate(180%);z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;border-right:1px solid var(--glass-highlight);box-shadow:15px 0 40px rgba(0,0,0,.6);transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);will-change:transform}
     .sidebar.is-expanded{transform:translateX(0)}
     .sidebar.is-expanded .sidebar__body,.sidebar.is-expanded .sidebar__footer,.sidebar.is-expanded .sidebar__header{opacity:1;transform:translateY(0)}
@@ -72,7 +70,6 @@
     .hero-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--kex-green);color:#fff;font-weight:600;font-size:1.2rem;padding:14px 34px;border:2px solid transparent;border-radius:60px;text-decoration:none;transition:all .3s;box-shadow:0 8px 25px rgba(0,0,0,.6),0 0 15px rgba(26,215,111,.4);margin-bottom:20px;outline:none}
     .hero-btn i{font-size:1.4rem;font-style:normal!important}
     .hero-footer{font-size:1.1rem;color:var(--kex-gray);opacity:.8}
-    /* Removed content-visibility:auto to fix the severe scroll glitching */
     .cards-section,.faqs-section{padding:90px 0 120px;position:relative;z-index:2;scroll-margin-top:125px;width:100%;overflow-x:clip}
     .cards-header,.faqs-header{text-align:center;margin-bottom:80px}
     .cards-title,.faqs-title{font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
@@ -85,7 +82,7 @@
     .card-title{font-size:1.45rem;font-weight:700;color:var(--kex-white);margin-bottom:10px;line-height:1.3;transition:color .3s;word-break:break-word;overflow-wrap:break-word}
     .card-description{font-size:1.05rem;color:var(--kex-gray);line-height:1.6;flex-grow:1;word-break:break-word;overflow-wrap:break-word}
     
-    .faq-item{background:linear-gradient(135deg,rgba(255,255,255,.03) 0,rgba(20,20,30,.4) 100%);backdrop-filter:blur(var(--kex-blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--kex-blur)) saturate(180%);border:1px solid var(--kex-dark-green);box-shadow:0 12px 35px rgba(0,0,0,.7),0 0 15px rgba(26,215,111,.05);border-radius:16px;overflow:hidden;transition:border-color .3s,background .3s,transform .3s cubic-bezier(0,0,.2,1),opacity .2s ease-out;display:flex;flex-direction:column;align-self:start;will-change:transform,opacity}
+    .faq-item{background:linear-gradient(135deg,rgba(255,255,255,.03) 0,rgba(20,20,30,.4) 100%);backdrop-filter:blur(var(--kex-blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--kex-blur)) saturate(180%);border:1px solid var(--kex-dark-green);box-shadow:0 12px 35px rgba(0,0,0,.7),0 0 15px rgba(26,215,111,.05);border-radius:16px;overflow:hidden;transition:border-color .3s,background .3s,transform .3s cubic-bezier(0,0,.2,1),opacity .25s ease-out;display:flex;flex-direction:column;align-self:start;will-change:transform,opacity}
     .faqs-container .faq-item.reveal:nth-child(odd){transform:translate3d(20px,10px,0)}
     .faqs-container .faq-item.reveal:nth-child(even){transform:translate3d(-20px,10px,0)}
     .faqs-container .faq-item.reveal.active{transform:translate3d(0,0,0)}
@@ -176,21 +173,25 @@
 
   <section class="cards-section" id="services">
     <div class="container">
-      <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %><div class="cards-header reveal"><% if (cards.data.title) { %><h2 class="cards-title"><%- fmt(cards.data.title) %></h2><% } %><% if (cards.data.description) { %><p class="cards-description"><%- fmt(cards.data.description) %></p><% } %></div><% } %>
+      <!-- Changed header div container to NOT have .reveal class, applied to children directly -->
+      <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %><div class="cards-header"><% if (cards.data.title) { %><h2 class="cards-title reveal"><%- fmt(cards.data.title) %></h2><% } %><% if (cards.data.description) { %><p class="cards-description reveal"><%- fmt(cards.data.description) %></p><% } %></div><% } %>
       <div class="cards-grid">
         <% let sortedCards = []; if (cards && cards.items && cards.items.length > 0) sortedCards = cards.items.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0)); %><% if (sortedCards.length > 0) { %><% sortedCards.slice(0, 6).forEach(card => { %><a href="<%= card.url || '#' %>" class="card-bg reveal" target="_blank" rel="noopener"><% if (card.status && card.status.trim() !== '') { let statusClass = 'status-default', statusText = card.status.trim().toLowerCase(); if (statusText === 'online') statusClass = 'status-online'; else if (statusText === 'maintenance') statusClass = 'status-maintenance'; else if (statusText === 'offline') statusClass = 'status-offline'; else if (statusText === 'soon') statusClass = 'status-soon'; %><div class="card-status <%= statusClass %>"><div class="status-dot"></div><span><%= card.status %></span></div><% } %><% if (card.icon) { %><div class="card-icon"><i class="<%= card.icon %>"></i></div><% } %><h3 class="card-title"><%- fmt(card.title || '') %></h3><p class="card-description"><%- fmt(card.description || '') %></p></a><% }) %><% } %>
       </div>
-      <% if (cards && cards.data && (cards.data.buttonenabled === true || cards.data.buttonenabled === 'true')) { %><div class="cards-footer reveal"><a href="<%= cards.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener"><% if (cards.data.buttonicon) { %><i class="<%= cards.data.buttonicon %>"></i><% } %><span><%= cards.data.buttontext || '' %></span></a></div><% } %>
+      <!-- Moved .reveal class inside to the <a> tag -->
+      <% if (cards && cards.data && (cards.data.buttonenabled === true || cards.data.buttonenabled === 'true')) { %><div class="cards-footer"><a href="<%= cards.data.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener"><% if (cards.data.buttonicon) { %><i class="<%= cards.data.buttonicon %>"></i><% } %><span><%= cards.data.buttontext || '' %></span></a></div><% } %>
     </div>
   </section>
 
   <section class="faqs-section" id="faqs">
     <div class="container">
-      <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %><div class="faqs-header reveal"><% if (faqs.data.title) { %><h2 class="faqs-title"><%- fmt(faqs.data.title) %></h2><% } %><% if (faqs.data.description) { %><p class="faqs-description"><%- fmt(faqs.data.description) %></p><% } %></div><% } %>
+      <!-- Changed header div container to NOT have .reveal class, applied to children directly -->
+      <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %><div class="faqs-header"><% if (faqs.data.title) { %><h2 class="faqs-title reveal"><%- fmt(faqs.data.title) %></h2><% } %><% if (faqs.data.description) { %><p class="faqs-description reveal"><%- fmt(faqs.data.description) %></p><% } %></div><% } %>
       <div class="faqs-container">
         <% if (faqs && faqs.items && faqs.items.length > 0) { %><% faqs.items.forEach(faq => { %><div class="faq-item reveal"><button type="button" class="faq-question" aria-expanded="false"><span class="faq-question-title"><%- fmt(faq.title || '') %></span><span class="faq-toggle-icon"><i class="fa-solid fa-plus"></i></span></button><div class="faq-answer"><div class="faq-answer-content"><div class="faq-answer-inner"><%- fmt(faq.description || '') %></div></div></div></div><% }) %><% } %>
       </div>
-      <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %><div class="faqs-footer reveal"><a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener"><% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %><span><%= faqs.data.buttontext || '' %></span></a></div><% } %>
+      <!-- Moved .reveal class inside to the <a> tag -->
+      <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %><div class="faqs-footer"><a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener"><% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %><span><%= faqs.data.buttontext || '' %></span></a></div><% } %>
     </div>
   </section>
 
@@ -208,10 +209,32 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // Adjusted Reveal observer to a threshold of 0.05 for a much snappier load while scrolling rapidly
-      const obs = new IntersectionObserver((e, o) => e.forEach(n => {
-        if (n.isIntersecting) { n.target.classList.add('active'); o.unobserve(n.target); }
-      }), { threshold: 0.05 });
+      
+      // REVEAL ANIMATIONS (UPDATED WITH DYNAMIC STAGGERING)
+      // When elements enter at the same exact time (like a grid of cards), they receive an incremental delay so they cascade beautifully!
+      const obs = new IntersectionObserver((entries, observer) => {
+        let delay = 0;
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            
+            // Add staggered delay inline to avoid CSS bloat
+            el.style.transitionDelay = `${Math.min(delay, 0.4)}s`; // Capped at 0.4s to prevent scroll-lagging
+            el.classList.add('active');
+            observer.unobserve(el);
+            
+            // Remove the delay afterward so it doesn't break hover animations!
+            setTimeout(() => {
+              el.style.transitionDelay = '';
+            }, (Math.min(delay, 0.4) * 1000) + 400); 
+
+            delay += 0.08; // 80ms stagger per item
+          }
+        });
+      }, { 
+        threshold: 0.05, 
+        rootMargin: '0px 0px -40px 0px' // Wait until they are slightly into the view so the animation is clearly seen
+      });
       document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
       // Global Event Delegation (Click interactions)
@@ -303,7 +326,7 @@
       ov.addEventListener('click', () => toggleSb(false));
       window.addEventListener('hideSidebar', () => toggleSb(false));
 
-      // High-Performance Canvas Snow (Optimized particle count to decrease mathematical looping overhead)
+      // High-Performance Canvas Snow
       const c = document.getElementById('snow-canvas'), ctx = c.getContext('2d');
       let w = innerWidth, h = innerHeight, isVisible = true;
       c.width = w; c.height = h;
