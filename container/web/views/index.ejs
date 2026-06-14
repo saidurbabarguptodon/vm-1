@@ -10,210 +10,426 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* ENTERPRISE CSS OPTIMIZATIONS */
     :root {
-      --kex-green: #1ad76f; --kex-dark-green: #0E713B; --kex-yellow: #FBBF24; --kex-dark-yellow: #B45309;
-      --kex-red: #EF4444; --kex-dark-red: #991B1B; --kex-blue: #3B82F6; --kex-dark-blue: #1E3A8A;
-      --kex-white: #F1F5F9; --kex-gray: #94A3B8; --kex-blur: 24px;
-      --header-height-desktop: 70px; --header-height-mobile: 60px;
-      --glass-border: rgba(148,163,184,.15); --glass-highlight: rgba(26,215,111,.3);
+      --kex-green: #1ad76f;
+      --kex-dark-green: #0E713B;
+      --kex-yellow: #FBBF24;
+      --kex-dark-yellow: #B45309;
+      --kex-red: #EF4444;
+      --kex-dark-red: #991B1B;
+      --kex-blue: #3B82F6;
+      --kex-dark-blue: #1E3A8A;
+      --kex-white: #F1F5F9;
+      --kex-gray: #94A3B8;
+      --header-height-desktop: 70px;
+      --header-height-mobile: 60px;
+      --kex-blur: 24px;
+      --glass-border: rgba(148, 163, 184, 0.15);
+      --glass-highlight: rgba(26, 215, 111, 0.3);
     }
     
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html { font-size: clamp(14px, 1vw + 8px, 18px); }
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     
-    /* Removed overflow-anchor and overflow: clip to completely stop the stuttering/tearing glitch */
-    body { width: 100%; overflow-x: hidden; font-family: 'Inter', sans-serif; background: #0A0A0F; color: var(--kex-white); line-height: 1.6; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-    body.has-sidebar-open { overflow: hidden; touch-action: none; }
+    html{
+      font-size:clamp(14px,1vw + 8px,18px);
+      scroll-behavior:smooth;
+    }
     
-    /* SHARED UTILITIES */
-    .glass-effect { backdrop-filter: blur(var(--kex-blur)) saturate(180%); -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%); }
-    .flex-center { display: flex; align-items: center; justify-content: center; }
-    canvas, iframe, img, svg, video { max-width: 100%; height: auto; display: block; }
+    body{
+      width:100%;
+      overflow-x:clip;
+      overflow-anchor:none;
+      font-family:'Inter',sans-serif;
+      background:#0A0A0F;
+      color:var(--kex-white);
+      line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
     
-    #snow-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
-    .glow-tl, .glow-br { position: fixed; border-radius: 50%; z-index: 0; pointer-events: none; transform: translateZ(0); }
-    .glow-tl { top: -250px; left: -250px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(26,215,111,.15) 0, transparent 70%); }
-    .glow-br { bottom: -300px; right: -300px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(26,215,111,.12) 0, transparent 70%); }
-    .container { position: relative; z-index: 2; width: 100%; max-width: 100%; padding: 0 14px; }
+    body.has-sidebar-open{overflow:hidden;touch-action:none}
+    #snow-canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
     
-    /* 
-       ULTRA-FAST & ZERO-LATENCY REVEAL
-       Removed "will-change" to prevent GPU layer explosion and stop the "blank paper" glitch.
-       Using a professional snappy easing curve so it feels instant. 
-    */
-    .reveal { opacity: 0; transform: translateY(15px); transition: opacity 0.35s cubic-bezier(0.1, 0.9, 0.2, 1), transform 0.35s cubic-bezier(0.1, 0.9, 0.2, 1); }
-    .reveal.active { opacity: 1; transform: translateY(0); }
+    /* OPTIMIZATION: Replaced heavy filter:blur with ultra-fast radial-gradient. 
+       Precisely W/2 offset ensures exactly 1/4 of the circle is visible. */
+    .glow-tl{position:fixed;top:-250px;left:-250px;width:500px;height:500px;background:radial-gradient(circle, rgba(26,215,111,0.15) 0%, rgba(26,215,111,0) 70%);border-radius:50%;z-index:0;pointer-events:none;transform:translateZ(0)}
+    .glow-br{position:fixed;bottom:-300px;right:-300px;width:600px;height:600px;background:radial-gradient(circle, rgba(26,215,111,0.12) 0%, rgba(26,215,111,0) 70%);border-radius:50%;z-index:0;pointer-events:none;transform:translateZ(0)}
     
-    /* FAQ ALTERNATING REVEAL */
-    .faqs-container .faq-item.reveal:nth-child(odd) { transform: translate3d(25px, 0, 0); }
-    .faqs-container .faq-item.reveal:nth-child(even) { transform: translate3d(-25px, 0, 0); }
-    .faqs-container .faq-item.reveal.active { transform: translate3d(0, 0, 0); opacity: 1; }
+    .container{position:relative;z-index:2;width:100%;max-width:100%;margin:0;padding:0 14px}
     
-    @property --header-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
-    @keyframes header-rotate-border { to { --header-angle: 360deg; } }
+    .reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease-out,transform .6s cubic-bezier(.16,1,.3,1);will-change:opacity,transform}
+    .reveal.active{opacity:1;transform:translateY(0)}
     
-    .header { height: var(--header-height-desktop); width: calc(100% - 24px); margin: 12px 12px 0; background: linear-gradient(135deg, rgba(20,20,30,.65) 0, rgba(20,20,30,.45) 100%); position: sticky; top: 12px; z-index: 100; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.6), 0 0 20px rgba(26,215,111,.08); transform: translateZ(0); }
-    .header::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: conic-gradient(from var(--header-angle), var(--kex-dark-green) 0, var(--kex-dark-green) 75%, var(--kex-green) 75%, var(--kex-green) 100%); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: header-rotate-border 4s linear infinite; pointer-events: none; }
-    .header .container { padding: 0 12px; height: 100%; }
-    .header__nav { display: flex; justify-content: space-between; align-items: center; height: 100%; }
-    .header__right { display: flex; align-items: center; gap: 16px; }
-    .header__links { display: none; align-items: center; gap: 28px; margin-right: 12px; }
-    .header__link { color: var(--kex-white); text-decoration: none; font-size: 1.05rem; font-weight: 500; transition: color .2s ease; }
-    .header__link.is-active, .header__link:hover { color: var(--kex-green); }
-    .header__toggle, .sidebar__close { background: transparent; border: none; color: var(--kex-white); cursor: pointer; border-radius: 8px; transition: all .15s ease; }
-    .header__toggle { font-size: 1.8rem; width: 46px; height: 46px; }
-    .header__toggle i { transition: transform .2s ease; }
-    .sidebar__close { font-size: 1.5rem; width: 36px; height: 36px; margin-right: -8px; }
-    .brand { display: flex; align-items: center; gap: 10px; transition: opacity .2s ease; text-decoration: none; }
-    .brand--header { height: 42px; }
-    .brand--sidebar { height: 32px; }
-    .logoimg { height: 100%; width: auto; object-fit: contain; }
-    .alticon { font-size: 2rem; color: var(--kex-green); text-shadow: 0 0 12px rgba(26,215,111,.45); }
-    .alttext { font-size: 1.8rem; font-weight: 900; letter-spacing: -.5px; font-family: 'Playfair Display', serif; color: #fff; }
+    @property --header-angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
     
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); opacity: 0; visibility: hidden; transition: opacity .3s, visibility .3s; z-index: 998; cursor: pointer; }
-    .overlay.is-visible { opacity: 1; visibility: visible; }
+    @keyframes header-rotate-border {
+      to { --header-angle: 360deg; }
+    }
     
-    .sidebar { position: fixed; top: 0; bottom: 0; left: 0; height: 100dvh; width: 280px; max-width: 80vw; background: linear-gradient(180deg, rgba(16,16,22,.6) 0, rgba(16,16,22,.85) 100%); z-index: 999; display: flex; flex-direction: column; border-radius: 0 20px 20px 0; border-right: 1px solid var(--glass-highlight); box-shadow: 15px 0 40px rgba(0,0,0,.6); transform: translateX(-100%); transition: transform .3s cubic-bezier(.4,0,.2,1); will-change: transform; }
-    .sidebar.is-expanded { transform: translateX(0); }
-    .sidebar.is-expanded .sidebar__body, .sidebar.is-expanded .sidebar__footer, .sidebar.is-expanded .sidebar__header { opacity: 1; transform: translateY(0); }
-    .sidebar.is-expanded .sidebar__close i { transform: rotate(90deg); }
-    .sidebar__body, .sidebar__footer, .sidebar__header { opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; }
-    .sidebar__header { display: flex; justify-content: space-between; align-items: center; padding: 0 24px; border-bottom: 1px solid var(--glass-border); height: 73px; flex-shrink: 0; }
-    .sidebar__body { flex: 1; padding: 16px 12px 20px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--glass-highlight) transparent; }
-    .sidebar__body::-webkit-scrollbar { width: 5px; } .sidebar__body::-webkit-scrollbar-track { background: transparent; } .sidebar__body::-webkit-scrollbar-thumb { background: var(--glass-highlight); border-radius: 10px; }
-    .sidebar__footer { border-top: 1px solid var(--glass-border); flex-shrink: 0; margin-top: auto; min-height: calc(73px + env(safe-area-inset-bottom)); padding: 15px 24px calc(15px + env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.15); }
-    
-    .navmenu { display: flex; flex-direction: column; gap: 6px; }
-    .navbutton { display: flex; align-items: center; gap: 12px; padding: 14px 15px; min-height: 56px; color: #fff; text-decoration: none; border-radius: 12px; transition: all .25s cubic-bezier(.4,0,.2,1); overflow: hidden; }
-    .navbutton i { font-size: 1.25rem; width: 28px; text-align: center; flex-shrink: 0; color: var(--kex-green); transition: color .2s; }
-    .navbutton.is-active { background: var(--kex-dark-green); color: #fff; } .navbutton.is-active i { color: var(--kex-green); } .navbutton.is-active .navbutton__text { color: #fff; font-weight: 700; }
-    .navbutton__content { display: flex; flex-direction: column; justify-content: center; line-height: 1.3; }
-    .navbutton__text { font-size: 1.05rem; font-weight: 500; color: inherit; transition: color .2s; }
-    
-    .sociallinks { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 100%; }
-    .sociallink { width: 42px; height: 42px; background: var(--kex-green); border: 1px solid var(--kex-green); color: #fff; border-radius: 50%; text-decoration: none; font-size: 19px; transition: all .3s cubic-bezier(.4,0,.2,1); box-shadow: 0 4px 15px rgba(0,0,0,.5); }
-    
-    .hero { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 0 90px; min-height: 50vh; position: relative; scroll-margin-top: 125px; width: 100%; }
-    .hero .container { display: flex; flex-direction: column; align-items: center; }
-    .hero-title { font-size: clamp(2.5rem, 7vw, 4rem); font-weight: 800; line-height: 1.2; letter-spacing: -.02em; color: var(--kex-white); margin: 0 auto 18px; text-align: center; hyphens: auto; max-width: 90%; width: 100%; }
-    .hero-description { font-size: clamp(1.3rem, 3vw, 1.6rem); color: var(--kex-gray); margin: 0 auto 28px; text-align: center; hyphens: auto; max-width: 85%; width: 100%; line-height: 1.7; }
-    .hero-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--kex-green); color: #fff; font-weight: 600; font-size: 1.2rem; padding: 14px 34px; border: 2px solid transparent; border-radius: 60px; text-decoration: none; transition: all .3s; box-shadow: 0 8px 25px rgba(0,0,0,.6), 0 0 15px rgba(26,215,111,.4); margin-bottom: 20px; outline: none; }
-    .hero-btn i { font-size: 1.4rem; font-style: normal !important; }
-    .hero-footer { font-size: 1.1rem; color: var(--kex-gray); opacity: .8; }
-    
-    .cards-section, .faqs-section, .secret-section { padding: 90px 0 120px; position: relative; z-index: 2; scroll-margin-top: 125px; width: 100%; }
-    .cards-header, .faqs-header { text-align: center; margin-bottom: 80px; }
-    .cards-title, .faqs-title { font-weight: 800; color: var(--kex-white); margin-bottom: 14px; letter-spacing: -.02em; }
-    .cards-title { font-size: clamp(2.4rem, 6vw, 3.6rem); }
-    .faqs-title { font-size: clamp(2.5rem, 6vw, 3.8rem); }
-    .cards-description, .faqs-description { font-size: clamp(1.2rem, 3vw, 1.5rem); color: var(--kex-gray); max-width: 85%; margin: 0 auto; line-height: 1.7; }
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 22px; width: 100%; max-width: 92%; margin: 0 auto; }
-    .faqs-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 18px; width: 100%; max-width: 92%; margin: 0 auto; align-items: start; align-content: start; }
-    
-    .card-bg, .faq-item { background: linear-gradient(135deg, rgba(255,255,255,.03) 0, rgba(20,20,30,.4) 100%); border: 1px solid var(--kex-dark-green); box-shadow: 0 15px 40px rgba(0,0,0,.8), 0 0 20px rgba(26,215,111,.08); border-radius: 20px; overflow: hidden; transition: all .3s cubic-bezier(.4,0,.2,1); }
-    .card-bg { padding: 30px 26px 20px; text-decoration: none; display: flex; flex-direction: column; align-items: flex-start; position: relative; outline: none; min-height: 220px; height: 100%; }
-    .card-title { font-size: 1.45rem; font-weight: 700; color: var(--kex-white); margin-bottom: 10px; line-height: 1.3; transition: color .3s; word-break: break-word; overflow-wrap: break-word; }
-    .card-description { font-size: 1.05rem; color: var(--kex-gray); line-height: 1.6; flex-grow: 1; word-break: break-word; overflow-wrap: break-word; }
-    
-    .faq-item { display: flex; flex-direction: column; align-self: start; box-shadow: 0 12px 35px rgba(0,0,0,.7), 0 0 15px rgba(26,215,111,.05); border-radius: 16px; }
-    
-    .card-status { position: absolute; top: 22px; right: 22px; display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-size: .65rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; pointer-events: none; transition: all .3s; border: 1px solid; }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; position: relative; }
-    .status-dot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { transform: scale(.95); box-shadow: 0 0 0 0 var(--pulse-color); } 70% { transform: scale(1); box-shadow: 0 0 0 4px transparent; } 100% { transform: scale(.95); box-shadow: 0 0 0 0 transparent; } }
-    .status-online { color: var(--kex-green); border-color: rgba(26,215,111,.2); background: rgba(26,215,111,.05); } .status-online .status-dot { background: var(--kex-green); --pulse-color: rgba(26,215,111,.7); }
-    .status-maintenance { color: var(--kex-yellow); border-color: rgba(251,191,36,.2); background: rgba(251,191,36,.05); } .status-maintenance .status-dot { background: var(--kex-yellow); --pulse-color: rgba(251,191,36,.7); }
-    .status-offline { color: var(--kex-red); border-color: rgba(239,68,68,.2); background: rgba(239,68,68,.05); } .status-offline .status-dot { background: var(--kex-red); --pulse-color: rgba(239,68,68,.7); }
-    .status-soon { color: var(--kex-blue); border-color: rgba(59,130,246,.2); background: rgba(59,130,246,.05); } .status-soon .status-dot { background: var(--kex-blue); --pulse-color: rgba(59,130,246,.7); }
-    .status-default { color: var(--kex-white); border-color: rgba(255,255,255,.1); background: rgba(255,255,255,.05); } .status-default .status-dot { background: var(--kex-white); --pulse-color: rgba(255,255,255,.7); }
-    
-    .card-icon { width: 56px; height: 56px; background: rgba(26,215,111,.1); color: var(--kex-green); border-radius: 14px; font-size: 1.6rem; margin-bottom: 22px; transition: all .3s; }
-    .cards-footer, .faqs-footer { display: flex; justify-content: center; margin-top: 40px; }
-    .cards-footer .hero-btn, .faqs-footer .hero-btn { margin-bottom: 0; }
-    
-    .faq-question { width: 100%; text-align: left; background: transparent; border: none; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; color: var(--kex-white); font-size: 1.15rem; font-weight: 600; cursor: pointer; transition: color .3s; font-family: inherit; outline: none; }
-    .faq-toggle-icon { width: 34px; height: 34px; background: rgba(26,215,111,.1); border-radius: 10px; color: var(--kex-green); font-size: 1rem; transition: all .3s; flex-shrink: 0; }
-    .faq-item.is-active { border-color: var(--kex-green); background: linear-gradient(135deg, rgba(20,20,30,.6) 0, rgba(20,20,30,.8) 100%); }
-    .faq-item.is-active .faq-toggle-icon { background: rgba(26,215,111,.15); }
-    .faq-question-title { display: block; word-break: break-word; overflow-wrap: break-word; }
-    .faq-answer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s cubic-bezier(.33,1,.68,1); }
-    .faq-item.is-active .faq-answer { grid-template-rows: 1fr; }
-    .faq-answer-content { overflow: hidden; min-height: 0; }
-    .faq-answer-inner { padding: 0 18px 18px; opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .3s; color: var(--kex-gray); font-size: .92rem; line-height: 1.55; word-break: break-word; overflow-wrap: break-word; }
-    .faq-item.is-active .faq-answer-inner { opacity: 1; transform: translateY(0); transition: opacity .4s .1s, transform .4s cubic-bezier(.33,1,.68,1); }
-    
-    /* SECRET SECTION / PURE CSS 3D CYBER CORE SHOWCASE */
-    .secret-box { position: relative; width: 100%; max-width: 92%; margin: 0 auto; background: linear-gradient(135deg, rgba(20,20,30,.6) 0, rgba(10,10,15,.9) 100%); border: 1px solid var(--kex-dark-green); box-shadow: 0 20px 50px rgba(0,0,0,.9), inset 0 0 40px rgba(26,215,111,.05); border-radius: 24px; padding: 60px 20px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    
-    /* Moving Grid Background */
-    .secret-box::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(26,215,111,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(26,215,111,.05) 1px, transparent 1px); background-size: 40px 40px; animation: grid-scroll 4s linear infinite; pointer-events: none; z-index: 0; transform: perspective(500px) rotateX(60deg) scale(2.5); transform-origin: bottom; opacity: 0.4; }
-    @keyframes grid-scroll { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
-    
-    .cyber-core-wrapper { position: relative; width: 220px; height: 220px; perspective: 1000px; transform-style: preserve-3d; z-index: 2; margin-bottom: 40px; }
-    
-    .core-ring { position: absolute; inset: 0; border-radius: 50%; border: 3px solid transparent; transform-style: preserve-3d; }
-    /* Ring 1: X & Y rotation */
-    .core-ring:nth-child(1) { border-top-color: var(--kex-green); border-bottom-color: var(--kex-green); animation: spin-ring-1 5s linear infinite; box-shadow: 0 0 15px rgba(26,215,111,.3); }
-    /* Ring 2: Dashed offset rotation */
-    .core-ring:nth-child(2) { width: 85%; height: 85%; top: 7.5%; left: 7.5%; border-left: 3px dashed #fff; border-right: 3px dashed #fff; animation: spin-ring-2 7s linear infinite reverse; opacity: 0.8; }
-    /* Ring 3: Dotted pulsing ring */
-    .core-ring:nth-child(3) { width: 120%; height: 120%; top: -10%; left: -10%; border: 2px dotted rgba(26,215,111,.5); animation: spin-ring-3 10s linear infinite; }
-    
-    .core-nucleus { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; background: #fff; border-radius: 50%; box-shadow: 0 0 30px var(--kex-green), 0 0 60px var(--kex-green), inset 0 0 10px #000; animation: core-pulse 2s ease-in-out infinite alternate; }
-    
-    /* Orbiting particles using pseudo elements */
-    .core-ring:nth-child(1)::before, .core-ring:nth-child(2)::after { content: ''; position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; background: #fff; border-radius: 50%; box-shadow: 0 0 15px 5px var(--kex-green); transform: translateX(-50%); }
-    .core-ring:nth-child(2)::after { top: auto; bottom: -5px; width: 8px; height: 8px; background: var(--kex-yellow); box-shadow: 0 0 10px 3px var(--kex-yellow); }
-    
-    @keyframes spin-ring-1 { 0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg); } }
-    @keyframes spin-ring-2 { 0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(180deg) rotateY(360deg) rotateZ(180deg); } }
-    @keyframes spin-ring-3 { 0% { transform: rotateX(75deg) rotateZ(0deg); } 100% { transform: rotateX(75deg) rotateZ(360deg); } }
-    @keyframes core-pulse { 0% { transform: scale(0.9); box-shadow: 0 0 20px var(--kex-green), 0 0 40px var(--kex-green); opacity: 0.8; } 100% { transform: scale(1.3); box-shadow: 0 0 40px var(--kex-green), 0 0 80px var(--kex-green), 0 0 120px #fff; opacity: 1; } }
-    
-    .secret-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(26,215,111,.1); border: 1px solid rgba(26,215,111,.3); color: var(--kex-green); border-radius: 50px; font-size: .85rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; z-index: 2; margin-top: 20px; }
-    .secret-badge i { font-size: 1rem; animation: float-icon 3s ease-in-out infinite; }
-    @keyframes float-icon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    .header{
+      height: var(--header-height-desktop); 
+      width:calc(100% - 24px);
+      margin:12px 12px 0;
+      background: linear-gradient(135deg, rgba(20,20,30,0.65) 0%, rgba(20,20,30,0.45) 100%);
+      backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      position:sticky;
+      top:12px;
+      z-index:100;
+      border-radius:16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 20px rgba(26,215,111,.08);
+      transform: translateZ(0);
+      will-change: transform;
+    }
 
-    @media(hover:hover) {
-      .header__toggle:hover, .sidebar__close:hover { background: rgba(255,255,255,.06); color: #fff; } .brand:hover { opacity: .8; }
-      .navbutton:hover { background: var(--kex-dark-green); transform: translateX(4px); color: #fff; } .navbutton:hover i { color: var(--kex-green); }
-      .sociallink:hover { background: var(--kex-dark-green); border-color: var(--kex-dark-green); color: #fff; transform: translateY(-6px) scale(1.2); box-shadow: 0 12px 25px rgba(0,0,0,.6), 0 0 15px rgba(26,215,111,.5); }
-      .hero-btn:hover { background: var(--kex-dark-green); border-color: var(--kex-green); transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,.7), 0 0 20px rgba(26,215,111,.5); }
-      .card-bg:hover { transform: translateY(-8px); background: linear-gradient(135deg, rgba(255,255,255,.06) 0, rgba(20,20,30,.5) 100%); border-color: var(--kex-green); box-shadow: 0 20px 45px rgba(0,0,0,.9), 0 0 30px rgba(26,215,111,.2); }
-      .card-bg:hover .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,.5), 0 0 15px rgba(26,215,111,.4); }
-      .card-bg:hover .card-title, .faq-question:hover { color: var(--kex-green); }
-      .secret-box:hover .core-nucleus { animation: core-pulse 0.5s ease-in-out infinite alternate; background: var(--kex-green); }
-      .secret-box:hover .core-ring { animation-duration: 2s; }
+    .header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px; 
+      background: conic-gradient(
+        from var(--header-angle), 
+        var(--kex-dark-green) 0%, 
+        var(--kex-dark-green) 75%, 
+        var(--kex-green) 75%, 
+        var(--kex-green) 100%
+      );
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      animation: header-rotate-border 4s linear infinite;
+      pointer-events: none;
+    }
+
+    .header .container{padding:0 12px;max-width:100%;height:100%;}
+    .header__nav{display:flex;justify-content:space-between;align-items:center;height:100%;padding:0;}
+    
+    .header__right{display:flex;align-items:center;gap:16px;}
+    .header__links{display:none;align-items:center;gap:28px;margin-right:12px;}
+    .header__link{color:var(--kex-white);text-decoration:none;font-size:1.05rem;font-weight:500;transition:all .2s ease;}
+    .header__link:hover, .header__link.is-active{color:var(--kex-green);}
+
+    .header__toggle,.sidebar__close{background:transparent;border:none;color:var(--kex-white);cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all .15s ease}
+    .header__toggle{font-size:1.8rem;width:46px;height:46px} 
+    .header__toggle i{transition:transform .2s ease}
+    .sidebar__close{font-size:1.5rem;width:36px;height:36px;margin-right:-8px}
+    .brand{display:flex;align-items:center;gap:10px;transition:opacity .2s ease;text-decoration:none}
+    .brand--header{height:42px} 
+    .brand--sidebar{height:32px}
+    .logoimg{height:100%;width:auto;object-fit:contain}
+    .alticon{font-size:2rem;display:inline-block;color:var(--kex-green);text-shadow:0 0 12px rgba(26,215,111,.45)}
+    .alttext{font-size:1.8rem;font-weight:900;letter-spacing:-.5px;font-family:'Playfair Display',serif;color:#fff;text-shadow:none}
+    
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;z-index:998;cursor:pointer}    
+    .overlay.is-visible{opacity:1;visibility:visible}
+    
+    .sidebar{
+      position:fixed;top:0;bottom:0;left:0;height:100vh;height:100dvh;width:280px;max-width:80vw;
+      background: linear-gradient(180deg, rgba(16,16,22,0.6) 0%, rgba(16,16,22,0.85) 100%); 
+      backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      z-index:999;display:flex;flex-direction:column;border-radius:0 20px 20px 0;
+      border-right:1px solid var(--glass-highlight); 
+      box-shadow: 15px 0 40px rgba(0,0,0,.6);
+      transform:translateX(-100%);transition:transform .35s cubic-bezier(.4,0,.2,1);
+      will-change: transform;
+    }    
+    .sidebar.is-expanded{transform:translateX(0)}
+    .sidebar__header,.sidebar__body,.sidebar__footer{opacity:0;transform:translateY(6px);transition:opacity .3s ease,transform .3s ease}
+    .sidebar.is-expanded .sidebar__header,.sidebar.is-expanded .sidebar__body,.sidebar.is-expanded .sidebar__footer{opacity:1;transform:translateY(0)}
+    .sidebar.is-expanded .sidebar__close i{transform:rotate(90deg);transition:transform .3s ease}
+    
+    .sidebar__header{display:flex;justify-content:space-between;align-items:center;padding:0 24px;border-bottom:1px solid var(--glass-border);height:73px;flex-shrink:0}
+    .sidebar__body{flex:1;padding:16px 12px 20px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--glass-highlight) transparent}
+    .sidebar__body::-webkit-scrollbar{width:5px}.sidebar__body::-webkit-scrollbar-track{background:transparent}.sidebar__body::-webkit-scrollbar-thumb{background:var(--glass-highlight);border-radius:10px}
+    .sidebar__footer{border-top:1px solid var(--glass-border);flex-shrink:0;margin-top:auto;min-height:calc(73px + env(safe-area-inset-bottom));padding:15px 24px calc(15px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.15)}
+    .navmenu{display:flex;flex-direction:column;gap:6px}
+    .navbutton{display:flex;align-items:center;gap:12px;padding:14px 15px;min-height:56px;color:#fff;text-decoration:none;border-radius:12px;transition:all .25s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
+    .navbutton i{font-size:1.25rem;width:28px;text-align:center;flex-shrink:0;color:var(--kex-green);transition:color .2s ease}
+    .navbutton.is-active{background:var(--kex-dark-green);color:#fff}.navbutton.is-active i{color:var(--kex-green)}.navbutton.is-active .navbutton__text{color:#fff;font-weight:700}
+    .navbutton__content{display:flex;flex-direction:column;justify-content:center;line-height:1.3}
+    .navbutton__text{font-size:1.05rem;font-weight:500;color:inherit;transition:color .2s ease}
+    .sociallinks{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%}
+    .sociallink{display:flex;align-items:center;justify-content:center;width:42px;height:42px;background:var(--kex-green);border:1px solid var(--kex-green);color:#fff;border-radius:50%;text-decoration:none;font-size:19px;transition:all .3s cubic-bezier(.4,0,.2,1);box-shadow: 0 4px 15px rgba(0,0,0,0.5);}
+    
+    .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 0 90px;min-height:50vh;position:relative;scroll-margin-top:125px;width:100%}
+    .hero .container{display:flex;flex-direction:column;align-items:center;width:100%}
+    
+    .hero-title{font-size:clamp(2.5rem,7vw,4rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--kex-white);margin:0 auto 18px;text-align:center;hyphens:auto;max-width:90%;width:100%}
+    .hero-description{font-size:clamp(1.3rem,3vw,1.6rem);color:var(--kex-gray);margin:0 auto 28px;text-align:center;hyphens:auto;max-width:85%;width:100%;line-height:1.7}
+    .hero-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--kex-green);color:#fff;font-weight:600;font-size:1.2rem;padding:14px 34px;border:2px solid transparent;border-radius:60px;text-decoration:none;transition:background .3s ease,transform .3s ease,box-shadow .3s ease,border-color .3s ease;box-shadow:0 8px 25px rgba(0,0,0,0.6), 0 0 15px rgba(26,215,111,.4);margin-bottom:20px;outline:none}
+    .hero-btn i{font-size:1.4rem;font-style:normal!important}
+    .hero-footer{font-size:1.1rem;color:var(--kex-gray);opacity:.8}
+    
+    /* OPTIMIZATION: Added content-visibility for rapid page rendering */
+    .cards-section,.faqs-section{padding:90px 0 120px;position:relative;z-index:2;scroll-margin-top:125px;width:100%;overflow-x:clip;content-visibility:auto;contain-intrinsic-size:800px;}
+    
+    .cards-header{text-align:center;margin-bottom:80px}
+    .faqs-header{text-align:center;margin-bottom:80px}
+    
+    .cards-title{font-size:clamp(2.4rem,6vw,3.6rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
+    .faqs-title{font-size:clamp(2.5rem,6vw,3.8rem);font-weight:800;color:var(--kex-white);margin-bottom:14px;letter-spacing:-.02em}
+    
+    .cards-description,.faqs-description{font-size:clamp(1.2rem,3vw,1.5rem);color:var(--kex-gray);max-width:85%;margin:0 auto;line-height:1.7}
+    
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:22px;width:100%;max-width:92%;margin:0 auto}
+    
+    .faqs-container{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));
+      gap:18px;
+      width:100%;
+      max-width:92%;
+      margin:0 auto;
+      align-items:start;
+      align-content:start;
     }
     
-    .header__toggle.force-active i, .header__toggle:active i { transform: scale(.85); }
-    .sociallink.force-active, .sociallink:active { background: var(--kex-dark-green); transform: scale(1.15); }
-    .hero-btn.force-active, .hero-btn:active { background: var(--kex-dark-green); border-color: var(--kex-green); transform: scale(.95); }
-    .card-bg.force-active, .card-bg:active { transform: scale(.98); border-color: var(--kex-green); box-shadow: 0 10px 25px rgba(0,0,0,.8), 0 0 15px rgba(26,215,111,.15); }
-    .card-bg.force-active .card-icon, .card-bg:active .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,.5), 0 0 15px rgba(26,215,111,.4); }
-    .card-bg.force-active .card-title, .card-bg:active .card-title { color: var(--kex-green); }
+    .card-bg{
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(20,20,30,0.4) 100%);
+      backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      border: 1px solid var(--kex-dark-green);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 20px rgba(26,215,111,0.08);
+      border-radius:20px;
+      padding:30px 26px 20px 26px; 
+      text-decoration:none;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      transition:all .3s cubic-bezier(.4,0,.2,1);
+      position:relative;
+      overflow:hidden;
+      outline:none;
+      min-height:220px; 
+      height:100%; 
+    }
     
-    @media(min-width:900px) { .header__links { display: flex; } .hero { padding: 70px 0 100px; } .cards-section, .faqs-section, .secret-section { padding: 110px 0 140px; } .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 28px; } .faqs-container { grid-template-columns: repeat(2, 1fr); gap: 24px; } .card-bg { padding: 36px 32px 24px; min-height: 280px; } }
-    @media(min-width:1200px) { html { font-size: 18px; } .hero { padding: 80px 0 120px; } .cards-section, .faqs-section, .secret-section { padding: 140px 0 170px; } .cards-grid, .faqs-container { gap: 36px; max-width: 88%; } .card-bg { padding: 44px 40px 30px; min-height: 340px; border-radius: 24px; } .card-icon { width: 72px; height: 72px; font-size: 2.2rem; margin-bottom: 30px; border-radius: 18px; } .card-title { font-size: 1.8rem; margin-bottom: 14px; } .card-description { font-size: 1.15rem; line-height: 1.7; } .secret-box { padding: 80px 20px; } .cyber-core-wrapper { width: 280px; height: 280px; } }
-    @media(max-width:768px) { .hero { padding: 50px 0 90px; } .cards-section, .faqs-section, .secret-section { padding: 90px 0 100px; } .cards-header, .faqs-header { margin-bottom: 70px; } .faqs-title { margin-bottom: 8px; } .faq-question { padding: 16px 20px; font-size: 1.2rem; } }
-    @media(max-width:479px) { .header { height: var(--header-height-mobile); margin: 8px 8px 0; } .container { padding: 0 12px; } .header .container { padding: 0 10px; } .header__toggle { width: 42px; height: 42px; font-size: 1.6rem; } .brand--header { height: 36px; } .alttext { font-size: 1.6rem; } .alticon { font-size: 1.8rem; } .hero { padding: 40px 0 60px; } .cards-section { padding: 60px 0 80px; } .faqs-section, .secret-section { padding: 50px 0 70px; } .cards-header, .faqs-header { margin-bottom: 50px; } .faqs-title { margin-bottom: 6px; } .cards-grid, .faqs-container { grid-template-columns: 1fr; gap: 20px; max-width: 100%; } .card-bg { margin: 0; padding: 28px 24px 20px; height: 100%; min-height: 200px; } .card-icon { width: 60px; height: 60px; font-size: 1.7rem; margin-bottom: 24px; } .faq-item { margin: 0; } .faq-question { padding: 14px 16px; font-size: 1.1rem; } .sociallink { width: 38px; height: 38px; font-size: 17px; } .glow-tl { width: 300px; height: 300px; top: -150px; left: -150px; } .glow-br { width: 400px; height: 400px; bottom: -200px; right: -200px; } .sidebar { width: 260px; } .sidebar__header { padding: 0 20px; height: 68px; } .sidebar__body { padding: 12px 8px 16px; } .sidebar__footer { padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); min-height: calc(68px + env(safe-area-inset-bottom)); } .navbutton { padding: 12px 14px; min-height: 52px; } .navbutton i { font-size: 1.2rem; width: 26px; } .navbutton__text { font-size: 1rem; } .cyber-core-wrapper { width: 180px; height: 180px; } }
+    .card-title{
+      font-size:1.45rem;
+      font-weight:700;
+      color:var(--kex-white);
+      margin-bottom:10px;
+      line-height:1.3;
+      transition:color .3s ease;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .card-description{
+      font-size:1.05rem;
+      color:var(--kex-gray);
+      line-height:1.6;
+      flex-grow:1;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .faq-item{
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(20,20,30,0.4) 100%);
+      backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      -webkit-backdrop-filter: blur(var(--kex-blur)) saturate(180%);
+      border: 1px solid var(--kex-dark-green);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.7), 0 0 15px rgba(26,215,111,0.05);
+      border-radius:16px;
+      overflow:hidden;
+      transition: border-color .3s ease, background .3s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease-out;
+      display:flex;
+      flex-direction:column;
+      align-self:start;
+    }
+
+    .faqs-container .faq-item.reveal:nth-child(odd) {
+      transform: translate(60px, 30px);
+    }
+    .faqs-container .faq-item.reveal:nth-child(even) {
+      transform: translate(-60px, 30px);
+    }
+    .faqs-container .faq-item.reveal.active {
+      transform: translate(0, 0); 
+    }
+    
+    .card-status{position:absolute;top:22px;right:22px;display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:.65rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;pointer-events:none;transition:all .3s ease;border:1px solid}
+    .status-dot{width:6px;height:6px;border-radius:50%;position:relative}
+    .status-dot::after{content:'';position:absolute;inset:0;border-radius:50%;animation:pulse 2s infinite}
+    @keyframes pulse{0%{transform:scale(.95);box-shadow:0 0 0 0 var(--pulse-color)}70%{transform:scale(1);box-shadow:0 0 0 4px transparent}100%{transform:scale(.95);box-shadow:0 0 0 0 transparent}}
+    .status-online{color:var(--kex-green);border-color:rgba(26,215,111,.2);background:rgba(26,215,111,.05)}.status-online .status-dot{background:var(--kex-green);--pulse-color:rgba(26,215,111,.7)}
+    .status-maintenance{color:var(--kex-yellow);border-color:rgba(251,191,36,.2);background:rgba(251,191,36,.05)}.status-maintenance .status-dot{background:var(--kex-yellow);--pulse-color:rgba(251,191,36,.7)}
+    .status-offline{color:var(--kex-red);border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.05)}.status-offline .status-dot{background:var(--kex-red);--pulse-color:rgba(239,68,68,.7)}
+    .status-soon{color:var(--kex-blue);border-color:rgba(59,130,246,.2);background:rgba(59,130,246,.05)}.status-soon .status-dot{background:var(--kex-blue);--pulse-color:rgba(59,130,246,.7)}
+    .status-default{color:var(--kex-white);border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.05)}.status-default .status-dot{background:var(--kex-white);--pulse-color:rgba(255,255,255,.7)}
+    .card-icon{display:flex;align-items:center;justify-content:center;width:56px;height:56px;background:rgba(26,215,111,.1);color:var(--kex-green);border-radius:14px;font-size:1.6rem;margin-bottom:22px;transition:all .3s ease}    
+    .cards-footer,.faqs-footer{display:flex;justify-content:center;margin-top:40px}
+    .cards-footer .hero-btn,.faqs-footer .hero-btn{margin-bottom:0}
+    
+    .faq-question{width:100%;text-align:left;background:transparent;border:none;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;color:var(--kex-white);font-size:1.15rem;font-weight:600;cursor:pointer;transition:color .3s ease;font-family:inherit;outline:none}
+    .faq-toggle-icon{display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(26,215,111,.1);border-radius:10px;color:var(--kex-green);font-size:1rem;transition:all .3s ease;flex-shrink:0}
+    .faq-item.is-active .faq-toggle-icon{background:rgba(26,215,111,.15);color:var(--kex-green)}
+    
+    .faq-item.is-active{
+      border-color:var(--kex-green);
+      background: linear-gradient(135deg, rgba(20,20,30,0.6) 0%, rgba(20,20,30,0.8) 100%);
+    }
+
+    .faq-question-title{display:block; word-break: break-word; overflow-wrap: break-word;}
+    .faq-answer-content{
+      color: var(--kex-gray);
+      font-size: .92rem;
+      line-height: 1.55;
+      word-break: break-word; 
+      overflow-wrap: break-word;
+    }
+
+    @media(max-width: 899px) {
+      .faq-answer{
+        display: grid;
+        grid-template-rows: 0fr;
+        opacity: 0;
+        transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-out;
+      }
+      .faq-item.is-active .faq-answer{
+        grid-template-rows: 1fr;
+        opacity: 1;
+      }
+      .faq-answer-content{
+        overflow: hidden;
+        padding: 0 18px 0;
+        transition: padding-bottom 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .faq-item.is-active .faq-answer-content{
+        padding-bottom: 16px;
+      }
+    }
+
+    @media(min-width: 900px) {
+      .faq-answer{
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease-out, padding 0.35s ease, opacity 0.3s ease;
+        padding: 0 18px;
+        opacity: 0;
+      }
+      .faq-item.is-active .faq-answer{
+        opacity: 1;
+      }
+    }
+    
+    @media(hover:hover){
+      .header__toggle:hover,.sidebar__close:hover{background:rgba(255,255,255,.06);color:#fff}.brand:hover{opacity:.8}.navbutton:hover{background:var(--kex-dark-green);transform:translateX(4px);color:#fff}.navbutton:hover i{color:var(--kex-green)}.sociallink:hover{background:var(--kex-dark-green);border-color:var(--kex-dark-green);color:#fff;transform:translateY(-6px) scale(1.2);box-shadow:0 12px 25px rgba(0,0,0,0.6), 0 0 15px rgba(26,215,111,.5)}.hero-btn:hover{background:var(--kex-dark-green);border-color:var(--kex-green);transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,0.7), 0 0 20px rgba(26,215,111,.5)}
+      
+      .card-bg:hover{
+        transform:translateY(-8px);
+        background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(20,20,30,0.5) 100%);
+        border-color:var(--kex-green);
+        box-shadow: 0 20px 45px rgba(0,0,0,0.9), 0 0 30px rgba(26,215,111,0.2);
+      }
+      .card-bg:hover .card-icon{transform:scale(1.1) rotate(-5deg);background:var(--kex-green);color:#fff;box-shadow:0 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(26,215,111,.4)}.card-bg:hover .card-title{color:var(--kex-green)}.faq-question:hover{color:var(--kex-green)}
+    }
+    .header__toggle:active i,.header__toggle.force-active i{transform:scale(.85)}.sociallink:active,.sociallink.force-active{background:var(--kex-dark-green);transform:scale(1.15)}.hero-btn:active,.hero-btn.force-active{background:var(--kex-dark-green);border-color:var(--kex-green);transform:scale(.95)}
+    .card-bg:active,.card-bg.force-active{transform:scale(.98);border-color:var(--kex-green);box-shadow: 0 10px 25px rgba(0,0,0,0.8), 0 0 15px rgba(26,215,111,0.15);}
+    .card-bg:active .card-icon,.card-bg.force-active .card-icon{transform:scale(1.1) rotate(-5deg);background:var(--kex-green);color:#fff;box-shadow:0 8px 20px rgba(0,0,0,0.5), 0 0 15px rgba(26,215,111,.4)}
+    .card-bg:active .card-title,.card-bg.force-active .card-title{color:var(--kex-green)}
+    img,video,iframe,canvas,svg{max-width:100%;height:auto;display:block}
+    
+    @media(min-width:900px){
+      .header__links{display:flex;} 
+      .hero { padding: 70px 0 100px; }
+      .cards-section, .faqs-section { padding: 110px 0 140px; }
+      .cards-grid{grid-template-columns:repeat(2,1fr);gap:28px}
+      .faqs-container{grid-template-columns:repeat(2,1fr);gap:24px}
+      .card-bg{padding:36px 32px 24px 32px; min-height: 280px;}
+    }
+    
+    @media(min-width:1200px){
+      html{font-size:18px}      
+      .hero { padding: 80px 0 120px; }
+      .cards-section, .faqs-section { padding: 140px 0 170px; }
+      .cards-grid{gap:36px;max-width:88%;}
+      .faqs-container{gap:32px; max-width:88%;}
+      .card-bg{padding:44px 40px 30px 40px; min-height: 340px; border-radius: 24px;}
+      .card-icon{width: 72px; height: 72px; font-size: 2.2rem; margin-bottom: 30px; border-radius: 18px;}
+      .card-title{font-size: 1.8rem; margin-bottom: 14px;}
+      .card-description{font-size: 1.15rem; line-height: 1.7;}
+    }
+
+    @media(max-width:768px){
+      .hero { padding: 50px 0 90px; }
+      .faqs-section{padding:90px 0 100px}
+      .cards-section{padding:90px 0 100px}
+      .cards-header{margin-bottom:70px}
+      .faqs-header{margin-bottom:70px}
+      .faqs-title{margin-bottom:8px}
+      .faq-question{padding:16px 20px; font-size: 1.2rem;}
+    }
+    
+    @media(max-width:479px){
+      .header{height: var(--header-height-mobile); margin:8px 8px 0;}
+      .container{padding:0 12px}
+      .header .container{padding:0 10px}
+      .header__toggle{width:42px;height:42px;font-size:1.6rem}
+      .brand--header{height:36px}
+      .alttext{font-size:1.6rem}
+      .alticon{font-size:1.8rem}
+      
+      .hero{padding:40px 0 60px}
+      .cards-section{padding:60px 0 80px}
+      .faqs-section{padding:50px 0 70px}
+      
+      .cards-header{margin-bottom:50px}
+      .faqs-header{margin-bottom:50px}
+      .faqs-title{margin-bottom:6px}
+      
+      .cards-grid,.faqs-container{grid-template-columns:1fr;gap:20px;max-width:100%;}
+      .card-bg{margin:0;padding:28px 24px 20px 24px;height:100%;min-height:200px;}
+      .card-icon{width: 60px; height: 60px; font-size: 1.7rem; margin-bottom: 24px;}
+      
+      .faq-item{margin:0}
+      .faq-question{padding:14px 16px; font-size: 1.1rem;}
+      
+      .sociallink{width:38px;height:38px;font-size:17px}
+      
+      .glow-tl{width:300px;height:300px;top:-150px;left:-150px;}
+      .glow-br{width:400px;height:400px;bottom:-200px;right:-200px;}
+      
+      .sidebar{width:260px}
+      .sidebar__header{padding:0 20px;height:68px}
+      .sidebar__body{padding:12px 8px 16px}
+      .sidebar__footer{padding:12px 20px calc(12px + env(safe-area-inset-bottom));min-height:calc(68px + env(safe-area-inset-bottom))}
+      .navbutton{padding:12px 14px;min-height:52px}
+      .navbutton i{font-size:1.2rem;width:26px}
+      .navbutton__text{font-size:1rem}
+    }
   </style>
 </head>
 <body>
   <canvas id="snow-canvas"></canvas>
-  <div class="glow-tl"></div><div class="glow-br"></div>
+  <div class="glow-tl"></div>
+  <div class="glow-br"></div>
 
-  <header class="header glass-effect">
+  <header class="header">
     <div class="container">
       <nav class="header__nav">
-        <a href="/" class="brand brand--header" id="brand-header"><% if (header.logourl) { %><img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="logoimg" loading="lazy" decoding="async"><% } else { %><% if (header.alticon) { %><i class="<%= header.alticon %> alticon"></i><% } %><% if (header.alttext) { %><span class="alttext"><span class="alttext"><%= header.alttext %></span><% } %><% } %></a>
+        <a href="/" class="brand brand--header" id="brand-header">
+          <% if (header.logourl) { %><img src="<%= header.logourl %>" alt="<%= header.alttext %>" class="logoimg"><% } else { %>
+            <% if (header.alticon) { %><i class="<%= header.alticon %> alticon"></i><% } %>            <% if (header.alttext) { %><span class="alttext"><span class="alttext"><%= header.alttext %></span><% } %>
+          <% } %>
+        </a>
+        
         <div class="header__right">
           <div class="header__links" id="header-links">
-            <% if (sidebar.body && sidebar.body.length > 0) { %><% sidebar.body.forEach(link => { %><a href="<%= link.url || '#' %>" class="header__link"><%= link.text || '' %></a><% }) %><% } %>
+            <% if (sidebar.body && sidebar.body.length > 0) { %>
+              <% sidebar.body.forEach(link => { %>
+                <a href="<%= link.url || '#' %>" class="header__link"><%= link.text || '' %></a>
+              <% }) %>
+            <% } %>
           </div>
-          <button class="header__toggle flex-center" id="open-sidebar" aria-label="Open Menu"><i class="fa-solid fa-bars"></i></button>
+          
+          <button class="header__toggle" id="open-sidebar" aria-label="Open Menu"><i class="fa-solid fa-bars"></i></button>
         </div>
       </nav>
     </div>
@@ -221,19 +437,33 @@
 
   <div class="overlay" id="overlay"></div>
 
-  <aside class="sidebar glass-effect" id="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar__header">
-      <a href="/" class="brand brand--sidebar" id="brand-sidebar"><% if (sidebar.header && sidebar.header.logourl) { %><img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="logoimg" loading="lazy" decoding="async"><% } else { %><% if (sidebar.header && sidebar.header.alticon) { %><i class="<%= sidebar.header.alticon %> alticon"></i><% } %><% if (sidebar.header && sidebar.header.alttext) { %><span class="alttext"><%= sidebar.header.alttext %></span><% } %><% } %></a>
-      <button class="sidebar__close flex-center" id="close-sidebar" aria-label="Close Menu"><i class="fa-solid fa-xmark"></i></button>
+      <a href="/" class="brand brand--sidebar" id="brand-sidebar">        <% if (sidebar.header && sidebar.header.logourl) { %><img src="<%= sidebar.header.logourl %>" alt="<%= sidebar.header.alttext %>" class="logoimg"><% } else { %>
+          <% if (sidebar.header && sidebar.header.alticon) { %><i class="<%= sidebar.header.alticon %> alticon"></i><% } %>
+          <% if (sidebar.header && sidebar.header.alttext) { %><span class="alttext"><%= sidebar.header.alttext %></span><% } %>
+        <% } %>      </a>
+      <button class="sidebar__close" id="close-sidebar" aria-label="Close Menu"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="sidebar__body">
       <nav class="navmenu" id="navmenu">
-        <% if (sidebar.body && sidebar.body.length > 0) { %><% sidebar.body.forEach(link => { %><a href="<%= link.url || '#' %>" class="navbutton"><% if (link.icon) { %><i class="<%= link.icon %>"></i><% } %><div class="navbutton__content"><span class="navbutton__text"><%= link.text || '' %></span></div></a><% }) %><% } %>
+        <% if (sidebar.body && sidebar.body.length > 0) { %>
+          <% sidebar.body.forEach(link => { %>
+            <a href="<%= link.url || '#' %>" class="navbutton">
+              <% if (link.icon) { %><i class="<%= link.icon %>"></i><% } %>
+              <div class="navbutton__content"><span class="navbutton__text"><%= link.text || '' %></span></div>
+            </a>
+          <% }) %>
+        <% } %>
       </nav>
     </div>
     <div class="sidebar__footer">
       <div class="sociallinks" id="sociallinks">
-        <% if (sidebar.footer && sidebar.footer.length > 0) { %><% sidebar.footer.forEach(social => { %><a href="<%= social.url || '#' %>" target="_blank" class="sociallink flex-center" rel="noopener"><% if (social.icon) { %><i class="<%= social.icon %>"></i><% } %></a><% }) %><% } %>
+        <% if (sidebar.footer && sidebar.footer.length > 0) { %>
+          <% sidebar.footer.forEach(social => { %>
+            <a href="<%= social.url || '#' %>" target="_blank" class="sociallink" rel="noopener"><% if (social.icon) { %><i class="<%= social.icon %>"></i><% } %></a>
+          <% }) %>
+        <% } %>
       </div>
     </div>
   </aside>
@@ -242,49 +472,83 @@
     <div class="container">
       <% if (hero.primarytext) { %><h1 class="hero-title reveal"><%- fmt(hero.primarytext) %></h1><% } %>
       <% if (hero.secondarytext) { %><p class="hero-description reveal"><%- fmt(hero.secondarytext) %></p><% } %>
-      <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %><a href="<%= hero.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener"><% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %><span><%= hero.buttontext || '' %></span></a><% } %>
+      <% if (hero.buttonenabled === true || hero.buttonenabled === 'true') { %>
+        <a href="<%= hero.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener">
+          <% if (hero.buttonicon) { %><i class="<%= hero.buttonicon %>"></i><% } %><span><%= hero.buttontext || '' %></span>        </a>
+      <% } %>
       <% if (hero.footertext) { %><div class="hero-footer reveal"><%- fmt(hero.footertext) %></div><% } %>
     </div>
   </section>
 
   <section class="cards-section" id="services">
     <div class="container">
-      <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %><div class="cards-header"><% if (cards.data.title) { %><h2 class="cards-title reveal"><%- fmt(cards.data.title) %></h2><% } %><% if (cards.data.description) { %><p class="cards-description reveal"><%- fmt(cards.data.description) %></p><% } %></div><% } %>
-      <div class="cards-grid">
-        <% let sortedCards = []; if (cards && cards.items && cards.items.length > 0) sortedCards = cards.items.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0)); %><% if (sortedCards.length > 0) { %><% sortedCards.slice(0, 6).forEach(card => { %><a href="<%= card.url || '#' %>" class="card-bg glass-effect reveal" target="_blank" rel="noopener"><% if (card.status && card.status.trim() !== '') { let statusClass = 'status-default', statusText = card.status.trim().toLowerCase(); if (statusText === 'online') statusClass = 'status-online'; else if (statusText === 'maintenance') statusClass = 'status-maintenance'; else if (statusText === 'offline') statusClass = 'status-offline'; else if (statusText === 'soon') statusClass = 'status-soon'; %><div class="card-status <%= statusClass %>"><div class="status-dot"></div><span><%= card.status %></span></div><% } %><% if (card.icon) { %><div class="card-icon flex-center"><i class="<%= card.icon %>"></i></div><% } %><h3 class="card-title"><%- fmt(card.title || '') %></h3><p class="card-description"><%- fmt(card.description || '') %></p></a><% }) %><% } %>
+      <% if (cards && cards.data && (cards.data.title || cards.data.description)) { %>
+        <div class="cards-header reveal">
+          <% if (cards.data.title) { %><h2 class="cards-title"><%- fmt(cards.data.title) %></h2><% } %>
+          <% if (cards.data.description) { %><p class="cards-description"><%- fmt(cards.data.description) %></p><% } %>
+        </div>
+      <% } %>      <div class="cards-grid">
+        <% 
+          let sortedCards =[];
+          if (cards && cards.items && cards.items.length > 0) sortedCards = cards.items.slice().sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+        %>        <% if (sortedCards.length > 0) { %>
+          <% sortedCards.slice(0, 6).forEach(card => { %>
+            <a href="<%= card.url || '#' %>" class="card-bg reveal" target="_blank" rel="noopener">
+              <% if (card.status && card.status.trim() !== '') { 
+                let statusClass = 'status-default', statusText = card.status.trim().toLowerCase();
+                if (statusText === 'online') statusClass = 'status-online';
+                else if (statusText === 'maintenance') statusClass = 'status-maintenance';
+                else if (statusText === 'offline') statusClass = 'status-offline';
+                else if (statusText === 'soon') statusClass = 'status-soon';
+              %>
+                <div class="card-status <%= statusClass %>"><div class="status-dot"></div><span><%= card.status %></span></div>
+              <% } %>
+              <% if (card.icon) { %><div class="card-icon"><i class="<%= card.icon %>"></i></div><% } %>
+              <h3 class="card-title"><%- fmt(card.title || '') %></h3>
+              <p class="card-description"><%- fmt(card.description || '') %></p>
+            </a>
+          <% }) %>
+        <% } %>
       </div>
-      <% if (cards && cards.data && (cards.data.buttonenabled === true || cards.data.buttonenabled === 'true')) { %><div class="cards-footer"><a href="<%= cards.data.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener"><% if (cards.data.buttonicon) { %><i class="<%= cards.data.buttonicon %>"></i><% } %><span><%= cards.data.buttontext || '' %></span></a></div><% } %>
+      <% if (cards && cards.data && (cards.data.buttonenabled === true || cards.data.buttonenabled === 'true')) { %>
+        <div class="cards-footer reveal">
+          <a href="<%= cards.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
+            <% if (cards.data.buttonicon) { %><i class="<%= cards.data.buttonicon %>"></i><% } %><span><%= cards.data.buttontext || '' %></span>
+          </a>
+        </div>
+      <% } %>
     </div>
   </section>
 
   <section class="faqs-section" id="faqs">
     <div class="container">
-      <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %><div class="faqs-header"><% if (faqs.data.title) { %><h2 class="faqs-title reveal"><%- fmt(faqs.data.title) %></h2><% } %><% if (faqs.data.description) { %><p class="faqs-description reveal"><%- fmt(faqs.data.description) %></p><% } %></div><% } %>
+      <% if (faqs && faqs.data && (faqs.data.title || faqs.data.description)) { %>
+        <div class="faqs-header reveal">
+          <% if (faqs.data.title) { %><h2 class="faqs-title"><%- fmt(faqs.data.title) %></h2><% } %>
+          <% if (faqs.data.description) { %><p class="faqs-description"><%- fmt(faqs.data.description) %></p><% } %>
+        </div>
+      <% } %>
       <div class="faqs-container">
-        <% if (faqs && faqs.items && faqs.items.length > 0) { %><% faqs.items.forEach(faq => { %><div class="faq-item glass-effect reveal"><button type="button" class="faq-question" aria-expanded="false"><span class="faq-question-title"><%- fmt(faq.title || '') %></span><span class="faq-toggle-icon flex-center"><i class="fa-solid fa-plus"></i></span></button><div class="faq-answer"><div class="faq-answer-content"><div class="faq-answer-inner"><%- fmt(faq.description || '') %></div></div></div></div><% }) %><% } %>
-      </div>
-      <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %><div class="faqs-footer"><a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener"><% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %><span><%= faqs.data.buttontext || '' %></span></a></div><% } %>
-    </div>
-  </section>
-
-  <section class="secret-section" id="secret">
-    <div class="container">
-      <div class="cards-header">
-        <h2 class="cards-title reveal">Skill Showcase</h2>
-        <p class="cards-description reveal">Hover below to test system stability. Pure CSS 3D capabilities rendered seamlessly without a single drop of JavaScript.</p>
-      </div>
-      
-      <div class="secret-box reveal glass-effect">
-        <div class="cyber-core-wrapper">
-          <div class="core-ring"></div>
-          <div class="core-ring"></div>
-          <div class="core-ring"></div>
-          <div class="core-nucleus"></div>
+        <% if (faqs && faqs.items && faqs.items.length > 0) { %>
+          <% faqs.items.forEach(faq => { %>
+            <div class="faq-item reveal">
+              <button type="button" class="faq-question" aria-expanded="false">
+                <span class="faq-question-title"><%- fmt(faq.title || '') %></span>
+                <span class="faq-toggle-icon"><i class="fa-solid fa-plus"></i></span>
+              </button>              
+              <div class="faq-answer">
+                <div class="faq-answer-content"><%- fmt(faq.description || '') %></div>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>      </div>
+      <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %>
+        <div class="faqs-footer reveal">
+          <a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn" target="_blank" rel="noopener">
+            <% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %><span><%= faqs.data.buttontext || '' %></span>
+          </a>
         </div>
-        <div class="secret-badge">
-          <i class="fa-solid fa-code"></i> Pure CSS Engine
-        </div>
-      </div>
+      <% } %>
     </div>
   </section>
 
@@ -297,157 +561,157 @@
     t = t.replace(/\[i\](.*?)\[\/i\]/gi, '<i>$1</i>');
     t = t.replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>');
     t = t.replace(/\[br\]/gi, '<br>');
-    return t.replace(/\n/g, '<br>');
+    t = t.replace(/\n/g, '<br>');
+    return t;
   } %>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      
-      // ENTERPRISE OBSERVER FIX:
-      // - rootMargin: "200px" pre-loads elements far off-screen so you never wait for them while scrolling.
-      // - requestAnimationFrame: Batches DOM updates to entirely prevent layout thrashing and stutters.
-      const observer = new IntersectionObserver((entries, obs) => {
-        requestAnimationFrame(() => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('active');
-              obs.unobserve(entry.target); // Unobserves instantly to guarantee it NEVER fires twice.
-            }
-          });
-        });
-      }, { threshold: 0, rootMargin: '200px 0px 200px 0px' });
-      
-      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+      const obs = new IntersectionObserver((e, o) => {
+        e.forEach(n => { if (n.isIntersecting) { n.target.classList.add('active'); o.unobserve(n.target); } });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    });
 
-      // Global Event Delegation (Click interactions)
-      document.addEventListener('click', e => {
-        const target = e.target;
-        const btn = target.closest('.hero-btn, .card-bg, .sociallink');
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('.hero-btn, .card-bg, .sociallink');
+      if (!btn) return;
+      const href = btn.getAttribute('href');
+      const target = btn.getAttribute('target') || '_self';
+      const actionable = href && href !== '#' && !href.startsWith('#');
+      if (actionable) e.preventDefault();
+      btn.classList.add('force-active');
+      if (actionable) setTimeout(() => target === '_blank' ? window.open(href, '_blank') : window.location.href = href, 200);
+      setTimeout(() => { btn.classList.remove('force-active'); btn.blur(); }, 2500);
+    });
+    
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault(); 
+        const item = this.closest('.faq-item');
+        const answer = item.querySelector('.faq-answer');
+        const icon = item.querySelector('.faq-toggle-icon i');
+        const isActive = item.classList.contains('is-active');
+        const isDesktop = window.innerWidth >= 900;
         
-        if (btn) {
-          btn.classList.add('force-active');
-          setTimeout(() => { btn.classList.remove('force-active'); btn.blur(); }, 1000);
-        }
-        
-        const faqBtn = target.closest('.faq-question');
-        if (faqBtn) {
-          e.preventDefault();
-          const item = faqBtn.closest('.faq-item');
-          const isActive = item.classList.toggle('is-active');
-          faqBtn.setAttribute('aria-expanded', isActive);
-          item.querySelector('.faq-toggle-icon i').className = `fa-solid fa-${isActive ? 'minus' : 'plus'}`;
-        }
-        
-        const navLink = target.closest('.brand, .navbutton, .header__link');
-        if (navLink) {
-          const href = navLink.getAttribute('href');
-          const isHome = navLink.classList.contains('brand') || href === '/' || href === '#home';
-          const targetSection = isHome ? null : document.getElementById(href?.slice(1));
+        if (!isActive) {
+          item.classList.add('is-active');
+          this.setAttribute('aria-expanded', 'true');
+          icon.className = 'fa-solid fa-minus';
           
-          if (isHome || targetSection) {
-            e.preventDefault();
-            navigating = true;
-            window.scrollTo({ top: isHome ? 0 : targetSection.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' });
-            history.pushState(null, null, isHome ? window.location.pathname : href);
-            setNav(isHome ? 'home' : href.slice(1));
-            lastSec = isHome ? 'home' : href.slice(1);
-            window.dispatchEvent(new Event('hideSidebar'));
-            setTimeout(() => navigating = false, 800);
+          if (isDesktop) {
+            answer.style.display = 'block';
+            answer.style.visibility = 'visible';
+            answer.style.opacity = '1';
+            void answer.offsetHeight;
+            requestAnimationFrame(() => {
+              answer.style.maxHeight = answer.scrollHeight + 'px';
+              answer.style.paddingBottom = '16px';
+            });
+          }
+        } else {
+          item.classList.remove('is-active');
+          this.setAttribute('aria-expanded', 'false');
+          icon.className = 'fa-solid fa-plus';
+          
+          if (isDesktop) {
+            answer.style.maxHeight = null;
+            answer.style.paddingBottom = '0';
+            setTimeout(() => {
+              if (!item.classList.contains('is-active')) {
+                answer.style.display = '';
+                answer.style.visibility = '';
+                answer.style.opacity = '';
+              }
+            }, 350);
           }
         }
       });
+    });
 
-      // Scroll Spy Navigation
-      const navBtns = document.querySelectorAll('.navbutton, .header__link');
-      const sections = Array.from(document.querySelectorAll('section[id]'));
-      let navigating = false, lastSec = 'home', scrollLock = false;
+    window.addEventListener('resize', () => {
+      if (window.innerWidth < 900) {
+        document.querySelectorAll('.faq-answer').forEach(ans => {
+          ans.style.maxHeight = '';
+          ans.style.paddingBottom = '';
+          ans.style.display = '';
+          ans.style.visibility = '';
+          ans.style.opacity = '';
+        });
+      } else {
+        document.querySelectorAll('.faq-item.is-active .faq-answer').forEach(ans => {
+          ans.style.display = 'block';
+          ans.style.visibility = 'visible';
+          ans.style.opacity = '1';
+          ans.style.maxHeight = ans.scrollHeight + 'px';
+          ans.style.paddingBottom = '16px';
+        });
+      }
+    });
 
+    (() => {
+      const navBtns = document.querySelectorAll('.navbutton, .header__link'), sections = Array.from(document.querySelectorAll('section[id]')), headerH = 85;
+      let navigating = false, lastSec = '', scrollLock = false;
       const setNav = id => navBtns.forEach(b => {
-        const href = b.getAttribute('href');
-        b.classList.toggle('is-active', (id === 'home' && (href === '/' || href === '#home')) || href === `#${id}`);
+        const h = b.getAttribute('href');        b.classList.toggle('is-active', (id === 'home' && (h === '/' || h === '#home')) || h === `#${id}`);
       });
-
+      const scrollTop = () => {
+        navigating = true; window.scrollTo({ top: 0, behavior: 'smooth' });
+        history.pushState(null, null, location.pathname); setNav('home'); lastSec = 'home';
+        setTimeout(() => navigating = false, 800);
+      };
+      document.querySelectorAll('.brand').forEach(b => b.addEventListener('click', e => { e.preventDefault(); scrollTop(); window.dispatchEvent(new Event('hideSidebar')); }));
+      navBtns.forEach(b => b.addEventListener('click', e => {
+        const h = b.getAttribute('href');
+        if (h === '/' || h === '#home') { e.preventDefault(); scrollTop(); window.dispatchEvent(new Event('hideSidebar')); }
+        else if (h?.startsWith('#')) {          e.preventDefault(); const t = document.getElementById(h.slice(1));
+          if (t) { navigating = true; t.scrollIntoView({ behavior: 'smooth' }); history.pushState(null, null, h); setNav(h.slice(1)); lastSec = h.slice(1); window.dispatchEvent(new Event('hideSidebar')); setTimeout(() => navigating = false, 800); }
+        }
+      }));
       const updateSpy = () => {
         if (navigating) return;
-        const scrollY = window.scrollY || document.documentElement.scrollTop;
-        const triggerPoint = 85 + (innerHeight / 3);
-        let current = sections.length ? sections[0].id : 'home';
-        
-        if (innerHeight + scrollY >= document.body.offsetHeight - 10) current = sections[sections.length - 1].id;
-        else if (scrollY < 50) current = 'home';
-        else {
-          for (let s of sections) {
-            const rect = s.getBoundingClientRect();
-            if (rect.top <= triggerPoint && rect.bottom >= triggerPoint) { current = s.id; break; }
-          }
-        }
-        
-        if (current !== lastSec) {
-          lastSec = current; setNav(current);
-          history.replaceState(null, null, current === 'home' ? window.location.pathname : `#${current}`);
+        const y = window.scrollY || document.documentElement.scrollTop;
+        let cur = null;
+        const mid = headerH + (innerHeight / 3);
+        if (innerHeight + y >= document.body.offsetHeight - 10) cur = sections[sections.length - 1].id;
+        else if (y < 50) cur = 'home';
+        else sections.forEach(s => { const r = s.getBoundingClientRect(); if (r.top <= mid && r.bottom >= mid) cur = s.id; });
+        if (!cur && sections.length) cur = sections[0].id;
+        if (cur !== lastSec) {
+          lastSec = cur; 
+          setNav(cur);
         }
       };
-
-      window.addEventListener('scroll', () => {
-        if (!scrollLock) {
-          requestAnimationFrame(() => { updateSpy(); scrollLock = false; });
-          scrollLock = true;
-        }
-      }, { passive: true });
-
+      window.addEventListener('scroll', () => { if (!scrollLock) { requestAnimationFrame(() => { updateSpy(); scrollLock = false; }); scrollLock = true; } }, { passive: true });
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-      if (location.hash) history.replaceState(null, null, window.location.pathname);
-      window.scrollTo(0, 0); setNav('home');
-      setTimeout(updateSpy, 100);
-
-      // Sidebar Toggle Controller
-      const sidebar = document.getElementById('sidebar'), overlay = document.getElementById('overlay'), body = document.body;
-      const toggleSidebar = isVisible => {
-        sidebar.classList.toggle('is-expanded', isVisible);
-        overlay.classList.toggle('is-visible', isVisible);
-        body.classList.toggle('has-sidebar-open', isVisible);
-      };
-      
-      document.getElementById('open-sidebar').addEventListener('click', () => toggleSidebar(true));
-      document.getElementById('close-sidebar').addEventListener('click', () => toggleSidebar(false));
-      overlay.addEventListener('click', () => toggleSidebar(false));
-      window.addEventListener('hideSidebar', () => toggleSidebar(false));
-
-      // High-Performance Canvas Snow
-      const canvas = document.getElementById('snow-canvas'), ctx = canvas.getContext('2d');
-      let w = innerWidth, h = innerHeight, isVisible = true;
-      canvas.width = w; canvas.height = h;
-      
-      const PI2 = Math.PI * 2;
-      const flakes = Array.from({ length: w < 768 ? 15 : 35 }, () => ({
+      window.addEventListener('load', () => { if (location.hash) history.replaceState(null, null, location.pathname); window.scrollTo(0, 0); setNav('home'); lastSec = 'home'; updateSpy(); });
+    })();
+    
+    // OPTIMIZATION: Pre-calculated PI*2 constant to prevent thousands of redundant calculations per second in the canvas loop.
+    (() => {
+      const c = document.getElementById('snow-canvas'), ctx = c.getContext('2d');
+      let w = innerWidth, h = innerHeight; c.width = w; c.height = h;
+      const max = w < 768 ? 20 : 50, PI2 = Math.PI * 2, flakes = Array.from({ length: max }, () => ({
         x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.5 + 0.5,
-        d: Math.random() * 0.4 + 0.15, a: Math.random() * PI2, aStep: Math.random() * 0.01 + 0.005, op: Math.random() * 0.4 + 0.15
+        d: Math.random() * 0.4 + 0.15, a: Math.random() * PI2,
+        aStep: Math.random() * 0.01 + 0.005, op: Math.random() * 0.4 + 0.15
       }));
-      
-      document.addEventListener('visibilitychange', () => {
-        isVisible = !document.hidden;
-        if (isVisible) requestAnimationFrame(drawSnow);
-      });
-      
-      const drawSnow = () => {
-        if (!isVisible) return;
+      const draw = () => {
         ctx.clearRect(0, 0, w, h);
-        ctx.fillStyle = '#fff';
-        
+        flakes.forEach(f => { if (f.op > 0) { ctx.beginPath(); ctx.fillStyle = `rgba(255,255,255,${f.op})`; ctx.arc(f.x, f.y, f.r, 0, PI2, true); ctx.fill(); } });
         flakes.forEach(f => {
-          if (f.op > 0) {
-            ctx.globalAlpha = f.op;
-            ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, PI2); ctx.fill();
-          }
           f.y += f.d; f.a += f.aStep; f.x += Math.sin(f.a) * 0.25;
-          if (f.y > h) { f.y = -10; f.x = Math.random() * w; }
-          if (f.x > w + 10) f.x = -10; else if (f.x < -10) f.x = w + 10;
+          if (f.y > h) { f.y = -10; f.x = Math.random() * w; }          if (f.x > w + 10) f.x = -10; if (f.x < -10) f.x = w + 10;
         });
-        requestAnimationFrame(drawSnow);
+        requestAnimationFrame(draw);
       };
-      drawSnow();
-      window.addEventListener('resize', () => { w = innerWidth; h = innerHeight; canvas.width = w; canvas.height = h; });
-    });
+      draw();
+      window.addEventListener('resize', () => { w = innerWidth; h = innerHeight; c.width = w; c.height = h; });
+      const openBtn = document.getElementById('open-sidebar'), closeBtn = document.getElementById('close-sidebar'), sidebar = document.getElementById('sidebar'), overlay = document.getElementById('overlay');
+      const show = () => { sidebar.classList.add('is-expanded'); overlay.classList.add('is-visible'); document.body.classList.add('has-sidebar-open'); };
+      const hide = () => { sidebar.classList.remove('is-expanded'); overlay.classList.remove('is-visible'); document.body.classList.remove('has-sidebar-open'); };
+      openBtn.addEventListener('click', show); closeBtn.addEventListener('click', hide); overlay.addEventListener('click', hide); window.addEventListener('hideSidebar', hide);
+    })();
   </script>
 </body>
 </html>
