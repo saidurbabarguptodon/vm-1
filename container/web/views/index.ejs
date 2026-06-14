@@ -39,7 +39,7 @@
     .reveal { opacity: 0; transform: translateY(15px); transition: opacity 0.25s ease-out, transform 0.25s cubic-bezier(0,0,.2,1); will-change: opacity, transform; }
     .reveal.active { opacity: 1; transform: translateY(0); }
     
-    /* RESTORED FAQ ALTERNATING REVEAL (Still matches the 0.25s fast timing) */
+    /* FAQ ALTERNATING REVEAL */
     .faqs-container .faq-item.reveal:nth-child(odd) { transform: translate3d(20px, 15px, 0); }
     .faqs-container .faq-item.reveal:nth-child(even) { transform: translate3d(-20px, 15px, 0); }
     .faqs-container .faq-item.reveal.active { transform: translate3d(0, 0, 0); opacity: 1; }
@@ -97,7 +97,7 @@
     .hero-btn i { font-size: 1.4rem; font-style: normal !important; }
     .hero-footer { font-size: 1.1rem; color: var(--kex-gray); opacity: .8; }
     
-    .cards-section, .faqs-section { padding: 90px 0 120px; position: relative; z-index: 2; scroll-margin-top: 125px; width: 100%; overflow-x: clip; }
+    .cards-section, .faqs-section, .secret-section { padding: 90px 0 120px; position: relative; z-index: 2; scroll-margin-top: 125px; width: 100%; overflow-x: clip; }
     .cards-header, .faqs-header { text-align: center; margin-bottom: 80px; }
     .cards-title, .faqs-title { font-weight: 800; color: var(--kex-white); margin-bottom: 14px; letter-spacing: -.02em; }
     .cards-title { font-size: clamp(2.4rem, 6vw, 3.6rem); }
@@ -138,6 +138,38 @@
     .faq-answer-inner { padding: 0 18px 18px; opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .3s; color: var(--kex-gray); font-size: .92rem; line-height: 1.55; word-break: break-word; overflow-wrap: break-word; }
     .faq-item.is-active .faq-answer-inner { opacity: 1; transform: translateY(0); transition: opacity .4s .1s, transform .4s cubic-bezier(.33,1,.68,1); }
     
+    /* SECRET SECTION / PURE CSS 3D CYBER CORE SHOWCASE */
+    .secret-box { position: relative; width: 100%; max-width: 92%; margin: 0 auto; background: linear-gradient(135deg, rgba(20,20,30,.6) 0, rgba(10,10,15,.9) 100%); border: 1px solid var(--kex-dark-green); box-shadow: 0 20px 50px rgba(0,0,0,.9), inset 0 0 40px rgba(26,215,111,.05); border-radius: 24px; padding: 60px 20px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    
+    /* Moving Grid Background */
+    .secret-box::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(26,215,111,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(26,215,111,.05) 1px, transparent 1px); background-size: 40px 40px; animation: grid-scroll 4s linear infinite; pointer-events: none; z-index: 0; transform: perspective(500px) rotateX(60deg) scale(2.5); transform-origin: bottom; opacity: 0.4; }
+    @keyframes grid-scroll { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
+    
+    .cyber-core-wrapper { position: relative; width: 220px; height: 220px; perspective: 1000px; transform-style: preserve-3d; z-index: 2; margin-bottom: 40px; }
+    
+    .core-ring { position: absolute; inset: 0; border-radius: 50%; border: 3px solid transparent; transform-style: preserve-3d; }
+    /* Ring 1: X & Y rotation */
+    .core-ring:nth-child(1) { border-top-color: var(--kex-green); border-bottom-color: var(--kex-green); animation: spin-ring-1 5s linear infinite; box-shadow: 0 0 15px rgba(26,215,111,.3); }
+    /* Ring 2: Dashed offset rotation */
+    .core-ring:nth-child(2) { width: 85%; height: 85%; top: 7.5%; left: 7.5%; border-left: 3px dashed #fff; border-right: 3px dashed #fff; animation: spin-ring-2 7s linear infinite reverse; opacity: 0.8; }
+    /* Ring 3: Dotted pulsing ring */
+    .core-ring:nth-child(3) { width: 120%; height: 120%; top: -10%; left: -10%; border: 2px dotted rgba(26,215,111,.5); animation: spin-ring-3 10s linear infinite; }
+    
+    .core-nucleus { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; background: #fff; border-radius: 50%; box-shadow: 0 0 30px var(--kex-green), 0 0 60px var(--kex-green), inset 0 0 10px #000; animation: core-pulse 2s ease-in-out infinite alternate; }
+    
+    /* Orbiting particles using pseudo elements */
+    .core-ring:nth-child(1)::before, .core-ring:nth-child(2)::after { content: ''; position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; background: #fff; border-radius: 50%; box-shadow: 0 0 15px 5px var(--kex-green); transform: translateX(-50%); }
+    .core-ring:nth-child(2)::after { top: auto; bottom: -5px; width: 8px; height: 8px; background: var(--kex-yellow); box-shadow: 0 0 10px 3px var(--kex-yellow); }
+    
+    @keyframes spin-ring-1 { 0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg); } }
+    @keyframes spin-ring-2 { 0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); } 100% { transform: rotateX(180deg) rotateY(360deg) rotateZ(180deg); } }
+    @keyframes spin-ring-3 { 0% { transform: rotateX(75deg) rotateZ(0deg); } 100% { transform: rotateX(75deg) rotateZ(360deg); } }
+    @keyframes core-pulse { 0% { transform: scale(0.9); box-shadow: 0 0 20px var(--kex-green), 0 0 40px var(--kex-green); opacity: 0.8; } 100% { transform: scale(1.3); box-shadow: 0 0 40px var(--kex-green), 0 0 80px var(--kex-green), 0 0 120px #fff; opacity: 1; } }
+    
+    .secret-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(26,215,111,.1); border: 1px solid rgba(26,215,111,.3); color: var(--kex-green); border-radius: 50px; font-size: .85rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; z-index: 2; margin-top: 20px; }
+    .secret-badge i { font-size: 1rem; animation: float-icon 3s ease-in-out infinite; }
+    @keyframes float-icon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
     @media(hover:hover) {
       .header__toggle:hover, .sidebar__close:hover { background: rgba(255,255,255,.06); color: #fff; } .brand:hover { opacity: .8; }
       .navbutton:hover { background: var(--kex-dark-green); transform: translateX(4px); color: #fff; } .navbutton:hover i { color: var(--kex-green); }
@@ -146,6 +178,8 @@
       .card-bg:hover { transform: translateY(-8px); background: linear-gradient(135deg, rgba(255,255,255,.06) 0, rgba(20,20,30,.5) 100%); border-color: var(--kex-green); box-shadow: 0 20px 45px rgba(0,0,0,.9), 0 0 30px rgba(26,215,111,.2); }
       .card-bg:hover .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,.5), 0 0 15px rgba(26,215,111,.4); }
       .card-bg:hover .card-title, .faq-question:hover { color: var(--kex-green); }
+      .secret-box:hover .core-nucleus { animation: core-pulse 0.5s ease-in-out infinite alternate; background: var(--kex-green); }
+      .secret-box:hover .core-ring { animation-duration: 2s; }
     }
     
     .header__toggle.force-active i, .header__toggle:active i { transform: scale(.85); }
@@ -155,10 +189,10 @@
     .card-bg.force-active .card-icon, .card-bg:active .card-icon { transform: scale(1.1) rotate(-5deg); background: var(--kex-green); color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,.5), 0 0 15px rgba(26,215,111,.4); }
     .card-bg.force-active .card-title, .card-bg:active .card-title { color: var(--kex-green); }
     
-    @media(min-width:900px) { .header__links { display: flex; } .hero { padding: 70px 0 100px; } .cards-section, .faqs-section { padding: 110px 0 140px; } .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 28px; } .faqs-container { grid-template-columns: repeat(2, 1fr); gap: 24px; } .card-bg { padding: 36px 32px 24px; min-height: 280px; } }
-    @media(min-width:1200px) { html { font-size: 18px; } .hero { padding: 80px 0 120px; } .cards-section, .faqs-section { padding: 140px 0 170px; } .cards-grid, .faqs-container { gap: 36px; max-width: 88%; } .card-bg { padding: 44px 40px 30px; min-height: 340px; border-radius: 24px; } .card-icon { width: 72px; height: 72px; font-size: 2.2rem; margin-bottom: 30px; border-radius: 18px; } .card-title { font-size: 1.8rem; margin-bottom: 14px; } .card-description { font-size: 1.15rem; line-height: 1.7; } }
-    @media(max-width:768px) { .hero { padding: 50px 0 90px; } .cards-section, .faqs-section { padding: 90px 0 100px; } .cards-header, .faqs-header { margin-bottom: 70px; } .faqs-title { margin-bottom: 8px; } .faq-question { padding: 16px 20px; font-size: 1.2rem; } }
-    @media(max-width:479px) { .header { height: var(--header-height-mobile); margin: 8px 8px 0; } .container { padding: 0 12px; } .header .container { padding: 0 10px; } .header__toggle { width: 42px; height: 42px; font-size: 1.6rem; } .brand--header { height: 36px; } .alttext { font-size: 1.6rem; } .alticon { font-size: 1.8rem; } .hero { padding: 40px 0 60px; } .cards-section { padding: 60px 0 80px; } .faqs-section { padding: 50px 0 70px; } .cards-header, .faqs-header { margin-bottom: 50px; } .faqs-title { margin-bottom: 6px; } .cards-grid, .faqs-container { grid-template-columns: 1fr; gap: 20px; max-width: 100%; } .card-bg { margin: 0; padding: 28px 24px 20px; height: 100%; min-height: 200px; } .card-icon { width: 60px; height: 60px; font-size: 1.7rem; margin-bottom: 24px; } .faq-item { margin: 0; } .faq-question { padding: 14px 16px; font-size: 1.1rem; } .sociallink { width: 38px; height: 38px; font-size: 17px; } .glow-tl { width: 300px; height: 300px; top: -150px; left: -150px; } .glow-br { width: 400px; height: 400px; bottom: -200px; right: -200px; } .sidebar { width: 260px; } .sidebar__header { padding: 0 20px; height: 68px; } .sidebar__body { padding: 12px 8px 16px; } .sidebar__footer { padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); min-height: calc(68px + env(safe-area-inset-bottom)); } .navbutton { padding: 12px 14px; min-height: 52px; } .navbutton i { font-size: 1.2rem; width: 26px; } .navbutton__text { font-size: 1rem; } }
+    @media(min-width:900px) { .header__links { display: flex; } .hero { padding: 70px 0 100px; } .cards-section, .faqs-section, .secret-section { padding: 110px 0 140px; } .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 28px; } .faqs-container { grid-template-columns: repeat(2, 1fr); gap: 24px; } .card-bg { padding: 36px 32px 24px; min-height: 280px; } }
+    @media(min-width:1200px) { html { font-size: 18px; } .hero { padding: 80px 0 120px; } .cards-section, .faqs-section, .secret-section { padding: 140px 0 170px; } .cards-grid, .faqs-container { gap: 36px; max-width: 88%; } .card-bg { padding: 44px 40px 30px; min-height: 340px; border-radius: 24px; } .card-icon { width: 72px; height: 72px; font-size: 2.2rem; margin-bottom: 30px; border-radius: 18px; } .card-title { font-size: 1.8rem; margin-bottom: 14px; } .card-description { font-size: 1.15rem; line-height: 1.7; } .secret-box { padding: 80px 20px; } .cyber-core-wrapper { width: 280px; height: 280px; } }
+    @media(max-width:768px) { .hero { padding: 50px 0 90px; } .cards-section, .faqs-section, .secret-section { padding: 90px 0 100px; } .cards-header, .faqs-header { margin-bottom: 70px; } .faqs-title { margin-bottom: 8px; } .faq-question { padding: 16px 20px; font-size: 1.2rem; } }
+    @media(max-width:479px) { .header { height: var(--header-height-mobile); margin: 8px 8px 0; } .container { padding: 0 12px; } .header .container { padding: 0 10px; } .header__toggle { width: 42px; height: 42px; font-size: 1.6rem; } .brand--header { height: 36px; } .alttext { font-size: 1.6rem; } .alticon { font-size: 1.8rem; } .hero { padding: 40px 0 60px; } .cards-section { padding: 60px 0 80px; } .faqs-section, .secret-section { padding: 50px 0 70px; } .cards-header, .faqs-header { margin-bottom: 50px; } .faqs-title { margin-bottom: 6px; } .cards-grid, .faqs-container { grid-template-columns: 1fr; gap: 20px; max-width: 100%; } .card-bg { margin: 0; padding: 28px 24px 20px; height: 100%; min-height: 200px; } .card-icon { width: 60px; height: 60px; font-size: 1.7rem; margin-bottom: 24px; } .faq-item { margin: 0; } .faq-question { padding: 14px 16px; font-size: 1.1rem; } .sociallink { width: 38px; height: 38px; font-size: 17px; } .glow-tl { width: 300px; height: 300px; top: -150px; left: -150px; } .glow-br { width: 400px; height: 400px; bottom: -200px; right: -200px; } .sidebar { width: 260px; } .sidebar__header { padding: 0 20px; height: 68px; } .sidebar__body { padding: 12px 8px 16px; } .sidebar__footer { padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); min-height: calc(68px + env(safe-area-inset-bottom)); } .navbutton { padding: 12px 14px; min-height: 52px; } .navbutton i { font-size: 1.2rem; width: 26px; } .navbutton__text { font-size: 1rem; } .cyber-core-wrapper { width: 180px; height: 180px; } }
   </style>
 </head>
 <body>
@@ -224,6 +258,28 @@
         <% if (faqs && faqs.items && faqs.items.length > 0) { %><% faqs.items.forEach(faq => { %><div class="faq-item glass-effect reveal"><button type="button" class="faq-question" aria-expanded="false"><span class="faq-question-title"><%- fmt(faq.title || '') %></span><span class="faq-toggle-icon flex-center"><i class="fa-solid fa-plus"></i></span></button><div class="faq-answer"><div class="faq-answer-content"><div class="faq-answer-inner"><%- fmt(faq.description || '') %></div></div></div></div><% }) %><% } %>
       </div>
       <% if (faqs && faqs.data && (faqs.data.buttonenabled === true || faqs.data.buttonenabled === 'true')) { %><div class="faqs-footer"><a href="<%= faqs.data.buttonurl || '#' %>" class="hero-btn reveal" target="_blank" rel="noopener"><% if (faqs.data.buttonicon) { %><i class="<%= faqs.data.buttonicon %>"></i><% } %><span><%= faqs.data.buttontext || '' %></span></a></div><% } %>
+    </div>
+  </section>
+
+  <!-- NEW SECRET SECTION (Pure CSS Showcase) -->
+  <section class="secret-section" id="secret">
+    <div class="container">
+      <div class="cards-header">
+        <h2 class="cards-title reveal">Skill Showcase</h2>
+        <p class="cards-description reveal">Hover below to test system stability. Pure CSS 3D capabilities rendered seamlessly without a single drop of JavaScript.</p>
+      </div>
+      
+      <div class="secret-box reveal glass-effect">
+        <div class="cyber-core-wrapper">
+          <div class="core-ring"></div>
+          <div class="core-ring"></div>
+          <div class="core-ring"></div>
+          <div class="core-nucleus"></div>
+        </div>
+        <div class="secret-badge">
+          <i class="fa-solid fa-code"></i> Pure CSS Engine
+        </div>
+      </div>
     </div>
   </section>
 
