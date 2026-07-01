@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emerald Theme</title>
+    <title>Emerald Theme with Bootstrap Icons</title>
+    
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <style>
         /* Color Palette & Basic Reset */
         :root {
@@ -50,9 +54,12 @@
             background: none;
             border: none;
             color: var(--white);
-            font-size: 32px;
+            font-size: 36px; /* Adjusted size for the bootstrap icon */
             cursor: pointer;
             transition: transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #menu-btn:hover {
@@ -103,7 +110,10 @@
 
     <!-- Header -->
     <header>
-        <button id="menu-btn">☰</button>
+        <button id="menu-btn">
+            <!-- Bootstrap Icon for Menu -->
+            <i class="bi bi-list"></i>
+        </button>
     </header>
 
     <!-- Floating Sidebar -->
