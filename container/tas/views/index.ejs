@@ -53,9 +53,15 @@
             border-bottom-left-radius: 24px;
             border-bottom-right-radius: 24px;
             
-            /* Green line and glowing green shadow for separation */
-            border-bottom: 2px solid var(--green);
-            box-shadow: 0 8px 24px rgba(26, 215, 111, 0.15); 
+            /* 
+               FIX FOR THINNING CORNERS:
+               Using a 1px solid box-shadow instead of border-bottom.
+               Borders naturally taper off on curved corners, but a shadow keeps a uniform thickness perfectly.
+               Combined with the glowing green shadow underneath.
+            */
+            box-shadow: 
+                0 1px 0 0 var(--green), 
+                0 8px 24px rgba(26, 215, 111, 0.15); 
             
             position: sticky;
             top: 0;
@@ -79,19 +85,15 @@
             transform: scale(1.1);
         }
 
-        /* ----- BACKGROUND OVERLAY (BLUR & FREEZE EFFECT) ----- */
+        /* ----- BACKGROUND OVERLAY (FREEZE EFFECT - REVERTED TO PREVIOUS) ----- */
         #overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            /* Semi-transparent dark background */
-            background: rgba(0, 0, 0, 0.4);
-            
-            /* Blur effect applied here */
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px); /* Safari support */
+            /* Solid dark background without the blur effect */
+            background: rgba(0, 0, 0, 0.7);
             
             z-index: 900; /* Below sidebar, above header */
             opacity: 0;
@@ -108,7 +110,6 @@
         #sidebar {
             position: fixed;
             
-            /* Identical top and bottom gaps */
             top: 24px; 
             bottom: 24px; 
             left: 16px; 
@@ -118,8 +119,8 @@
             
             background-color: var(--bg-surface);
             
-            /* Highly rounded corners for a modern look */
-            border-radius: 32px; 
+            /* Made the corners less round as requested (changed from 32px to 16px) */
+            border-radius: 16px; 
             
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
             
@@ -170,7 +171,7 @@
             color: var(--text-main);
         }
         
-        /* Placeholder content for demonstrating the blur effect */
+        /* Placeholder content */
         .content-demo {
             padding: 40px;
             color: var(--text-muted);
@@ -187,14 +188,14 @@
         </button>
     </header>
 
-    <!-- Demo content so you can see the blur effect working -->
+    <!-- Demo content -->
     <div class="content-demo">
         <h1>Welcome to the Dashboard</h1>
-        <p>Click the menu button in the top right to open the sidebar. Notice how this text gets blurred into the background when the menu is open.</p>
+        <p>Click the menu button in the top right to open the sidebar. Notice how the background freezes cleanly.</p>
         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
     </div>
 
-    <!-- Overlay Element to blur & freeze background -->
+    <!-- Overlay Element to freeze background -->
     <div id="overlay"></div>
 
     <!-- Floating Sidebar -->
