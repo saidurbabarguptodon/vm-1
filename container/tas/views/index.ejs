@@ -12,11 +12,12 @@
         /* Updated Color Palette */
         :root {
             --green: #1ad76f;
+            --dark-green: #0E713B; /* Added Dark Green */
             --yellow: #FBBF24;
             --red: #EF4444;
             --blue: #3B82F6;
             
-            /* Unified Gray for Body and Header */
+            /* Unified Gray for Body */
             --bg-gray: #1f1f1f; 
             /* Slightly lighter gray for the sidebar so it pops out */
             --bg-surface: #2c2c2c; 
@@ -41,7 +42,8 @@
 
         /* ----- HEADER ----- */
         header {
-            background-color: var(--bg-gray);
+            /* Changed to dark green */
+            background-color: var(--dark-green);
             height: 80px;
             
             display: flex;
@@ -49,19 +51,11 @@
             justify-content: flex-end; 
             padding: 0 30px;
             
-            /* Rounded corners at the bottom */
-            border-bottom-left-radius: 24px;
-            border-bottom-right-radius: 24px;
+            /* Removed the border-radius to make it perfectly straight/square */
             
-            /* 
-               FIX FOR THINNING CORNERS:
-               Using a 1px solid box-shadow instead of border-bottom.
-               Borders naturally taper off on curved corners, but a shadow keeps a uniform thickness perfectly.
-               Combined with the glowing green shadow underneath.
-            */
-            box-shadow: 
-                0 1px 0 0 var(--green), 
-                0 8px 24px rgba(26, 215, 111, 0.15); 
+            /* Since the corners are straight now, standard border-bottom is perfect */
+            border-bottom: 1px solid var(--green);
+            box-shadow: 0 8px 24px rgba(26, 215, 111, 0.15); 
             
             position: sticky;
             top: 0;
@@ -85,14 +79,14 @@
             transform: scale(1.1);
         }
 
-        /* ----- BACKGROUND OVERLAY (FREEZE EFFECT - REVERTED TO PREVIOUS) ----- */
+        /* ----- BACKGROUND OVERLAY (FREEZE EFFECT) ----- */
         #overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            /* Solid dark background without the blur effect */
+            /* Solid dark background */
             background: rgba(0, 0, 0, 0.7);
             
             z-index: 900; /* Below sidebar, above header */
@@ -119,7 +113,7 @@
             
             background-color: var(--bg-surface);
             
-            /* Made the corners less round as requested (changed from 32px to 16px) */
+            /* Reduced roundness */
             border-radius: 16px; 
             
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
