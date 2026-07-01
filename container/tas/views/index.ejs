@@ -34,7 +34,6 @@
 
         body {
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            /* Applying the gray background */
             background-color: var(--bg-gray);
             color: var(--text-main);
             overflow-x: hidden; 
@@ -42,7 +41,6 @@
 
         /* ----- HEADER ----- */
         header {
-            /* Matching gray background */
             background-color: var(--bg-gray);
             height: 80px;
             
@@ -51,8 +49,12 @@
             justify-content: flex-end; 
             padding: 0 30px;
             
+            /* Rounded corners at the bottom */
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            
             /* Green line and glowing green shadow for separation */
-            border-bottom: 1px solid var(--green);
+            border-bottom: 2px solid var(--green);
             box-shadow: 0 8px 24px rgba(26, 215, 111, 0.15); 
             
             position: sticky;
@@ -77,14 +79,20 @@
             transform: scale(1.1);
         }
 
-        /* ----- BACKGROUND OVERLAY (FREEZE EFFECT) ----- */
+        /* ----- BACKGROUND OVERLAY (BLUR & FREEZE EFFECT) ----- */
         #overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
+            /* Semi-transparent dark background */
+            background: rgba(0, 0, 0, 0.4);
+            
+            /* Blur effect applied here */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px); /* Safari support */
+            
             z-index: 900; /* Below sidebar, above header */
             opacity: 0;
             pointer-events: none;
@@ -109,7 +117,9 @@
             overflow-y: auto; 
             
             background-color: var(--bg-surface);
-            border-radius: 24px; 
+            
+            /* Highly rounded corners for a modern look */
+            border-radius: 32px; 
             
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
             
@@ -159,6 +169,13 @@
             background-color: var(--hover-bg);
             color: var(--text-main);
         }
+        
+        /* Placeholder content for demonstrating the blur effect */
+        .content-demo {
+            padding: 40px;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
     </style>
 </head>
 <body>
@@ -170,7 +187,14 @@
         </button>
     </header>
 
-    <!-- Overlay Element to freeze background -->
+    <!-- Demo content so you can see the blur effect working -->
+    <div class="content-demo">
+        <h1>Welcome to the Dashboard</h1>
+        <p>Click the menu button in the top right to open the sidebar. Notice how this text gets blurred into the background when the menu is open.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+    </div>
+
+    <!-- Overlay Element to blur & freeze background -->
     <div id="overlay"></div>
 
     <!-- Floating Sidebar -->
