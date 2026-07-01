@@ -10,7 +10,7 @@
             --emerald: #10B981;
             --emerald-light: #d1fae5;
             --white: #ffffff;
-            --bg-color: #f8fafc; /* Very light off-white to make the white sidebar pop */
+            --bg-color: #f8fafc;
         }
 
         * {
@@ -22,28 +22,27 @@
         body {
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
-            overflow-x: hidden; /* Prevents horizontal scrollbar */
+            overflow-x: hidden; 
         }
 
         /* ----- HEADER ----- */
         header {
             background-color: var(--emerald);
             height: 80px;
-            /* Round the bottom two corners */
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
             
-            /* Align items */
+            /* Made bottom two corners LESS round */
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            
             display: flex;
             align-items: center;
-            justify-content: flex-end; /* Pushes the button to the right */
+            justify-content: flex-end; 
             padding: 0 30px;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
             
-            /* Keep it sticky at the top */
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 100; /* Lower z-index than sidebar */
         }
 
         /* Sidebar Toggle Button */
@@ -63,34 +62,34 @@
         /* ----- FLOATING SIDEBAR ----- */
         #sidebar {
             position: fixed;
-            top: 100px; /* Pushed down from the header to float */
-            left: 20px; /* Pushed away from the left edge to float */
+            
+            /* Moved UP so it aligns near the top of the screen, NOT below the header */
+            top: 16px; 
+            left: 16px; 
             width: 260px;
-            height: calc(100vh - 130px); /* Adjust height so it floats above the bottom too */
+            
+            /* Adjusted height to maintain a gap at the bottom */
+            height: calc(100vh - 32px); 
             
             background-color: var(--white);
+            border-radius: 24px; /* All four corners rounded */
             
-            /* All four corners rounded */
-            border-radius: 24px; 
-            
-            /* Floating shadow effect with emerald tint */
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.15);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.25);
             border: 2px solid var(--emerald-light);
             
             padding: 24px;
-            z-index: 1000;
             
-            /* Animation logic: hidden to the left by default */
+            /* High z-index to stay ABOVE the header */
+            z-index: 1000; 
+            
             transform: translateX(-150%);
             transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        /* Class added via JavaScript to slide it in */
         #sidebar.open {
             transform: translateX(0);
         }
 
-        /* Sidebar dummy content styles */
         .sidebar-title {
             color: var(--emerald);
             font-size: 20px;
@@ -104,14 +103,12 @@
 
     <!-- Header -->
     <header>
-        <!-- Button positioned on the right -->
         <button id="menu-btn">☰</button>
     </header>
 
-    <!-- Floating Sidebar opening from the left -->
+    <!-- Floating Sidebar -->
     <nav id="sidebar">
         <h3 class="sidebar-title">Menu</h3>
-        <!-- You can add your sidebar links/items here later -->
     </nav>
 
     <!-- Script to handle sidebar toggle -->
@@ -119,12 +116,12 @@
         const menuBtn = document.getElementById('menu-btn');
         const sidebar = document.getElementById('sidebar');
 
-        // Toggle sidebar open/close on button click
-        menuBtn.addEventListener('click', () => {
+        menuBtn.addEventListener('click', (event) => {
             sidebar.classList.toggle('open');
+            // Prevent the click from immediately bubbling up to the document
+            event.stopPropagation();
         });
 
-        // Optional: Close sidebar if clicking outside of it
         document.addEventListener('click', (event) => {
             if (!sidebar.contains(event.target) && !menuBtn.contains(event.target)) {
                 sidebar.classList.remove('open');
